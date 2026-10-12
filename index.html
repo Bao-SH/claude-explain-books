@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>动态读书</title>
+<meta name="description" content="经典软件工程书籍的交互式可视化解读：人月神话、领域驱动设计。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%231A1F2E'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23FBFAF6' font-family='serif' font-weight='900'%3E书%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+:root{--paper:#F2F0EA;--sheet:#FBFAF6;--ink:#1A1F2E;--muted:#686D79;--line:#D9D6CC;--red:#E5432A;--acc:#0B7A64;
+ --f-display:"Noto Serif SC","Songti SC",serif;--f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;--f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--paper:#0E121B;--sheet:#121826;--ink:#ECE8DE;--muted:#8E94A3;--line:#273042;--red:#FF6448;--acc:#3DDBB0;color-scheme:dark}}
+:root[data-theme="dark"]{--paper:#0E121B;--sheet:#121826;--ink:#ECE8DE;--muted:#8E94A3;--line:#273042;--red:#FF6448;--acc:#3DDBB0;color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--f-body)}
+main{max-width:920px;margin:0 auto;padding:56px 16px 64px}
+.eyebrow{font:500 11px/1 var(--f-mono);letter-spacing:.14em;color:var(--muted);text-transform:uppercase}
+h1{font:900 40px/1.2 var(--f-display);margin:12px 0 10px}
+.lead{font-size:15px;line-height:1.8;color:var(--muted);margin:0 0 36px;max-width:560px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
+a.card{display:flex;flex-direction:column;gap:10px;padding:24px 24px 22px;background:var(--sheet);border:1px solid var(--line);border-radius:8px;color:inherit;text-decoration:none;border-top:4px solid var(--c);transition:transform .2s,box-shadow .2s}
+a.card:hover{transform:translateY(-3px);box-shadow:0 14px 30px -18px rgba(0,0,0,.35)}
+a.card:focus-visible{outline:2px solid var(--c);outline-offset:3px}
+.card .au{font:500 11px var(--f-mono);color:var(--muted);letter-spacing:.06em}
+.card h2{font:900 24px/1.3 var(--f-display);margin:0}
+.card p{margin:0;font-size:14px;line-height:1.75}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.tags span{font-size:12px;padding:4px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.go{margin-top:auto;padding-top:8px;font:700 13px var(--f-body);color:var(--c)}
+footer{margin-top:44px;font-size:12.5px;line-height:1.7;color:var(--muted)}
+@media (max-width:560px){main{padding-top:36px}h1{font-size:30px}}
+</style>
+</head>
+<body>
+<main>
+ <div class="eyebrow">Claude explains books</div>
+ <h1>动态读书</h1>
+ <p class="lead">把经典软件工程书籍拆成一幕幕可以播放、暂停、悬停查看的动画。每本书按它自己的特点选择呈现方式。</p>
+ <div class="grid">
+  <a class="card" href="mythical-man-month/" style="--c:var(--red)">
+   <div class="au">Frederick P. Brooks, Jr.</div>
+   <h2>人月神话</h2>
+   <p>为什么给落后的项目加人，只会让它更落后。软件工程的经典论文集。</p>
+   <div class="tags"><span>焦油坑</span><span>Brooks 法则</span><span>外科手术队伍</span><span>没有银弹</span></div>
+   <div class="go">开始阅读 →</div>
+  </a>
+  <a class="card" href="domain-driven-design/" style="--c:var(--acc)">
+   <div class="au">Eric Evans</div>
+   <h2>领域驱动设计</h2>
+   <p>软件核心复杂性应对之道：用领域模型把业务知识和代码连在一起。</p>
+   <div class="tags"><span>通用语言</span><span>聚合</span><span>限界上下文</span><span>精炼</span></div>
+   <div class="go">开始阅读 →</div>
+  </a>
+ </div>
+ <footer>非官方学习笔记，仅供交流。引文版权归原作者与出版方所有，图表为示意。</footer>
+</main>
+</body>
+</html>

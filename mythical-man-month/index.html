@@ -1,0 +1,877 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人月神话 · 动态解读</title>
+<meta name="description" content="用 Canvas 动画逐步拆解《人月神话》：焦油坑、Brooks 法则、外科手术队伍、概念完整性、巴比伦塔与没有银弹。">
+<meta property="og:title" content="人月神话 · 动态解读">
+<meta property="og:description" content="用 Canvas 动画逐步拆解《人月神话》：焦油坑、Brooks 法则、外科手术队伍、概念完整性、巴比伦塔与没有银弹。">
+<meta property="og:type" content="website">
+<meta name="theme-color" content="#F2F0EA" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0E121B" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23E5432A'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23FBFAF6' font-family='serif' font-weight='900'%3E人月%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap"></noscript>
+<style>
+/* Layout: drafting-table stage (canvas sheet + annotation rail) above a tape-transport bar */
+:root{
+  --paper:#F2F0EA; --sheet:#FBFAF6; --ink:#1A1F2E; --muted:#686D79; --line:#D9D6CC;
+  --grid:rgba(36,99,235,.07); --grid2:rgba(36,99,235,.035);
+  --red:#E5432A; --blue:#2463EB; --amber:#E39500; --teal:#0C9C7B; --violet:#7A48D8;
+  --tar:#2B2622; --soft:#E9E6DD; --grain:.35;
+  --f-display:"Noto Serif SC","Songti SC","STSong",serif;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E121B; --sheet:#121826; --ink:#ECE8DE; --muted:#8E94A3; --line:#273042;
+    --grid:rgba(120,160,255,.07); --grid2:rgba(120,160,255,.03);
+    --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+    --tar:#05070B; --soft:#1C2333; --grain:.18; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E121B; --sheet:#121826; --ink:#ECE8DE; --muted:#8E94A3; --line:#273042;
+  --grid:rgba(120,160,255,.07); --grid2:rgba(120,160,255,.03);
+  --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+  --tar:#05070B; --soft:#1C2333; --grain:.18; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html{color-scheme:light}
+.credit{font:400 11.5px/1.7 var(--f-body);color:var(--muted);border-top:1px solid var(--line);padding-top:14px;margin-top:4px}
+.credit a{color:inherit}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;margin:0;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,36px);padding-block:20px 28px;display:grid;gap:16px}
+.top{display:flex;align-items:center;gap:16px 24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.seal{width:44px;height:44px;border-radius:4px;background:var(--red);color:var(--sheet);display:grid;place-items:center;font:900 15px/1 var(--f-display);letter-spacing:.02em;flex:none}
+.brand h1{font:900 26px/1.1 var(--f-display);margin:0;letter-spacing:.06em}
+.brand p{margin:3px 0 0;font:500 10.5px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto}
+.nav button{font:500 13px/1 var(--f-body);color:var(--muted);background:none;border:0;padding:8px 11px;border-radius:999px;cursor:pointer;transition:color .2s,background .2s}
+.nav button:hover{color:var(--ink);background:var(--soft)}
+.nav button[aria-current="true"]{color:var(--sheet);background:var(--ink)}
+.nav button:focus-visible,.btn:focus-visible,.track:focus-visible,.theme:focus-visible{outline:2px solid var(--red);outline-offset:2px}
+.theme{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;font-size:15px;display:grid;place-items:center}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+.sheet{position:relative;aspect-ratio:16/10;max-width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background-color:var(--sheet);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(var(--grid2) 1px,transparent 1px),linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+  background-size:100px 100px,100px 100px,20px 20px,20px 20px;background-position:-1px -1px}
+canvas{display:block;width:100%;height:100%;touch-action:manipulation}
+.hint{position:absolute;left:12px;top:10px;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.06em;pointer-events:none}
+.tip{position:absolute;pointer-events:none;max-width:290px;background:var(--ink);color:var(--sheet);padding:10px 13px 11px;border-radius:6px;font-size:13px;line-height:1.65;box-shadow:0 10px 30px -12px rgba(0,0,0,.45);z-index:3}
+.tip b{display:block;font:600 14.5px/1.4 var(--f-display);margin-bottom:3px;color:var(--sheet)}
+.rail{display:flex;flex-direction:column;gap:12px;min-width:0;padding-top:2px}
+.eyebrow{font:700 11px/1 var(--f-mono);color:var(--red);letter-spacing:.14em;text-transform:uppercase}
+.rail h2{font:900 27px/1.25 var(--f-display);margin:0;text-wrap:balance;letter-spacing:.02em}
+.steps{display:flex;gap:5px;align-items:center}
+.steps i{width:18px;height:3px;border-radius:2px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--ink)}
+.steps span{font:500 11px var(--f-mono);color:var(--muted);margin-left:6px;font-variant-numeric:tabular-nums}
+.rail h3{font:700 17px/1.4 var(--f-body);margin:6px 0 0}
+.rail p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink)}
+.rail p b{color:var(--red);font-weight:700}
+blockquote{margin:4px 0 0;padding:2px 0 2px 14px;border-left:2px solid var(--red);font:600 14.5px/1.7 var(--f-display);color:var(--ink)}
+blockquote small{display:block;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.08em;margin-bottom:3px}
+.ctrl{display:grid;gap:8px;padding:12px 14px;border:1px dashed var(--line);border-radius:6px;margin-top:4px}
+.ctrl label{font:700 13px var(--f-body);display:flex;justify-content:space-between;align-items:baseline}
+.ctrl output{font:700 20px var(--f-mono);color:var(--red);font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%;accent-color:var(--red)}
+.ctrl .note{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btns{display:flex;gap:6px}
+.btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .15s,background .2s}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:scale(.94)}
+.btn.play{background:var(--ink);color:var(--sheet);border-color:var(--ink);width:46px;height:46px}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.track{flex:1 1 280px;min-width:0;display:flex;gap:5px;height:30px;align-items:center;cursor:pointer}
+.seg{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden;min-width:8px}
+.seg i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--red)}
+.seg.past i{background:var(--ink)}
+.count{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+.keys{font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+@media (max-width:980px){.stage{grid-template-columns:minmax(0,1fr)}.sheet{aspect-ratio:4/3}.nav{margin-left:0;width:100%}}
+@media (max-width:560px){.sheet{aspect-ratio:4/5}.brand h1{font-size:22px}.rail h2{font-size:23px}.keys{display:none}.nav button{padding:7px 9px;font-size:12.5px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="seal">人月</div>
+      <div><h1>人月神话</h1><p>The Mythical Man-Month · Frederick P. Brooks, Jr. · 40 周年中文纪念版</p></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="章节"></nav>
+    <button class="theme" id="theme" aria-label="切换明暗主题" title="切换明暗主题">◐</button>
+  </header>
+
+  <main class="stage">
+    <div class="sheet" id="sheet">
+      <canvas id="cv" aria-label="动态示意图"></canvas>
+      <div class="hint">HOVER · 悬停图形查看详解</div>
+      <div class="tip" id="tip" hidden></div>
+    </div>
+    <aside class="rail" aria-live="polite">
+      <div class="eyebrow" id="chap"></div>
+      <h2 id="stitle"></h2>
+      <div class="steps" id="steps"></div>
+      <h3 id="caph"></h3>
+      <p id="cap"></p>
+      <blockquote id="quote" hidden></blockquote>
+      <div class="ctrl" id="ctrl" hidden></div>
+    </aside>
+  </main>
+
+  <footer class="transport">
+    <div class="btns">
+      <button class="btn" id="prev" aria-label="上一步"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+      <button class="btn play" id="play" aria-label="暂停"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button>
+      <button class="btn" id="next" aria-label="下一步"><svg viewBox="0 0 16 16"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+    </div>
+    <div class="track" id="track" role="slider" tabindex="0" aria-label="播放进度"></div>
+    <div class="count" id="count">01 / 01</div>
+    <div class="keys">← → 切换 · 空格 播放/暂停</div>
+  </footer>
+  <p class="credit">本页为《人月神话》（The Mythical Man-Month）的非官方可视化解读，仅供学习交流。原著：〔美〕弗雷德里克·布鲁克斯（Frederick P. Brooks, Jr.）；中文版：UMLChina 翻译组 汪颖 译，《人月神话（40周年中文纪念版）》，清华大学出版社，2015。文中引文版权归原作者与出版方所有，图表为示意，不代表书中数据。</p>
+</div>
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const TAU=Math.PI*2;
+const E={
+  io:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  out:t=>1-Math.pow(1-t,3),
+  back:t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)},
+  expo:t=>t>=1?1:1-Math.pow(2,-10*t)
+};
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const cv=$('#cv'),ctx=cv.getContext('2d'),sheet=$('#sheet'),tip=$('#tip');
+let W=0,H=0,DPR=1;
+function resize(){const r=sheet.getBoundingClientRect();W=r.width;H=r.height;DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}
+new ResizeObserver(resize).observe(sheet);resize();
+
+/* ---------- theme ---------- */
+let C={};
+const KEYS=['paper','sheet','ink','muted','line','red','blue','amber','teal','violet','tar','soft'];
+function readColors(){const cs=getComputedStyle(document.documentElement);KEYS.forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+function rgba(hex,a){hex=(hex||'#000').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+$('#theme').onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'};
+
+/* ---------- drawing helpers ---------- */
+const FD='"Noto Serif SC","Songti SC",serif',FB='"Noto Sans SC","PingFang SC",system-ui,sans-serif',FM='"JetBrains Mono",ui-monospace,Menlo,monospace';
+const font=(size,w=500,f='b')=>`${w} ${size}px ${f==='d'?FD:f==='m'?FM:FB}`;
+function txt(s,x,y,o={}){ctx.save();ctx.font=font(o.size||13,o.w||500,o.f);ctx.fillStyle=o.color||C.ink;ctx.textAlign=o.align||'center';ctx.textBaseline=o.base||'middle';if(o.a!=null)ctx.globalAlpha*=o.a;ctx.fillText(s,x,y);ctx.restore()}
+function tw(s,size,w=500,f){ctx.save();ctx.font=font(size,w,f);const m=ctx.measureText(s).width;ctx.restore();return m}
+function dot(x,y,r,fill,stroke,lw=1.5){ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,TAU);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function seg(x1,y1,x2,y2,color,lw=1,dash){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrow(x1,y1,x2,y2,color,lw=1.5,head=8){seg(x1,y1,x2,y2,color,lw);const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-head*Math.cos(a-.42),y2-head*Math.sin(a-.42));ctx.lineTo(x2-head*Math.cos(a+.42),y2-head*Math.sin(a+.42));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+function rr(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
+function pill(s,x,y,o={}){const size=o.size||12,pad=o.pad||9,w=tw(s,size,o.w||600,o.f)+pad*2,h=size+pad*1.1;const x0=o.align==='left'?x:o.align==='right'?x-w:x-w/2;rr(x0,y-h/2,w,h,h/2);ctx.fillStyle=o.bg||C.ink;ctx.fill();if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=1;ctx.stroke()}txt(s,x0+w/2,y+.5,{size,w:o.w||600,color:o.color||C.sheet,f:o.f});return {x:x0,y:y-h/2,w,h}}
+function layer(a,fn){if(a<=.004)return;ctx.save();ctx.globalAlpha*=Math.min(1,a);fn();ctx.restore()}
+function glow(x,y,r,color,a){if(r<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(color,a));g.addColorStop(1,rgba(color,0));ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+const along=(x1,y1,x2,y2,p)=>[lerp(x1,x2,p),lerp(y1,y2,p)];
+
+/* ---------- hotspots ---------- */
+let HOT=[];
+const live=()=>ctx.globalAlpha>.45;
+function hotC(x,y,r,t,b,click){if(live())HOT.push({k:'c',x,y,r,t,b,click})}
+function hotR(x,y,w,h,t,b,click){if(live())HOT.push({k:'r',x,y,w,h,t,b,click})}
+function hotF(fn,t,b){if(live())HOT.push({k:'f',fn,t,b})}
+function hit(mx,my){for(let i=HOT.length-1;i>=0;i--){const h=HOT[i];if(h.k==='c'&&Math.hypot(mx-h.x,my-h.y)<=h.r)return h;if(h.k==='r'&&mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h)return h;if(h.k==='f'&&h.fn(mx,my))return h}return null}
+
+/* ====================================================================
+   SCENES
+   ==================================================================== */
+const PAL=()=>[C.blue,C.amber,C.teal,C.violet,C.red];
+let nT=8,nA=8;
+
+const SCENES=[
+/* ---------------- 0 · Overview ---------------- */
+{nav:'总览',chap:'序言 · 全书主线',title:'规模、分工与概念完整性',
+steps:[
+ {h:'一个人，一个头脑',dur:7,c:'小程序由一个人完成：需求、设计、实现都在同一个头脑里，设计自然一致。中央的晶体代表系统的<b>概念完整性</b>。',q:'大型编程项目的管理问题和小项目不同，原因在于分工。（第 1 版序言）'},
+ {h:'规模扩大，工作被分解',dur:6.5,c:'系统变大以后，一个人做不完，工作被拆成许多部分分给不同的人。流出的粒子代表被分配出去的任务。'},
+ {h:'分工带来沟通开销',dur:6.5,c:'任意两个人之间都需要协调。12 个人就有 <b>66</b> 条沟通路径，沟通成本按人数的平方增长，而不是线性增长。'},
+ {h:'沟通失效，概念瓦解',dur:7,c:'每个人按自己的理解实现自己那部分，系统碎成风格不一的拼块。Brooks 主持的 OS/360 就是这样：进度延期、内存超出预期、成本数倍于估算。',q:'维护产品的概念完整性，是最关键的需求。（第 1 版序言）'},
+ {h:'全书的答案',dur:8,c:'由一位结构师（或少数人）掌控设计，团队采用外科手术式的结构，再加上文档、计划和组织好的沟通。分工保留下来，沟通变得有序，概念重新统一。后面各章逐一展开。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const cx=W/2,cy=H*(n?.42:.43),R=m*(n?.36:.31),core=m*.085,N=12;
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ const P=[];
+ for(let i=0;i<N;i++){const a=i/N*TAU-Math.PI/2+t*.035;const r=i===0?lerp(core*2.2,R,v1):lerp(core*1.3,R,v1);P.push([cx+Math.cos(a)*r,cy+Math.sin(a)*r*.94])}
+ glow(cx,cy,core*4,C.red,.16*(1-v3*(1-v4))+.04);
+ // mesh
+ const mesh=v2*(1-v4);
+ layer(mesh,()=>{
+  ctx.lineWidth=.8;ctx.strokeStyle=rgba(C.blue,.26);ctx.beginPath();
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1])}
+  ctx.stroke();
+  if(v3>0){ctx.strokeStyle=rgba(C.red,.5*v3);ctx.beginPath();
+   for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){if(Math.sin(t*5+i*3.1+j*1.7)>.75){ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1])}}ctx.stroke()}
+  for(let k=0;k<30;k++){const a=Math.floor(rnd(k)*N),b=(a+1+Math.floor(rnd(k+99)*(N-1)))%N,p=(t*.35+rnd(k+7))%1;const [x,y]=along(P[a][0],P[a][1],P[b][0],P[b][1],p);dot(x,y,2,C.amber)}
+ });
+ // star
+ layer(v4,()=>{
+  for(let i=0;i<N;i++){seg(cx,cy,P[i][0],P[i][1],rgba(C.red,.45),1.2);const p=1-((t*.4+rnd(i+3))%1);const [x,y]=along(cx,cy,P[i][0],P[i][1],.25+p*.75);dot(x,y,2.2,C.teal)}
+ });
+ // work particles
+ layer(v1*(1-v2*.55)*(1-v4*.6),()=>{
+  for(let k=0;k<40;k++){const i=k%N,p=(t*.22+rnd(k))%1;const [x,y]=along(cx,cy,P[i][0],P[i][1],p);ctx.globalAlpha=Math.sin(p*Math.PI)*.9;ctx.fillStyle=C.blue;ctx.fillRect(x-2,y-2,4,4)}
+ });
+ // crystal
+ const d=v3*(1-v4),pal=PAL();
+ for(let k=0;k<6;k++){
+  const a0=k/6*TAU+t*.08,a1=(k+1)/6*TAU+t*.08,am=(a0+a1)/2;
+  const off=d*core*(.7+rnd(k)*.9),rot=d*(rnd(k+3)-.5)*1.4;
+  const p0=[0,0],p1=[Math.cos(a0)*core,Math.sin(a0)*core],p2=[Math.cos(a1)*core,Math.sin(a1)*core];
+  const gx=(p1[0]+p2[0])/3,gy=(p1[1]+p2[1])/3;
+  ctx.save();ctx.translate(cx+gx+Math.cos(am)*off,cy+gy+Math.sin(am)*off);ctx.rotate(rot);
+  ctx.beginPath();ctx.moveTo(p0[0]-gx,p0[1]-gy);ctx.lineTo(p1[0]-gx,p1[1]-gy);ctx.lineTo(p2[0]-gx,p2[1]-gy);ctx.closePath();
+  ctx.fillStyle=C.red;ctx.globalAlpha*=1-d*.85;ctx.fill();ctx.globalAlpha/=Math.max(.01,1-d*.85);
+  if(d>0){ctx.fillStyle=pal[k%5];ctx.globalAlpha*=d;ctx.fill();ctx.globalAlpha/=d}
+  ctx.strokeStyle=C.sheet;ctx.lineWidth=1.2;ctx.stroke();ctx.restore();
+ }
+ hotC(cx,cy,core*1.2,'概念完整性','系统设计中最重要的考虑因素。宁可省略一些不规则的特性和改进，也要让系统体现一组统一的设计思路（第 4 章）。');
+ txt('概念完整性',cx,cy+core+20+d*core*.6,{size:n?13:15,w:600,f:'d'});
+ layer(v4,()=>pill('结构师统一设计',cx,cy-core-20,{size:11,bg:C.red}));
+ // people
+ const pr=Math.max(4,m*.013);
+ P.forEach((p,i)=>{const a=i===0?1:v1;layer(a,()=>{dot(p[0],p[1],pr+2,C.sheet);dot(p[0],p[1],pr,C.ink);hotC(p[0],p[1],pr+6,'开发者 #'+(i+1),v2>.5&&v4<.5?'与另外 11 人各有一条沟通路径，任何改动都可能需要通知所有人。':v4>.5?'只需与结构师保持一致：按统一的说明书实现自己的部分。':'负责被分配到的一部分工作。')})});
+ layer(1-v1,()=>pill('1 人',P[0][0],P[0][1]-pr-16,{size:11,bg:C.ink}));
+ // counter
+ const ty=cy-R*.94-30;
+ layer(v2*(1-v4),()=>txt('12 人 · 66 条沟通路径',cx,ty,{size:12,w:700,f:'m',color:v3>.5?C.red:C.blue}));
+ layer(v4,()=>txt('12 人 · 12 条主沟通路径',cx,ty,{size:12,w:700,f:'m',color:C.teal}));
+ // causal chain
+ const chain=[['规模 ↑',v1,C.ink],['分工 ↑',v1,C.ink],['沟通开销 ↑',v2,C.blue],['概念完整性 ↓',v3,C.red]];
+ const fs=n?11.5:13.5,gap=n?20:30;
+ let widths=chain.map(c=>tw(c[0],fs,700)),tot=widths.reduce((a,b)=>a+b,0)+gap*(chain.length-1);
+ let x=cx-tot/2,y=H-(n?56:58);
+ chain.forEach((c,i)=>{layer(c[1],()=>{txt(c[0],x+widths[i]/2,y+(1-c[1])*8,{size:fs,w:700,color:c[2]});if(i<chain.length-1)txt('→',x+widths[i]+gap/2,y,{size:fs,color:C.muted})});x+=widths[i]+gap});
+ layer(v4,()=>txt(n?'解法：结构师 · 手术队伍 · 文档 · 计划':'解法：结构师 + 外科手术队伍 + 文档 + 计划与组织',cx,H-(n?26:26),{size:fs,w:700,color:C.teal,f:'d'}));
+}},
+
+/* ---------------- 1 · Tar pit ---------------- */
+{nav:'焦油坑',chap:'第 1 章 · 焦油坑',title:'从程序到编程系统产品',
+steps:[
+ {h:'史前的焦油坑',dur:7.5,c:'恐龙、猛犸、剑齿虎陷进焦油坑，越挣扎陷得越深。大型系统开发也像这样：没有哪个问题单独致命，许多因素缠在一起，项目越陷越深。左上角的小方块是一个能独立运行的<b>程序</b>，两个人在车库里就能写出来。'},
+ {h:'编程产品 · ×3',dur:6,c:'要让任何人都能运行、测试、修复和扩展，程序必须通用化、经过充分测试，并配齐文档。成本大约是程序的 <b>3 倍</b>。'},
+ {h:'编程系统 · ×3',dur:6,c:'作为系统的一个构件，程序的输入输出要符合精确定义的接口，只能使用预算内的内存和时间，还要和其他构件一起集成测试。成本同样大约是 <b>3 倍</b>。'},
+ {h:'编程系统产品 · ×9',dur:7,c:'同时具备两者的<b>编程系统产品</b>才是大多数系统开发的真正目标，成本约为程序的 <b>9 倍</b>。用车库程序的速度去估算它，项目必然陷进焦油坑。'},
+ {h:'职业的乐趣与苦恼',dur:8,c:'乐趣：创造的快乐，做出对别人有用的东西，拼装精巧部件的魔力，不断学习，在像思想一样易于驾驭的介质上工作。苦恼：必须追求完美，目标由别人设定，依赖别人的程序，调试枯燥，产品还没完成就可能过时。',q:'编程是一个许多人痛苦挣扎的焦油坑，也是一种乐趣和苦恼共存的创造性活动。（第 1 章，大意）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const tarY=H*(n?.84:.82),top=H*.07;
+ const sink=s.v(4);
+ const avW=W*.86,avH=tarY-top-10;
+ const u=Math.min(avW/5.3,avH/5.2),g=u*.62,sq3=Math.sqrt(3);
+ const c1=sq3*u,c2=3*u,r1=sq3*u,r2=3*u,totW=c1+g+c2,totH=r1+g+r2;
+ const ox=(W-totW)/2,oy=top+(avH-totH)/2+u*.15;
+ const B=[
+  {k:0,side:u,cx:ox+c1/2,cy:oy+r1/2,name:'程序',mul:'1×',sub:'',color:C.ink,tip:['程序','完整、可以运行，作者在自己的机器上就能用。这是车库里两个程序员就能做出来的东西。']},
+  {k:1,side:sq3*u,cx:ox+c1+g+c2/2,cy:oy+r1/2,name:'编程产品',mul:'3×',sub:'通用化 · 测试 · 文档',color:C.blue,tip:['编程产品 ×3','可以被任何人运行、测试、修复和扩展。需要通用化、大量测试用例和完整文档，成本至少是程序的 3 倍。']},
+  {k:2,side:sq3*u,cx:ox+c1/2,cy:oy+r1+g+r2/2,name:'编程系统',mul:'3×',sub:'接口 · 资源预算 · 集成',color:C.teal,tip:['编程系统 ×3','由交互的构件组成的集合。每个构件都要符合精确定义的接口，遵守内存与时间预算，并与其他构件组合测试，成本至少是 3 倍。']},
+  {k:3,side:3*u,cx:ox+c1+g+c2/2,cy:oy+r1+g+r2/2,name:'编程系统产品',mul:'9×',sub:'两者兼备',color:C.red,tip:['编程系统产品 ×9','同时是编程产品和编程系统，成本约为程序的 9 倍。它是大多数系统编程工作的真正目标，也是真正有用的产品。']}
+ ];
+ const b0=B[0];
+ // arrows
+ [[1,b0.cx+u/2+6,b0.cy,B[1].cx-B[1].side/2-6,B[1].cy,'×3'],[2,b0.cx,b0.cy+u/2+6,B[2].cx,B[2].cy-B[2].side/2-6,'×3'],[3,b0.cx+u/2+4,b0.cy+u/2+4,B[3].cx-B[3].side/2-4,B[3].cy-B[3].side/2-4,'×9']].forEach(a=>{
+  const v=s.v(a[0]);layer(v,()=>{const [x2,y2]=along(a[1],a[2],a[3],a[4],v);arrow(a[1],a[2],x2,y2,C.muted,1.4,7);const mx=(a[1]+a[3])/2,my=(a[2]+a[4])/2;pill(a[5],mx,my,{size:11,bg:C.sheet,color:C.ink,stroke:C.line,f:'m'})});
+ });
+ // blocks
+ B.forEach(b=>{
+  const v=s.raw(b.k);if(v<=0)return;const e=E.back(clamp(v));
+  const sd=b.side*e,dy=sink*b.side*(.18+b.k*.06)+Math.sin(t*1.3+b.k)*sink*2;
+  const x=b.cx-sd/2,y=b.cy-sd/2+dy;
+  layer(clamp(v*1.4),()=>{
+   rr(x,y,sd,sd,4);ctx.fillStyle=rgba(b.color,.12);ctx.fill();ctx.strokeStyle=b.color;ctx.lineWidth=2;ctx.stroke();
+   const fs=clamp(b.side*.13,10,20);
+   txt(b.name,b.cx,b.cy+dy-(b.sub?fs*.9:fs*.2),{size:fs,w:700,f:'d',color:b.color});
+   txt(b.mul,b.cx,b.cy+dy+(b.sub?fs*.45:fs*.95),{size:fs*1.25,w:700,f:'m',color:b.color});
+   if(b.sub&&b.side>70)txt(b.sub,b.cx,b.cy+dy+fs*1.75,{size:clamp(fs*.62,9,12),color:C.muted});
+   hotR(x,y,sd,sd,b.tip[0],b.tip[1]);
+  });
+ });
+ // tar
+ const surf=x=>tarY+Math.sin(x*.018+t*1.1)*4+Math.sin(x*.047-t*.7)*2.4;
+ ctx.beginPath();ctx.moveTo(0,H);for(let x=0;x<=W+8;x+=8)ctx.lineTo(x,surf(x));ctx.lineTo(W,H);ctx.closePath();
+ const g2=ctx.createLinearGradient(0,tarY,0,H);g2.addColorStop(0,rgba(C.tar,.92));g2.addColorStop(1,rgba(C.tar,1));ctx.fillStyle=g2;ctx.fill();
+ ctx.beginPath();for(let x=0;x<=W+8;x+=8){x?ctx.lineTo(x,surf(x)):ctx.moveTo(x,surf(x))}ctx.strokeStyle=rgba(C.amber,.35);ctx.lineWidth=1.2;ctx.stroke();
+ for(let k=0;k<14+sink*14;k++){const bx=rnd(k*3)*W,ph=(t*(.25+rnd(k)*.3)+rnd(k+5))%1;const by=lerp(H-6,surf(bx)+2,ph);dot(bx,by,1.5+rnd(k+9)*3*(1-ph*.5),null,rgba(C.amber,.45*(1-ph)),1)}
+ // sauropod sinking
+ const sx=n?W*.1:W*.075,sb=surf(sx),neck=Math.min(H*.18,90)*(1-sink*.55);
+ ctx.beginPath();ctx.moveTo(sx,sb+4);ctx.quadraticCurveTo(sx+neck*.1,sb-neck*.9,sx+neck*.5,sb-neck+Math.sin(t*1.6)*3);ctx.strokeStyle=rgba(C.muted,.7);ctx.lineWidth=7;ctx.lineCap='round';ctx.stroke();ctx.lineCap='butt';
+ dot(sx+neck*.56,sb-neck+Math.sin(t*1.6)*3,6,rgba(C.muted,.7));
+ hotR(0,tarY-6,W,H-tarY+6,'焦油坑','大型系统开发就像焦油坑：越挣扎陷得越深。团队大小、进度、复杂度、沟通……没有哪一个单独致命，合在一起就让人动弹不得。');
+ txt('焦油坑 · TAR PIT',W-14,H-14,{size:10.5,w:700,f:'m',align:'right',color:rgba(C.amber,.8)});
+}},
+
+/* ---------------- 2 · Mythical man-month ---------------- */
+{nav:'人月神话',chap:'第 2 章 · 人月神话',title:'人和月不能互换',
+ctrl:`<label for="nslider">团队人数 n <output id="nout">8</output></label><input id="nslider" type="range" min="1" max="20" step="1" value="8"><div class="note">拖动滑块：左图的沟通路径按 n(n−1)/2 增长，右图的竖线标出当前人数下各类任务的完成时间。</div>`,
+steps:[
+ {h:'完全可分解的任务',dur:7,c:'“人月”把人和月当作可以互换的单位。只有当任务可以完全分解、成员之间无需交流时，这才成立，比如收割小麦。试着拖动下方滑块改变人数。'},
+ {h:'不可分解的任务',dur:6,c:'受次序约束的任务无法分给更多的人。生孩子需要九个月，派多少位母亲都一样。增加人手对进度毫无作用。'},
+ {h:'需要沟通的任务',dur:6.5,c:'大多数软件任务可以分解，但成员之间必须交流。培训和沟通的开销抵消了一部分收益，曲线变平，存在一个最佳人数。'},
+ {h:'关系错综复杂的任务',dur:7,c:'如果每个部分都要和其他部分单独协调，沟通量按 <b>n(n−1)/2</b> 增长。超过某个点之后，加人反而让完成时间更长。'},
+ {h:'Brooks 法则',dur:8.5,c:'例：一个 12 人月的任务，计划 3 人做 4 个月，每月一个里程碑。到第 2 个月末才完成第一个里程碑。这时加 2 人：新人要培训一个月，任务要重新分解，系统测试也要延长，最后比不加人还晚。（右图为示意数据）',q:'向进度落后的软件项目中增加人手，只会使进度更加落后。'},
+ {h:'进度安排的经验法则',dur:7.5,c:'Brooks 的经验：<b>1/3</b> 计划，<b>1/6</b> 编码，<b>1/4</b> 构件测试和早期系统测试，<b>1/4</b> 系统测试。编码只占 1/6，可许多项目把大部分时间都排给了编码，测试时间被挤掉。'}
+],
+enter(){const sl=$('#nslider'),out=$('#nout');if(!sl)return;sl.value=nT;out.textContent=nT;sl.oninput=()=>{nT=+sl.value;out.textContent=nT}},
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ nA+=(nT-nA)*Math.min(1,s.dt*5);
+ const L=n?{x:0,y:0,w:W,h:H*.4}:{x:0,y:0,w:W*.42,h:H};
+ const R=n?{x:0,y:H*.4,w:W,h:H*.6}:{x:W*.42,y:0,w:W*.58,h:H};
+ // ---- network
+ const cx=L.x+L.w/2,cy=L.y+L.h*(n?.52:.5),r=Math.min(L.w,L.h)*(n?.36:.34);
+ const cnt=Math.ceil(nA-.001),P=[];
+ for(let i=0;i<cnt;i++){const a=i/Math.max(nA,1)*TAU-Math.PI/2;P.push({x:cx+Math.cos(a)*r,y:cy+Math.sin(a)*r,a:clamp(nA-i)})}
+ ctx.lineWidth=.8;
+ for(let i=0;i<cnt;i++)for(let j=i+1;j<cnt;j++){ctx.strokeStyle=rgba(C.blue,.28*Math.min(P[i].a,P[j].a));ctx.beginPath();ctx.moveTo(P[i].x,P[i].y);ctx.lineTo(P[j].x,P[j].y);ctx.stroke()}
+ if(cnt>1)for(let k=0;k<Math.min(40,cnt*2);k++){const a=Math.floor(rnd(k)*cnt),b=(a+1+Math.floor(rnd(k+50)*(cnt-1)))%cnt,p=(t*.4+rnd(k+3))%1;const [x,y]=along(P[a].x,P[a].y,P[b].x,P[b].y,p);dot(x,y,1.8,rgba(C.amber,Math.min(P[a].a,P[b].a)))}
+ const nr=clamp(r*.06,3.5,8);
+ P.forEach((p,i)=>layer(p.a,()=>{dot(p.x,p.y,nr+2,C.sheet);dot(p.x,p.y,nr,C.ink);hotC(p.x,p.y,nr+6,'成员 #'+(i+1),`与另外 ${nT-1} 人各有一条沟通路径。再加一人，就会新增 ${nT} 条。`)}));
+ const Ed=nT*(nT-1)/2;
+ txt('n = '+nT+' 人',cx,cy-r*.32,{size:clamp(r*.12,11,15),w:700,f:'m',color:C.muted});
+ txt(String(Ed),cx,cy+r*.02,{size:clamp(r*.36,22,58),w:700,f:'m',color:C.red});
+ txt('条沟通路径 · n(n−1)/2',cx,cy+r*.32,{size:clamp(r*.1,10,13),w:600,color:C.muted});
+ hotC(cx,cy,r*.4,'沟通路径 n(n−1)/2','两两之间都要协调时，沟通的工作量按 n(n−1)/2 增长：3 人 3 条，5 人 10 条，10 人 45 条，20 人 190 条。人数翻倍，沟通量约翻四倍。');
+ if(!n)seg(L.x+L.w,H*.1,L.x+L.w,H*.9,C.line,1,[3,5]);
+ // ---- chart
+ layer(1-s.v(4),()=>chart(R,s));
+ layer(s.v(4)*(1-s.v(5)),()=>sim(R,s));
+ layer(s.v(5),()=>ring(R,s));
+}},
+
+/* ---------------- 3 · Surgical team ---------------- */
+{nav:'外科手术队伍',chap:'第 3 章 · 外科手术队伍',title:'一个头脑，多双手',
+steps:[
+ {h:'十个人，十个头脑',dur:7,c:'研究表明，优秀程序员和较差程序员的生产率可能相差十倍。小而精的团队效率最高，却做不了大系统；十个平级程序员则要协调 <b>45</b> 条沟通路径。'},
+ {h:'Mills 的建议',dur:7,c:'Harlan Mills 提出：大型任务的每个部分由一个<b>外科手术队伍</b>完成。一名外科医生主刀，另外九人各司其职地支持他。悬停每个角色可查看职责。'},
+ {h:'设计只出自一两个头脑',dur:7,c:'只有外科医生和副手参与设计和编码，其他人负责支持。系统由一个头脑构思，沟通路径收拢成以外科医生为中心的 <b>9</b> 条。'},
+ {h:'团队的扩展',dur:7.5,c:'200 人的项目可以组织成约 20 个手术队伍。需要相互协调的只是各队的外科医生，再由一位系统结构师统一设计。（图中队伍数量为示意）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const v0=s.v(0),v1=s.v(1),v2=s.v(2),v3=s.v(3);
+ const A=n?{x:W/2,y:H*.25}:{x:W*.25,y:H*.48},Bc=n?{x:W/2,y:H*.7}:{x:W*.71,y:H*.48};
+ const rad=n?Math.min(W*.3,H*.15):Math.min(W*.16,H*.3);
+ // mesh
+ layer(v0*(1-v3),()=>{
+  const P=[];for(let i=0;i<10;i++){const a=i/10*TAU-Math.PI/2+t*.03;P.push([A.x+Math.cos(a)*rad,A.y+Math.sin(a)*rad])}
+  ctx.lineWidth=.9;ctx.strokeStyle=rgba(v2>.3?C.red:C.blue,.25+v2*.1);ctx.beginPath();
+  for(let i=0;i<10;i++)for(let j=i+1;j<10;j++){ctx.moveTo(P[i][0],P[i][1]);ctx.lineTo(P[j][0],P[j][1])}ctx.stroke();
+  for(let k=0;k<26;k++){const a=Math.floor(rnd(k)*10),b=(a+1+Math.floor(rnd(k+30)*9))%10,p=(t*.45+rnd(k+1))%1;const [x,y]=along(P[a][0],P[a][1],P[b][0],P[b][1],p);dot(x,y,1.8,C.amber)}
+  P.forEach((p,i)=>{dot(p[0],p[1],7,C.sheet);dot(p[0],p[1],5.5,C.ink);hotC(p[0],p[1],10,'平级程序员','每个人都对设计有自己的想法，任何接口改动都可能牵涉另外 9 人。')});
+  txt('平权团队',A.x,A.y+rad+26,{size:n?13:15,w:600,f:'d'});
+  txt('10 人 · 10 个头脑 · 45 条路径',A.x,A.y+rad+46,{size:11.5,f:'m',color:v2>.3?C.red:C.muted,w:700});
+ });
+ // surgical team
+ const roles=[
+  ['副手','外科医生的另一个自己，能完成任何部分，但经验较少。参与设计讨论、思考和评估，但不对代码负责。'],
+  ['管理员','外科医生是老板，对人员、加薪和场地有决定权，但不必在这些事务上花时间。管理员处理资金、人员、场地和机器。'],
+  ['编辑','外科医生负责产生文档。编辑负责修改、提供参考文献和索引，并组织出版。'],
+  ['秘书 A','管理员和编辑各需要一名秘书，处理项目协作和非产品文件。'],
+  ['秘书 B','管理员和编辑各需要一名秘书，处理项目协作和非产品文件。'],
+  ['程序职员','维护编程产品库中所有团队的技术记录，让每个人的代码对整个团队可见。'],
+  ['工具维护','保证文件、编辑、调试等基础服务可用，并为外科医生开发专用工具。'],
+  ['测试人员','设计系统测试用例，为日常调试准备测试数据和测试平台。'],
+  ['语言专家','精通编程语言，寻找简洁有效的用法，为多名外科医生提供咨询。']
+ ];
+ layer(v1*(1-v3),()=>{
+  const P=roles.map((r,i)=>{const a=i/9*TAU-Math.PI/2;return [Bc.x+Math.cos(a)*rad,Bc.y+Math.sin(a)*rad,a]});
+  glow(Bc.x,Bc.y,rad*.9,C.red,.12+.12*v2);
+  P.forEach((p,i)=>{seg(Bc.x,Bc.y,p[0],p[1],rgba(i===0?C.red:C.teal,i===0?.7:.45),i===0?2.4:1.2);const q=(t*.35+rnd(i+11))%1;const [x,y]=along(p[0],p[1],Bc.x,Bc.y,q);dot(x,y,2,i===0?C.red:C.teal)});
+  P.forEach((p,i)=>{const dim=i===0?1:1-v2*.45;layer(dim,()=>{dot(p[0],p[1],8,C.sheet);dot(p[0],p[1],6.5,i===0?C.red:C.teal);
+   const lx=p[0]+Math.cos(p[2])*16,ly=p[1]+Math.sin(p[2])*16,al=Math.abs(Math.cos(p[2]))<.2?'center':Math.cos(p[2])>0?'left':'right';
+   txt(roles[i][0],lx,ly+(Math.abs(Math.cos(p[2]))<.2?Math.sign(Math.sin(p[2]))*6:0),{size:n?10.5:12,w:600,align:al,color:C.ink});
+   hotC(p[0],p[1],14,roles[i][0],roles[i][1])})});
+  const sr=12+3*Math.sin(t*2)*v2;
+  dot(Bc.x,Bc.y,sr+3,C.sheet);dot(Bc.x,Bc.y,sr,C.red);
+  hotC(Bc.x,Bc.y,20,'外科医生（首席程序员）','亲自定义功能和性能说明书，设计程序，编写代码、测试并撰写文档。拥有丰富的经验和系统知识。');
+  txt('外科医生',Bc.x,Bc.y+sr+12,{size:n?11:12.5,w:700,color:C.red});
+  txt('外科手术队伍',Bc.x,Bc.y+rad+26,{size:n?13:15,w:600,f:'d'});
+  txt(v2>.5?'10 人 · 1 个头脑 · 9 条主路径':'10 人 · 各司其职',Bc.x,Bc.y+rad+46,{size:11.5,f:'m',w:700,color:v2>.5?C.teal:C.muted});
+ });
+ // scaling
+ layer(v3,()=>{
+  const T=n?4:6,ay=H*.16,ty=H*(n?.56:.6),span=W*(n?.8:.78);
+  const ax=W/2;
+  glow(ax,ay,60,C.red,.16);
+  for(let k=0;k<T;k++){
+   const tx=W/2-span/2+span*(k+.5)/T,tr=Math.min(span/T*.32,H*.1);
+   const e=E.out(clamp(s.raw(3)*1.4-k*.06));
+   const yy=lerp(ay,ty,e);
+   seg(ax,ay,tx,yy,rgba(C.red,.5),1.3);
+   const q=(t*.4+rnd(k))%1;const [px,py]=along(tx,yy,ax,ay,q);dot(px,py,2,C.red);
+   for(let j=0;j<6;j++){const a=j/6*TAU+t*.1;const x=tx+Math.cos(a)*tr,y=yy+Math.sin(a)*tr;seg(tx,yy,x,y,rgba(C.teal,.4),1);dot(x,y,3,C.teal)}
+   dot(tx,yy,6,C.red);
+   hotC(tx,yy,tr,'手术队伍 '+(k+1),'队伍内部由外科医生统一思路。对外只有外科医生一人参与协调。');
+  }
+  dot(ax,ay,11,C.ink);
+  hotC(ax,ay,16,'系统结构师','负责整个系统的设计和概念完整性，只需和各队外科医生沟通。');
+  txt('系统结构师',ax,ay-22,{size:13,w:700,f:'d'});
+  txt('只需协调各队的外科医生',W/2,H*(n?.82:.86),{size:n?12:14,w:600,color:C.muted});
+ });
+}},
+
+/* ---------------- 4 · Conceptual integrity / second system ---------------- */
+{nav:'概念完整性',chap:'第 4–5 章 · 贵族专制、民主政治和系统设计 · 画蛇添足',title:'统一的构想，克制的第二版',
+steps:[
+ {h:'兰斯大教堂',dur:8,c:'欧洲的许多大教堂由几代人接力修建，各部分风格不一。兰斯大教堂却保持了统一：八代建造者都克制了自己的想法，服从最初的设计。左边是委员会式的拼凑，右边是统一构想。',q:'概念完整性是系统设计中最重要的考虑因素。（第 4 章）'},
+ {h:'结构与实现分离',dur:7,c:'结构师负责用户能看到的一切：一份完整而详细的说明书，定义<b>做什么</b>。实现者决定<b>怎么做</b>。设计由一个人或少数人掌控，这种“贵族专制”并不妨碍实现者发挥创造力。'},
+ {h:'第二系统效应',dur:7.5,c:'设计第一个系统时，结构师清楚自己的无知，所以谨慎克制，把好点子记下留到“下一次”。第二个系统因此成为最危险的系统：所有被压下的装饰会一起加进来，这就是<b>画蛇添足</b>。'},
+ {h:'自律',dur:7.5,c:'结构师要有意识地警惕第二系统效应：给每个功能标上价值，比如能占多少字节、花多少微秒，没有价值的“蛇足”一律砍掉。项目经理应坚持选用做过至少两个系统的结构师。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3);
+ layer(1-v2,()=>buildings(s,v1));
+ layer(v2,()=>snakes(s,v3));
+}},
+
+/* ---------------- 5 · Babel / plan to throw one away ---------------- */
+{nav:'巴比伦塔',chap:'第 7、11 章 · 为什么巴比伦塔会失败 · 未雨绸缪',title:'交流、组织与变化',
+steps:[
+ {h:'巴比伦塔',dur:7,c:'按照工程的标准，巴比伦塔项目条件齐备：清晰的目标、充足的人力、材料、时间和技术。'},
+ {h:'它为什么失败',dur:8,c:'失败在两件事上：<b>交流</b>，以及交流的结果，<b>组织</b>。人们无法彼此沟通，就无法协作，工程最终停下。项目可以靠非正式途径、例会和一本<b>项目工作手册</b>保持交流。'},
+ {h:'未雨绸缪：准备扔掉一个',dur:7.5,c:'化工厂先建试验性工厂。第一个软件系统往往太慢、太大、难用，本质上是试验品。问题不在于要不要建试验系统，而在于是否打算把它交给用户。',q:'为舍弃而计划，无论如何，你都要这样做。（第 11 章）'},
+ {h:'前进两步，后退一步',dur:8,c:'维护时修复一个缺陷，有 20%–50% 的可能引入新缺陷。Belady 和 Lehman 研究 OS/360 的版本历史发现：版本越往后，每次发布要改的模块越多，结构越来越乱，熵不断增加。'}
+],
+draw(s){
+ const v2=s.v(2),v3=s.v(3);
+ layer(1-v2,()=>babel(s));
+ layer(v2*(1-v3),()=>throwAway(s));
+ layer(v3,()=>entropy(s));
+}},
+
+/* ---------------- 6 · No silver bullet ---------------- */
+{nav:'没有银弹',chap:'第 16–17 章 · 没有银弹',title:'本质与次要',
+steps:[
+ {h:'狼人与银弹',dur:7,c:'传说中，狼人会从熟悉的面孔突然变成怪物，只有银弹能杀死它。软件项目也会从无害变成怪物：进度落后、预算超支、产品缺陷。于是人们一直在寻找银弹。'},
+ {h:'本质与次要',dur:7.5,c:'Brooks 借用亚里士多德的划分：软件的<b>本质</b>是相互牵连的概念结构，包括数据集、数据之间的关系、算法和函数调用。<b>次要</b>的部分是用语言和机器把它表达出来时遇到的困难。'},
+ {h:'过去的突破都针对次要困难',dur:7,c:'高级语言、分时系统、统一编程环境（如 Unix、Interlisp）带来了巨大的生产率提升。它们消除的都是表达层面的困难。'},
+ {h:'本质困难仍然存在',dur:8,c:'剥掉外壳，剩下的是软件固有的四个属性：<b>复杂度、一致性、可变性、不可见性</b>。悬停可查看各项的解释。'},
+ {h:'没有银弹',dur:8,c:'未来十年内，没有任何一种技术或管理方法能单独让生产率、可靠性或简洁性提高一个数量级（10 倍）。除非次要部分占全部工作的 9/10 以上，否则即使把它降到零，也换不来数量级的提升。'},
+ {h:'有希望的方向',dur:8,c:'真正的进展要直接攻击本质困难：购买现成软件而不是自己开发，用快速原型精炼需求，增量开发（“培育”而不是“建造”软件），以及发现和培养卓越的设计人员。'}
+],
+draw(s){noSilver(s)}},
+
+/* ---------------- 7 · Epilogue ---------------- */
+{nav:'结语',chap:'第 18–19 章 · 命题与 20 年后的回顾',title:'一张图读完人月神话',
+steps:[
+ {h:'全书的结构',dur:8,c:'各章都在回答同一个问题：规模扩大带来分工，分工带来沟通成本，产品的概念完整性必须守住。点击任意节点可跳到对应章节。'},
+ {h:'四十年后',dur:9,c:'书中的数字会过时，核心判断却一直成立：人和月不能互换，沟通需要组织，设计需要统一的头脑，也不存在一颗万能的银弹。',q:'向进度落后的软件项目中增加人手，只会使进度更加落后。（Brooks 法则）'}
+],
+draw(s){epilogue(s)}}
+];
+
+/* ---------- scene 2 parts ---------- */
+const CURVES=[
+ {f:n=>12/n,name:'完全可分解',ck:'blue',tip:['完全可分解的任务','可以分给任意多的人，彼此无需沟通（如收割小麦）。只有这时人和月才能互换：时间 = 工作量 ÷ 人数。']},
+ {f:n=>9,name:'不可分解',ck:'muted',tip:['不可分解的任务','受次序约束，加人毫无作用。生孩子需要九个月，派多少位母亲都一样。']},
+ {f:n=>12/n+.1*(n-1),name:'需要沟通',ck:'teal',tip:['需要沟通的可分解任务','每个新人都要培训，彼此需要交流。沟通开销抵消部分收益，曲线存在最低点。']},
+ {f:n=>12/n+.05*n*(n-1),name:'关系复杂',ck:'red',tip:['关系错综复杂的任务','沟通量按 n(n−1)/2 增长，很快超过分工的好处。越过最低点之后，加人只会更慢。']}
+];
+function chart(R,s){
+ const n=s.narrow,pl=R.x+(n?40:52),pr=R.x+R.w-(n?16:28),pt=R.y+(n?52:78),pb=R.y+R.h-(n?34:52);
+ const pw=pr-pl,ph=pb-pt,ymax=14;
+ const X=v=>pl+(v-1)/19*pw,Y=v=>pb-v/ymax*ph;
+ txt('完成时间 vs 人数（示意，工作量 12 人月）',pl,pt-(n?36:50),{size:n?10.5:11.5,w:700,f:'m',align:'left',color:C.muted});
+ // legend
+ let lx=pl,ly=pt-(n?18:24);
+ CURVES.forEach((c,i)=>{const a=s.v(i);const w=tw(c.name,n?10.5:12,600)+26;if(lx+w>pr){lx=pl;ly+=16}layer(a,()=>{seg(lx,ly,lx+14,ly,C[c.ck],2.5);txt(c.name,lx+19,ly,{size:n?10.5:12,w:600,align:'left',color:C[c.ck]})});lx+=w+8});
+ // axes
+ ctx.strokeStyle=C.line;ctx.lineWidth=1;
+ [0,4,8,12].forEach(v=>{seg(pl,Y(v),pr,Y(v),rgba(C.muted,.18),1);txt(v+'',pl-8,Y(v),{size:10.5,f:'m',align:'right',color:C.muted})});
+ [1,5,10,15,20].forEach(v=>txt(v+'',X(v),pb+14,{size:10.5,f:'m',color:C.muted}));
+ seg(pl,pb,pr,pb,C.muted,1.2);seg(pl,pt,pl,pb,C.muted,1.2);
+ txt('人数 →',pr,pb+(n?26:32),{size:10.5,w:600,align:'right',color:C.muted});
+ txt('月',pl-8,pt-8,{size:10.5,w:600,align:'right',color:C.muted});
+ // curves
+ ctx.save();ctx.beginPath();ctx.rect(pl,pt-2,pw+2,ph+4);ctx.clip();
+ CURVES.forEach((c,i)=>{const p=s.raw(i);if(p<=0)return;const end=1+19*E.out(clamp(p));ctx.beginPath();for(let v=1;v<=end+1e-6;v+=.1){const y=Y(c.f(v));v===1?ctx.moveTo(X(v),y):ctx.lineTo(X(v),y)}ctx.strokeStyle=C[c.ck];ctx.lineWidth=2.6;ctx.lineJoin='round';ctx.stroke()});
+ ctx.restore();
+ // marker
+ const mx=X(nA);seg(mx,pt,mx,pb,rgba(C.ink,.45),1,[4,4]);
+ txt('n='+nT,mx,pt-6,{size:10.5,w:700,f:'m',color:C.ink});
+ CURVES.forEach((c,i)=>{const a=s.v(i);if(a<.3)return;const yv=c.f(nA);if(yv>ymax)return;layer(a,()=>{dot(mx,Y(yv),4.5,C.sheet,C[c.ck],2);txt(yv.toFixed(1)+' 月',mx+8,Y(yv)-9,{size:10.5,w:700,f:'m',align:'left',color:C[c.ck]})})});
+ CURVES.forEach((c,i)=>{layer(s.v(i),()=>hotF((x,y)=>{if(x<pl||x>pr)return false;const v=1+(x-pl)/pw*19;return Math.abs(Y(c.f(v))-y)<9},c.tip[0],c.tip[1]))});
+}
+function sim(R,s){
+ const n=s.narrow,pl=R.x+(n?62:96),pr=R.x+R.w-(n?18:30),top=R.y+(n?40:R.h*.2),rowH=n?44:Math.min(62,R.h*.15);
+ const X=m=>pl+m/7*(pr-pl);
+ const ph=s.step===4?clamp(s.age/5)*7:s.step>4?7:0;
+ txt('Brooks 法则 · 12 人月任务（示意）',R.x+(n?14:30),top-(n?22:34),{size:n?10.5:11.5,w:700,f:'m',align:'left',color:C.muted});
+ for(let m=0;m<=7;m++){seg(X(m),top-6,X(m),top+rowH*3+8,rgba(C.muted,.15),1);txt(m+'',X(m),top+rowH*3+20,{size:10.5,f:'m',color:C.muted})}
+ txt('月',X(7)+10,top+rowH*3+20,{size:10.5,color:C.muted,align:'left'});
+ const rows=[
+  {name:'原计划',sub:'3 人 × 4 月',bars:[[0,1,'blue','M1'],[1,2,'blue','M2'],[2,3,'blue','M3'],[3,4,'blue','M4']],end:4},
+  {name:'不加人',sub:'3 人',bars:[[0,2,'red','M1 用了 2 月'],[2,3,'blue','M2'],[3,4,'blue','M3'],[4,5,'blue','M4']],end:5},
+  {name:'加 2 人',sub:'5 人',bars:[[0,2,'red','M1 用了 2 月'],[2,3,'amber','培训新人'],[3,3.6,'violet','重新分解'],[3.6,5.4,'blue','5 人开发'],[5.4,6.3,'red','测试延长']],end:6.3}
+ ];
+ const tipsBar={'培训新人':'新加入的人需要培训，培训他们的正是原来的 3 位成员，这一个月几乎没有产出。','重新分解':'任务要重新划分给 5 个人，原有的分工被打乱。','测试延长':'人越多，接口和沟通越多，系统测试和调试的时间也越长。','5 人开发':'5 人一起开发剩下的工作，但沟通开销也随之增长。'};
+ rows.forEach((r,i)=>{
+  const y=top+i*rowH+rowH*.5,bh=Math.min(22,rowH*.46);
+  txt(r.name,pl-12,y-(n?5:6),{size:n?11:13,w:700,align:'right'});
+  txt(r.sub,pl-12,y+(n?8:10),{size:n?9.5:10.5,f:'m',align:'right',color:C.muted});
+  ctx.save();ctx.beginPath();ctx.rect(pl,y-bh,X(ph)-pl,bh*2);ctx.clip();
+  r.bars.forEach(b=>{const x0=X(b[0])+1,x1=X(b[1])-1;rr(x0,y-bh/2,x1-x0,bh,3);ctx.fillStyle=rgba(C[b[2]],.85);ctx.fill();if(x1-x0>tw(b[3],n?9:10.5,600)+6)txt(b[3],(x0+x1)/2,y+.5,{size:n?9:10.5,w:600,color:C.sheet})});
+  ctx.restore();
+  r.bars.forEach(b=>{if(ph>=b[1]&&tipsBar[b[3]])hotR(X(b[0]),y-bh/2,X(b[1])-X(b[0]),bh,b[3],tipsBar[b[3]])});
+  if(ph>=r.end){const fx=X(r.end);seg(fx,y-bh*.9,fx,y+bh*.9,C.ink,2);txt(r.end+' 月',fx+5,y-bh*.75,{size:10.5,w:700,f:'m',align:'left'})}
+ });
+ if(ph>2){const x=X(2);seg(x,top-10,x,top+rowH*3,rgba(C.red,.8),1.4,[3,3]);txt(n?'第 2 月末：落后':'第 2 月末：发现落后，加 2 人',x+5,top-14,{size:n?10:11,w:700,color:C.red,align:'left'})}
+ layer(clamp((ph-6.3)/.5),()=>{pill(n?'加人 6.3 月 > 不加人 5 月':'加人后 6.3 个月完成，比不加人（5 个月）还晚',R.x+R.w/2,top+rowH*3+(n?44:54),{size:n?11:12.5,bg:C.red})});
+}
+function ring(R,s){
+ const n=s.narrow,cx=R.x+R.w/2,cy=R.y+R.h*(n?.5:.5),r=Math.min(R.w*.24,R.h*.26),lw=r*.34;
+ const S=[[1/3,'计划','1/3','blue','1/3 的时间用于计划。'],[1/6,'编码','1/6','amber','编码只占 1/6。它最容易估计，却常被当成工作的全部。'],[1/4,'构件测试与早期系统测试','1/4','teal','1/4 用于构件测试和早期的系统测试。'],[1/4,'系统测试','1/4','red','1/4 用于系统测试，此时所有构件都已完成。系统测试时间不够，往往到交付前才暴露，造成的延期破坏性最大。']];
+ const p=E.io(clamp(s.raw(5)*.8+(s.step===5?clamp(s.age/2)*.2:0)));
+ let a=-Math.PI/2;const total=p*TAU;let acc=0;
+ S.forEach(sg=>{const sw=sg[0]*TAU,draw=clamp(total-acc,0,sw);if(draw>0){ctx.beginPath();ctx.arc(cx,cy,r,a,a+draw);ctx.strokeStyle=C[sg[3]];ctx.lineWidth=lw;ctx.stroke()}
+  const mid=a+sw/2,lr=r+lw/2+(n?14:22);
+  layer(clamp((total-acc-sw*.5)*3),()=>{const lx=cx+Math.cos(mid)*lr,ly=cy+Math.sin(mid)*lr,al=Math.cos(mid)>.15?'left':Math.cos(mid)<-.15?'right':'center';
+   txt(sg[2],lx,ly-8,{size:n?14:18,w:700,f:'m',align:al,color:C[sg[3]]});txt(sg[1],lx,ly+10,{size:n?10.5:12,w:600,align:al})});
+  const a0=a;hotF((x,y)=>{const d=Math.hypot(x-cx,y-cy);if(d<r-lw/2-2||d>r+lw/2+2)return false;let ang=Math.atan2(y-cy,x-cx);while(ang<a0)ang+=TAU;return ang<=a0+sw},sg[1]+' · '+sg[2],sg[4]);
+  a+=sw;acc+=sw});
+ txt('进度安排',cx,cy-8,{size:n?13:15,w:600,f:'d'});txt('经验法则',cx,cy+12,{size:n?10.5:12,color:C.muted});
+}
+
+/* ---------- scene 4 parts ---------- */
+const COMMITTEE=(()=>{const b=[];let y=0;for(let r=0;r<7;r++){const h=.8+rnd(r*7)*1.2,cnt=1+Math.floor(rnd(r*3+1)*3),span=3.5-r*.36;for(let k=0;k<cnt;k++){const w=(span*2/cnt)*(.65+rnd(r*11+k)*.6),x=-span+(k+.5)*(span*2/cnt)+(rnd(r*5+k)-.5)*.9;b.push({x,y,w,h:h*(.8+rnd(r*17+k)*.4),rot:(rnd(r*13+k)-.5)*.16,c:(k*2+r)%5,tri:rnd(r*19+k)>.75})}y+=h*.9}return b})();
+function buildings(s,v1){
+ const {W,H,t}=s,n=s.narrow,gy=H*(n?.8:.78);
+ const u=Math.min(W*(n?.058:.042),(gy-H*.12)/10.5);
+ const L=W*.27,Rx=W*.71,bp=clamp(s.t/3.2),pal=PAL();
+ seg(W*.04,gy,W*.96,gy,C.muted,1.2);
+ // committee
+ COMMITTEE.forEach((b,i)=>{const e=E.out(clamp(bp*1.5-i/COMMITTEE.length*.9));if(e<=0)return;layer(e,()=>{ctx.save();ctx.translate(L+b.x*u,gy-(b.y+b.h/2)*u-(1-e)*u*3);ctx.rotate(b.rot);
+  if(b.tri){ctx.beginPath();ctx.moveTo(-b.w*u/2,b.h*u/2);ctx.lineTo(b.w*u/2,b.h*u/2);ctx.lineTo(0,-b.h*u*.9);ctx.closePath()}else{ctx.beginPath();ctx.rect(-b.w*u/2,-b.h*u/2,b.w*u,b.h*u)}
+  ctx.fillStyle=rgba(pal[b.c],.2);ctx.fill();ctx.strokeStyle=pal[b.c];ctx.lineWidth=1.6;ctx.stroke();ctx.restore()})});
+ hotR(L-3.8*u,gy-9*u,7.6*u,9*u,'委员会式设计','每个人都加入自己的好主意。单看每一块都不错，合在一起却没有统一的风格，用户要学的东西也成倍增加。');
+ // cathedral
+ const parts=[[-2,0,4,5],[-3.5,0,1.5,8],[2,0,1.5,8]];
+ const draw=(e,fn)=>layer(e,fn);
+ const col=C.blue,fill=rgba(C.blue,.12);
+ const step=k=>E.out(clamp(bp*1.6-k*.12));
+ parts.forEach((p,k)=>draw(step(k),()=>{const e=step(k);rr(Rx+p[0]*u,gy-p[3]*u*e,p[2]*u,p[3]*u*e,1);ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=col;ctx.lineWidth=1.8;ctx.stroke()}));
+ draw(step(3),()=>{[[-3.5,1.5],[2,1.5]].forEach(p=>{ctx.beginPath();ctx.moveTo(Rx+p[0]*u,gy-8*u);ctx.lineTo(Rx+(p[0]+p[1])*u,gy-8*u);ctx.lineTo(Rx+(p[0]+p[1]/2)*u,gy-10.6*u);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=col;ctx.stroke()});
+  ctx.beginPath();ctx.moveTo(Rx-2*u,gy-5*u);ctx.lineTo(Rx+2*u,gy-5*u);ctx.lineTo(Rx,gy-7.2*u);ctx.closePath();ctx.fillStyle=fill;ctx.fill();ctx.strokeStyle=col;ctx.stroke()});
+ draw(step(4),()=>{dot(Rx,gy-3.6*u,.95*u,fill,col,1.6);for(let k=0;k<8;k++){const a=k/8*TAU+t*.1;seg(Rx,gy-3.6*u,Rx+Math.cos(a)*.95*u,gy-3.6*u+Math.sin(a)*.95*u,rgba(C.blue,.6),1)}
+  ctx.beginPath();ctx.moveTo(Rx-.6*u,gy);ctx.lineTo(Rx-.6*u,gy-1.5*u);ctx.arc(Rx,gy-1.5*u,.6*u,Math.PI,0);ctx.lineTo(Rx+.6*u,gy);ctx.strokeStyle=col;ctx.stroke();
+  [-2.75,2.75].forEach(x=>{for(let k=0;k<3;k++){rr(Rx+(x-.25)*u,gy-(2+k*2)*u,.5*u,1.1*u,.25*u);ctx.strokeStyle=col;ctx.stroke()}})});
+ hotR(Rx-3.6*u,gy-10.8*u,7.2*u,10.8*u,'统一构想：兰斯大教堂','八代建造者都克制了自己的想法，服从最初的设计。结果是一座风格纯粹、各部分彼此呼应的建筑。');
+ const ls=n?11.5:13.5;
+ txt('委员会式设计',L,gy+(n?18:24),{size:ls,w:600,f:'d'});txt('多种思路拼凑',L,gy+(n?34:44),{size:n?10:11.5,color:C.muted});
+ txt('统一的构想',Rx,gy+(n?18:24),{size:ls,w:600,f:'d',color:C.blue});txt('兰斯大教堂 · 八代人服从一个设计',Rx,gy+(n?34:44),{size:n?10:11.5,color:C.muted});
+ // blueprint overlay
+ layer(v1,()=>{
+  seg(Rx,gy-11.5*u,Rx,gy+4,rgba(C.red,.8),1,[5,4]);
+  seg(Rx-3.5*u,gy-11.2*u,Rx+3.5*u,gy-11.2*u,rgba(C.red,.6),1);
+  [-3.5,3.5].forEach(x=>seg(Rx+x*u,gy-11.5*u,Rx+x*u,gy-10.9*u,rgba(C.red,.6),1));
+  const ax=Rx+(n?0:4.6*u),ay=gy-9.5*u;
+  const p1=pill('结构师 · 定义做什么',n?Rx:ax,n?gy-12.4*u:ay,{size:n?10:11.5,bg:C.red,align:n?'center':'left'});
+  const p2=pill('实现者 · 决定怎么做',n?Rx:ax,n?gy-.5*u:gy-1.2*u,{size:n?10:11.5,bg:C.teal,align:n?'center':'left'});
+  hotR(p1.x,p1.y,p1.w,p1.h,'结构（Architecture）','对用户可见的一切做完整、详细的规定：系统的手册。它规定做什么，而不规定怎么做。');
+  hotR(p2.x,p2.y,p2.w,p2.h,'实现（Implementation）','在说明书的约束下决定如何实现。实现者同样有充分的创造空间，比如成本、性能和结构上的取舍。');
+  const q=(t*.5)%1;dot(Rx,lerp(gy-11.5*u,gy,q),2.5,C.red);
+ });
+}
+function snakeBody(x0,x1,cy,amp,thick,t,legs,legA,cut,s){
+ const N=64,pts=[];
+ for(let i=0;i<=N;i++){const u=i/N;pts.push([lerp(x0,x1,u),cy+Math.sin(u*Math.PI*3.2-t*2)*amp*(.4+u*.6)])}
+ // legs
+ if(legs&&legA>0){for(let k=0;k<legs;k++){const u=.18+k/(legs)*.66,i=Math.round(u*N),p=pts[i];const lw=thick(u);const sw=Math.sin(t*6+k*1.3)*4;
+  layer(legA,()=>{[-1,1].forEach(sg=>{ctx.beginPath();ctx.moveTo(p[0],p[1]+sg*lw*.4);ctx.lineTo(p[0]+sw*sg,p[1]+sg*(lw*.5+12));ctx.lineTo(p[0]+sw*sg+5,p[1]+sg*(lw*.5+14));ctx.strokeStyle=C.amber;ctx.lineWidth=2.4;ctx.lineCap='round';ctx.stroke()});
+   if(cut>0){layer(cut,()=>{const r=7;seg(p[0]-r,p[1]+lw*.5+3,p[0]+r,p[1]+lw*.5+17,C.red,2.2);seg(p[0]+r,p[1]+lw*.5+3,p[0]-r,p[1]+lw*.5+17,C.red,2.2)})}
+   ctx.lineCap='butt'})}}
+ for(let i=0;i<N;i++){const u=i/N;ctx.beginPath();ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(pts[i+1][0],pts[i+1][1]);ctx.strokeStyle=C.teal;ctx.lineWidth=thick(u);ctx.lineCap='round';ctx.stroke()}
+ ctx.lineCap='butt';
+ const h=pts[N],hr=thick(1)*.75;dot(h[0],h[1],hr,C.teal);dot(h[0]+hr*.35,h[1]-hr*.35,Math.max(1.5,hr*.18),C.sheet);
+ const fl=Math.sin(t*8)>0;if(fl){seg(h[0]+hr,h[1],h[0]+hr+9,h[1],C.red,1.6);seg(h[0]+hr+9,h[1],h[0]+hr+13,h[1]-3,C.red,1.4);seg(h[0]+hr+9,h[1],h[0]+hr+13,h[1]+3,C.red,1.4)}
+ return pts;
+}
+function snakes(s,v3){
+ const {W,H,t}=s,n=s.narrow;
+ const y1=H*.3,y2=H*.68,amp=Math.min(H*.05,22);
+ const p=s.v(2);
+ txt('第一个系统',W*.1,y1-amp-34,{size:n?13:15,w:600,f:'d',align:'left'});
+ txt('谨慎、精炼：知道自己不懂什么',W*.1,y1-amp-14,{size:n?10.5:12,align:'left',color:C.muted});
+ snakeBody(W*.1,W*(n?.62:.5),y1,amp,u=>lerp(4,9,u),t,0,0,0,s);
+ hotR(W*.08,y1-amp-12,W*.46,amp*2+24,'第一个系统','结构师在第一个系统中往往克制而谨慎，把很多修饰和好点子记下来，留待“下一个”系统再做。');
+ const fat=lerp(1,1.9,p)*(1-v3*.35);
+ txt(v3>.5?'第二个系统 · 自律之后':'第二个系统',W*.1,y2-amp*fat-40,{size:n?13:15,w:600,f:'d',align:'left',color:v3>.5?C.teal:C.red});
+ txt(v3>.5?'给每个功能定价：字节 / 微秒':'画蛇添足：被压下的装饰一起加进来',W*.1,y2-amp*fat-20,{size:n?10.5:12,align:'left',color:C.muted});
+ const legs=n?6:9;
+ snakeBody(W*.1,W*(n?.86:.88),y2,amp*1.2,u=>lerp(5,15,u)*fat,t*1.1,legs,p*(1-v3*.85),v3,s);
+ // feature bubbles on the bloated body
+ layer(p*(1-v3),()=>{for(let k=0;k<14;k++){const u=.12+rnd(k)*.8,x=lerp(W*.1,W*.88,u),y=y2+Math.sin(u*Math.PI*3.2-t*2.2)*amp*1.2*(.4+u*.6)-(18+rnd(k+4)*22)-Math.sin(t*2+k)*4;dot(x,y,3+rnd(k+8)*3,rgba(PAL()[k%5],.8))}});
+ hotR(W*.08,y2-amp*2.5,W*.84,amp*5,'第二系统效应','第二个系统是设计者一生中最危险的系统。他倾向于过度设计，把第一次谨慎压下的想法全部加进来，还会去精雕细琢那些已经过时的技术。');
+}
+
+/* ---------- scene 5 parts ---------- */
+const GLYPHS=['ᚠ','あ','Ж','ש','ق','Ω','ㄅ','ઞ','ॐ','Ѯ','ꙮ','ጀ'];
+function babel(s){
+ const {W,H,t}=s,n=s.narrow,v1=s.v(1);
+ const gy=H*(n?.86:.86),cx=W*(n?.6:.6),u=Math.min(W*(n?.06:.05),H*.085),tiers=7,th=u*.9;
+ seg(W*.04,gy,W*.96,gy,C.muted,1.2);
+ const bt=clamp(s.t/3.2);
+ for(let k=0;k<tiers;k++){
+  const e=E.out(clamp(bt*1.4-k*.1));if(e<=0)continue;
+  const tw0=(7.2-k*.9)*u,y=gy-(k+1)*th;
+  const fall=k>=3?v1:0;
+  const bricks=3;
+  for(let b=0;b<bricks;b++){
+   const bw=tw0/bricks,bx=cx-tw0/2+b*bw;
+   const seed=k*7+b;
+   const tx=cx+(rnd(seed)-.5)*W*.5,ty=gy-th*.5-rnd(seed+2)*th*.4;
+   const ff=E.io(clamp(fall*1.3-rnd(seed+3)*.3));
+   const x=lerp(bx+bw/2,tx,ff),yy=lerp(y+th/2,ty,ff)-Math.sin(ff*Math.PI)*u*1.5;
+   layer(e,()=>{ctx.save();ctx.translate(x,yy-(1-e)*u*2);ctx.rotate(ff*(rnd(seed+5)-.5)*2.4);ctx.beginPath();ctx.rect(-bw/2+1,-th/2,bw-2,th-2);ctx.fillStyle=rgba(k%2?C.amber:C.red,.2+(fall>0?.1:0));ctx.fill();ctx.strokeStyle=k%2?C.amber:C.red;ctx.lineWidth=1.5;ctx.stroke();ctx.restore()});
+  }
+ }
+ hotR(cx-3.6*u,gy-tiers*th,7.2*u,tiers*th,'巴比伦塔','人们有共同的语言和清晰的目标时，工程进展顺利。语言被打乱以后，大家无法交流，工程就停了下来。');
+ // workers
+ for(let i=0;i<9;i++){const k=i%4,tw0=(7.2-k*.9)*u,y=gy-(k+1)*th-4;if(bt*1.4-k*.1<=0)continue;const x=cx+Math.sin(t*.7+i*2.1)*tw0*.42;dot(x,y,3,C.ink);
+  layer(v1,()=>{const ph=(t*.5+rnd(i))%1;txt(GLYPHS[(i*5+Math.floor(t*.5+rnd(i)))%GLYPHS.length],x+(rnd(i+3)-.5)*14,y-10-ph*34,{size:13,w:700,color:C.violet,a:1-ph})})}
+ // checklist
+ const lx=n?16:W*.08,ly=H*(n?.1:.18),lh=n?20:26,fs=n?11.5:13.5;
+ const ok=[['清晰的目标'],['充足的人力'],['材料'],['时间'],['技术']];
+ txt('项目条件',lx,ly,{size:n?11:12,w:700,f:'m',align:'left',color:C.muted});
+ ok.forEach((o,i)=>{const e=E.out(clamp(bt*1.5-i*.12));layer(e,()=>{txt('✓',lx,ly+(i+1)*lh,{size:fs,w:700,color:C.teal,align:'left'});txt(o[0],lx+18,ly+(i+1)*lh,{size:fs,align:'left'})})});
+ [['交流','人们无法交流，就无法协作。大型项目要靠非正式途径、例会和项目工作手册保持交流。'],['组织','组织架构是交流的结果。目的是减少所需的交流和协调，方法是分工和职责专门化。']].forEach((o,i)=>{layer(v1,()=>{const y=ly+(6+i)*lh;txt('✗',lx,y,{size:fs,w:700,color:C.red,align:'left'});txt(o[0],lx+18,y,{size:fs,w:700,color:C.red,align:'left'});hotR(lx-4,y-lh/2,90,lh,'缺少：'+o[0],o[1])})});
+}
+function throwAway(s){
+ const {W,H,t}=s,n=s.narrow,cy=H*.5,u=Math.min(W*.045,H*.07);
+ const xs=[W*.18,W*.5,W*.82];
+ const age=s.step===2?s.age:9;
+ const a1=E.out(clamp(age/1.3)),a2=E.io(clamp((age-1.6)/1.4)),a3=E.out(clamp((age-3.3)/1.3));
+ const pal=PAL();
+ // bin
+ const bx=xs[1],by=cy+u*1.2;
+ ctx.beginPath();ctx.moveTo(bx-u*1.3,by-u*1.4);ctx.lineTo(bx+u*1.3,by-u*1.4);ctx.lineTo(bx+u,by+u*.9);ctx.lineTo(bx-u,by+u*.9);ctx.closePath();ctx.strokeStyle=C.muted;ctx.lineWidth=1.6;ctx.stroke();
+ seg(bx-u*1.5,by-u*1.6,bx+u*1.5,by-u*1.6,C.muted,2);
+ for(let k=-1;k<=1;k++)seg(bx+k*u*.45,by-u*1.1,bx+k*u*.36,by+u*.6,rgba(C.muted,.5),1);
+ // pilot blocks
+ for(let k=0;k<8;k++){
+  const ox=(rnd(k)-.5)*u*2.6,oy=-(rnd(k+3))*u*2.2,w=u*(.6+rnd(k+5)*.7),h=u*(.4+rnd(k+6)*.5);
+  const sx=xs[0]+ox,sy=cy+oy+u*.4;
+  const x=lerp(sx,bx+(rnd(k+9)-.5)*u,a2),y=lerp(sy,by-u*.4,a2)-Math.sin(a2*Math.PI)*u*2;
+  const sc=lerp(1,.35,a2);
+  layer(a1*(1-a2*.9),()=>{ctx.save();ctx.translate(x,y);ctx.rotate((rnd(k+1)-.5)*.6+a2*3*(rnd(k+2)-.5));ctx.beginPath();ctx.rect(-w*sc/2,-h*sc/2,w*sc,h*sc);ctx.fillStyle=rgba(pal[k%5],.22);ctx.fill();ctx.strokeStyle=pal[k%5];ctx.lineWidth=1.4;ctx.stroke();ctx.restore()});
+ }
+ // delivered system
+ for(let r=0;r<3;r++)for(let c=0;c<3;c++){const k=r*3+c,e=E.back(clamp(a3*1.6-k*.07));if(e<=0)continue;const w=u*.9,x=xs[2]+(c-1)*w*1.08,y=cy+u*.6-r*w*1.08;layer(clamp(e),()=>{rr(x-w/2*e,y-w/2*e,w*e,w*e,2);ctx.fillStyle=rgba(C.blue,.16);ctx.fill();ctx.strokeStyle=C.blue;ctx.lineWidth=1.6;ctx.stroke()})}
+ layer(a3,()=>{ctx.beginPath();ctx.moveTo(xs[2]-u*1.65,cy-u*1.6);ctx.lineTo(xs[2],cy-u*2.7);ctx.lineTo(xs[2]+u*1.65,cy-u*1.6);ctx.strokeStyle=C.blue;ctx.lineWidth=1.8;ctx.stroke()});
+ arrow(xs[0]+u*1.9,cy,xs[1]-u*1.8,cy,rgba(C.muted,.8),1.4,7);arrow(xs[1]+u*1.8,cy,xs[2]-u*1.9,cy,rgba(C.muted,.8),1.4,7);
+ const ly=cy+u*2.8,fs=n?11.5:14;
+ [['试验性系统','pilot：太慢、太大、难用'],['扔掉','计划内的舍弃'],['交付的系统','吸取教训后重建']].forEach((l,i)=>{txt(l[0],xs[i],ly,{size:fs,w:600,f:'d',color:i===2?C.blue:i===1?C.muted:C.ink});txt(l[1],xs[i],ly+(n?16:20),{size:n?9.5:11,color:C.muted})});
+ hotR(xs[0]-u*1.8,cy-u*2.4,u*3.6,u*3.4,'试验性系统','第一个系统通常太慢、太大、难以使用。不管怎样，它都会被扔掉，区别只在于是事先计划好，还是交给用户之后被迫扔掉。');
+ hotR(xs[2]-u*1.8,cy-u*2.8,u*3.6,u*3.8,'为变更设计','真正交付的系统要为变化而设计：模块化、子程序化、精确完整的接口定义和完整的文档，组织结构也要为变更做好准备。');
+ txt('唯一不变的就是变化本身',W/2,H*.12,{size:n?13:16,w:600,f:'d',color:C.ink});
+}
+function entropy(s){
+ const {W,H,t}=s,n=s.narrow;
+ const pl=W*(n?.14:.12),pr=W*(n?.94:.8),pt=H*.2,pb=H*.8,N=12;
+ const X=r=>pl+(r-1)/(N-1)*(pr-pl),Y=v=>pb-v*(pb-pt);
+ const p=E.out(clamp(s.raw(3)*.6+(s.step===3?clamp(s.age/3)*.4:s.step>3?.4:0)));
+ seg(pl,pb,pr,pb,C.muted,1.2);seg(pl,pt,pl,pb,C.muted,1.2);
+ for(let r=1;r<=N;r+=n?2:1)txt('R'+r,X(r),pb+14,{size:10,f:'m',color:C.muted});
+ txt('发布版本 →',pr,pb+(n?30:32),{size:10.5,w:600,color:C.muted,align:'right'});
+ const mod=r=>clamp(.06*Math.exp(.24*(r-1))),ord=r=>clamp(.92-.065*(r-1)+.03*Math.sin(r*1.7));
+ const end=1+(N-1)*p;
+ [[mod,C.red],[ord,C.blue]].forEach(([f,c])=>{ctx.beginPath();for(let r=1;r<=end+1e-6;r+=.1){const y=Y(f(r));r===1?ctx.moveTo(X(r),y):ctx.lineTo(X(r),y)}ctx.strokeStyle=c;ctx.lineWidth=2.6;ctx.stroke()});
+ for(let r=1;r<=Math.floor(end);r++){const y=Y(mod(r));dot(X(r),y,3.5,C.sheet,C.red,2);
+  for(let k=0;k<2;k++){const ph=(t*.6+rnd(r*3+k))%1;dot(X(r)+(rnd(r+k*9)-.5)*20,y-6-ph*28,2.2,rgba(C.red,1-ph))}}
+ const lx=n?pl+8:pr+16,ly=n?pt-30:pt+10;
+ if(n){txt('— 每次发布修改的模块数',pl,pt-34,{size:10.5,w:700,color:C.red,align:'left'});txt('— 系统结构的有序度',pl,pt-18,{size:10.5,w:700,color:C.blue,align:'left'})}
+ else{txt('每次发布',lx,Y(mod(end))-10,{size:12,w:700,color:C.red,align:'left'});txt('修改的模块数 ↑',lx,Y(mod(end))+8,{size:12,w:700,color:C.red,align:'left'});
+  txt('系统结构',lx,Y(ord(end))-10,{size:12,w:700,color:C.blue,align:'left'});txt('有序度 ↓',lx,Y(ord(end))+8,{size:12,w:700,color:C.blue,align:'left'})}
+ txt('修复一个缺陷 → 20%–50% 引入新缺陷',(pl+pr)/2,H*(n?.08:.1),{size:n?11.5:14,w:700,f:'d',color:C.red});
+ hotF((x,y)=>x>pl&&x<pr&&Math.abs(Y(mod(1+(x-pl)/(pr-pl)*(N-1)))-y)<10,'Belady 与 Lehman 的观察','对 OS/360 的研究发现，随着版本号增加，每次发布涉及修改的模块数量不断增长。修复工作破坏系统结构，熵和无序程度越来越高。');
+ hotF((x,y)=>x>pl&&x<pr&&Math.abs(Y(ord(1+(x-pl)/(pr-pl)*(N-1)))-y)<10,'结构退化','修改越来越多地用于修补而不是改进。系统最终需要重新设计，就像“前进两步，后退一步”。');
+}
+
+/* ---------- scene 6 ---------- */
+function noSilver(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const cx=W/2,cy=H*(n?.44:.46),rc=m*(n?.13:.12);
+ const v0=s.v(0),v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4),v5=s.v(5);
+ const r1=rc*1.45,r2=rc*2.05;
+ // monster spikes
+ layer(1-v2,()=>{ctx.beginPath();const K=24;for(let k=0;k<=K*2;k++){const a=k/(K*2)*TAU+t*.12,rr0=k%2?r2+rc*(.35+.12*Math.sin(t*3+k)):r2;const x=cx+Math.cos(a)*rr0,y=cy+Math.sin(a)*rr0;k?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();ctx.fillStyle=rgba(C.ink,.1);ctx.fill();ctx.strokeStyle=rgba(C.ink,.35);ctx.lineWidth=1;ctx.stroke()});
+ // accidental shell
+ const shell=[['机器语言','高级语言'],['批处理周转','分时系统'],['零散工具','统一编程环境']];
+ shell.forEach((sh,i)=>{
+  const a0=i/3*TAU-Math.PI/2+.04+t*.05,a1=(i+1)/3*TAU-Math.PI/2-.04+t*.05,am=(a0+a1)/2;
+  for(let f=0;f<6;f++){const fa0=lerp(a0,a1,f/6),fa1=lerp(a0,a1,(f+1)/6),seed=i*6+f;
+   const e=E.out(clamp(s.raw(2)*1.2-rnd(seed)*.2)),d=e*m*(.35+rnd(seed+1)*.25),fam=(fa0+fa1)/2;
+   layer(1-e,()=>{ctx.save();ctx.translate(Math.cos(fam+(rnd(seed+2)-.5))*d,Math.sin(fam+(rnd(seed+2)-.5))*d);ctx.beginPath();ctx.arc(cx,cy,r2,fa0,fa1);ctx.arc(cx,cy,r1,fa1,fa0,true);ctx.closePath();ctx.fillStyle=rgba(C.muted,.25);ctx.fill();ctx.strokeStyle=C.sheet;ctx.lineWidth=1.5;ctx.stroke();ctx.restore()})}
+  const lr=(r1+r2)/2,lx=cx+Math.cos(am)*lr,ly=cy+Math.sin(am)*lr;
+  layer(v1*(1-v2),()=>{txt(sh[0],lx,ly,{size:n?10:11.5,w:700,color:C.ink});hotC(lx,ly,rc*.5,'次要困难：'+sh[0],'这是表达软件时遇到的困难，不属于软件本身的概念结构。')});
+  const fx=cx+Math.cos(am)*(r2+rc*.9),fy=cy+Math.sin(am)*(r2+rc*.7);
+  layer(v2*(1-v4),()=>{pill(sh[1],fx,fy,{size:n?10.5:12,bg:C.blue});hotC(fx,fy,30,sh[1],{'高级语言':'最强有力的突破：把程序从大量次要复杂度中解放出来，比如寄存器、位、分支和通道。','分时系统':'保持了思维的连贯，减少等待机器周转的时间，提高了程序员的生产率。','统一编程环境':'Unix、Interlisp 等提供集成的程序库、统一文件格式和管道过滤器，让工具可以组合使用。'}[sh[1]])});
+ });
+ layer(v1*(1-v2),()=>{txt('次要（偶然）',cx+r2+12,cy-r2*.8,{size:12,w:700,color:C.muted,align:'left'});seg(cx+r2+10,cy-r2*.8,cx+r2*.72,cy-r2*.62,C.muted,1)});
+ // essence core
+ glow(cx,cy,rc*3,C.red,.18);
+ ctx.beginPath();for(let k=0;k<=80;k++){const a=k/80*TAU,rr0=rc*(1+.08*Math.sin(a*5+t*1.4)+.05*Math.sin(a*9-t*2));const x=cx+Math.cos(a)*rr0,y=cy+Math.sin(a)*rr0;k?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.closePath();
+ const gr=ctx.createRadialGradient(cx-rc*.3,cy-rc*.3,rc*.1,cx,cy,rc*1.1);gr.addColorStop(0,rgba(C.amber,.95));gr.addColorStop(1,rgba(C.red,.95));ctx.fillStyle=gr;ctx.fill();
+ // internal concept web
+ ctx.save();ctx.clip();for(let k=0;k<14;k++){const a=rnd(k)*TAU+t*.1*(k%2?1:-1),b=rnd(k+20)*TAU-t*.08;seg(cx+Math.cos(a)*rc*.8,cy+Math.sin(a)*rc*.8,cx+Math.cos(b)*rc*.7,cy+Math.sin(b)*rc*.7,rgba(C.sheet,.35),1)}ctx.restore();
+ txt('本质',cx,cy-6,{size:n?16:20,w:900,f:'d',color:C.sheet});txt('概念结构',cx,cy+(n?12:16),{size:n?10:11.5,w:600,color:C.sheet});
+ hotC(cx,cy,rc,'本质困难','软件的本质是一个相互牵连的概念结构：数据集合、数据项之间的关系、算法和函数调用。规格说明、设计和测试这个结构才是真正的难点，而不是把它表达出来。');
+ // four properties
+ const props=[['复杂度','软件实体可能比任何人造物都复杂，没有任何两个部分完全相同。复杂度随规模非线性增长，带来沟通困难、缺陷和进度延误。'],['一致性','软件必须遵从各种人为制度和系统的接口。这些接口各不相同，随时间变化，并非出于必然，只是一直如此。'],['可变性','软件总是被要求变更。它是纯粹的思维产物，可以无限扩展；成功的软件更会被用到原本没设计过的场景中。'],['不可见性','软件无法被可视化。它不存在于空间中，没有现成的几何表示，这限制了个人的设计过程和人与人之间的交流。']];
+ layer(v3,()=>{props.forEach((p,i)=>{const a=i/4*TAU-Math.PI/4+t*.12,R=rc*(n?1.85:1.95)*lerp(.6,1,v3);const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R*.9;seg(cx+Math.cos(a)*rc,cy+Math.sin(a)*rc,x,y,rgba(C.red,.4),1,[3,3]);const b=pill(p[0],x,y,{size:n?11:13,bg:C.sheet,color:C.red,stroke:C.red});hotR(b.x,b.y,b.w,b.h,p[0],p[1])})});
+ // silver bullet
+ layer(v4*(1-v5),()=>{
+  const ph=s.step===4?(s.age%2.6)/2.6:.5;const bx=lerp(-60,W+60,E.io(ph)),by=cy+Math.sin(ph*Math.PI*2)*6;
+  for(let k=0;k<14;k++){dot(bx-k*9,by,3-k*.18,rgba(C.muted,.5*(1-k/14)))}
+  ctx.save();ctx.translate(bx,by);ctx.beginPath();ctx.moveTo(-22,-5);ctx.lineTo(8,-5);ctx.quadraticCurveTo(22,0,8,5);ctx.lineTo(-22,5);ctx.closePath();
+  const sg=ctx.createLinearGradient(0,-5,0,5);sg.addColorStop(0,'#F4F6FA');sg.addColorStop(.5,'#9AA3B2');sg.addColorStop(1,'#DDE2EA');ctx.fillStyle=sg;ctx.fill();ctx.strokeStyle=rgba(C.ink,.5);ctx.lineWidth=1;ctx.stroke();ctx.restore();
+  // gauge
+  const gx0=W*(n?.1:.25),gx1=W*(n?.9:.75),gyy=H*(n?.86:.88),G=v=>gx0+Math.log10(v)/Math.log10(12)*(gx1-gx0);
+  seg(gx0,gyy,gx1,gyy,C.line,8);ctx.lineCap='round';seg(gx0,gyy,G(1+1.6*clamp(s.step===4?s.age/2:1)),gyy,C.blue,8);ctx.lineCap='butt';
+  [1,2,5,10].forEach(v=>{seg(G(v),gyy-9,G(v),gyy+9,v===10?C.red:C.muted,v===10?2:1);txt(v+'×',G(v),gyy+20,{size:10.5,w:700,f:'m',color:v===10?C.red:C.muted})});
+  txt('十年内的单项提升',gx0,gyy-18,{size:11.5,w:700,align:'left',color:C.muted});txt('目标 10× ✗',G(10),gyy-18,{size:11.5,w:700,color:C.red});
+  hotR(gx0,gyy-24,gx1-gx0,50,'为什么到不了 10 倍','如果次要部分不到总工作量的 9/10，即使把它降到零，节省的时间也不到 10 倍。剩下的本质部分没有变。');
+ });
+ // promising directions
+ const dirs=[['购买而非开发','最彻底的解决方案是根本不去开发。大众市场的软件让成千上万用户分担了开发成本。'],['需求精炼与快速原型','最难的是决定开发什么。客户并不知道自己要什么，原型让他们看到并确认概念结构。'],['增量开发','“培育”而不是“建造”软件：先让系统运行起来，再一点点加功能，始终保持一个能运行的系统。'],['卓越的设计人员','好设计来自好的设计者。要像培养管理人员一样，识别并培养杰出的设计人才。']];
+ layer(v5,()=>{dirs.forEach((d,i)=>{const a=[-Math.PI*.78,-Math.PI*.22,Math.PI*.22,Math.PI*.78][i];const R=rc*(n?2.35:2.9)*lerp(.5,1,v5);const x=cx+Math.cos(a)*R*(n?1:1.25),y=cy+Math.sin(a)*R*(n?1.2:.95);
+  ctx.beginPath();ctx.moveTo(cx+Math.cos(a)*rc,cy+Math.sin(a)*rc);ctx.quadraticCurveTo(cx+Math.cos(a)*R*.5,cy+Math.sin(a)*R*.85,x,y);ctx.strokeStyle=rgba(C.teal,.7);ctx.lineWidth=1.6;ctx.stroke();
+  const b=pill(d[0],x,y,{size:n?11:13,bg:C.teal});hotR(b.x,b.y,b.w,b.h,d[0],d[1])})});
+ layer(v0*(1-v1),()=>txt('软件项目：一头可能突然变身的怪物',cx,cy+r2+rc*.9,{size:n?12:14,w:600,f:'d',color:C.muted}));
+}
+
+/* ---------- scene 7 ---------- */
+function epilogue(s){
+ const {W,H,t}=s,n=s.narrow,v1=s.v(1);
+ const cx=W/2,cy=H*(n?.42:.44),RX=n?W*.38:W*.36,RY=n?H*.3:H*.32;
+ const nodes=[['焦油坑',1,'大型系统开发是一个焦油坑；编程系统产品的成本约为程序的 9 倍。'],['人月神话',2,'人和月不能互换。Brooks 法则：给落后的项目加人只会更晚。'],['外科手术队伍',3,'一个头脑负责设计，其他人提供支持，减少沟通路径。'],['概念完整性',4,'最重要的设计考虑。结构与实现分离，由少数人掌控结构。'],['画蛇添足',4,'第二系统效应：警惕把第一次压下的修饰全加进来。'],['巴比伦塔',5,'项目失败于交流和组织；用工作手册和组织结构管理沟通。'],['未雨绸缪',5,'准备扔掉一个；为变化而设计系统和组织。'],['没有银弹',6,'本质困难无法被单一技术消除，只能逐步攻克。']];
+ const P=nodes.map((d,i)=>{const a=i/nodes.length*TAU-Math.PI/2;const e=E.back(clamp(s.raw(0)*1.5-i*.06));return {x:cx+Math.cos(a)*RX*e,y:cy+Math.sin(a)*RY*e,e:clamp(e),d}});
+ glow(cx,cy,Math.min(W,H)*.35,C.red,.1);
+ P.forEach((p,i)=>{const q=P[(i+1)%P.length];seg(p.x,p.y,q.x,q.y,rgba(C.blue,.3*p.e),1);seg(cx,cy,p.x,p.y,rgba(C.red,.3*p.e),1,[2,4]);const ph=(t*.3+rnd(i))%1;const [x,y]=along(p.x,p.y,cx,cy,ph);dot(x,y,2,rgba(C.red,p.e))});
+ dot(cx,cy,Math.min(W,H)*.075,C.red);
+ txt('守住',cx,cy-9,{size:n?11:12.5,w:600,color:C.sheet});txt('概念完整性',cx,cy+9,{size:n?11:13,w:700,f:'d',color:C.sheet});
+ hotC(cx,cy,Math.min(W,H)*.075,'全书主线','规模扩大带来分工，分工带来沟通成本。所有方法都服务于同一个目标：在分工的同时守住概念完整性。');
+ P.forEach(p=>layer(p.e,()=>{const b=pill(p.d[0],p.x,p.y,{size:n?11:13.5,bg:C.sheet,color:C.ink,stroke:C.line,f:'d'});hotR(b.x,b.y,b.w,b.h,p.d[0]+' →',p.d[2]+'（点击跳转）',()=>jumpScene(p.d[1]))}));
+ layer(v1,()=>{const y=H*(n?.86:.88);txt('人和月不能互换 · 沟通需要组织 · 设计需要统一的头脑 · 没有银弹',cx,y,{size:n?10.5:14,w:600,f:'d',color:C.ink});
+  if(!n)txt('The Mythical Man-Month · 1975 / 1995 · 中文 40 周年纪念版',cx,y+24,{size:11,f:'m',color:C.muted})});
+}
+
+/* ====================================================================
+   ENGINE
+   ==================================================================== */
+const FLAT=[];SCENES.forEach((sc,si)=>sc.steps.forEach((st,k)=>FLAT.push({si,k,st})));
+let cur=0,sceneIdx=-1,sf=-1,sceneT=0,sceneFade=0,stepClock=0,stepAge=0,playing=!REDUCED;
+const nav=$('#nav'),track=$('#track');
+SCENES.forEach((sc,i)=>{const b=document.createElement('button');b.textContent=sc.nav;b.onclick=()=>jumpScene(i);nav.appendChild(b)});
+const segEls=SCENES.map((sc,i)=>{const d=document.createElement('div');d.className='seg';d.style.flex=`${sc.steps.length} 1 0`;d.title=sc.nav;d.innerHTML='<i></i>';track.appendChild(d);return d});
+const firstOf=si=>FLAT.findIndex(f=>f.si===si);
+function jumpScene(si){go(firstOf(si),true)}
+function enterScene(si,k,fromStart){
+ sceneIdx=si;sceneT=0;sceneFade=REDUCED?1:0;sf=fromStart?k-1:k;
+ const sc=SCENES[si],ctrl=$('#ctrl');
+ if(sc.ctrl){ctrl.innerHTML=sc.ctrl;ctrl.hidden=false}else{ctrl.innerHTML='';ctrl.hidden=true}
+ sc.enter&&sc.enter();
+ [...nav.children].forEach((b,i)=>b.setAttribute('aria-current',i===si?'true':'false'));
+ try{history.replaceState(null,'','#s'+si)}catch(e){}
+}
+function go(i,fromStart){
+ i=clamp(i,0,FLAT.length-1);const prev=FLAT[cur];const f=FLAT[i];
+ const forward=i>cur;cur=i;stepClock=0;stepAge=0;
+ if(f.si!==sceneIdx)enterScene(f.si,f.k,fromStart||forward);
+ panel();
+}
+function panel(){
+ const f=FLAT[cur],sc=SCENES[f.si];
+ $('#chap').textContent=sc.chap;$('#stitle').textContent=sc.title;
+ $('#steps').innerHTML=sc.steps.map((_,k)=>`<i class="${k<=f.k?'on':''}"></i>`).join('')+`<span>${f.k+1} / ${sc.steps.length}</span>`;
+ $('#caph').textContent=f.st.h;$('#cap').innerHTML=f.st.c;
+ const q=$('#quote');if(f.st.q){q.innerHTML='<small>原书要点</small>'+f.st.q;q.hidden=false}else q.hidden=true;
+ $('#count').textContent=String(cur+1).padStart(2,'0')+' / '+String(FLAT.length).padStart(2,'0');
+}
+function setPlay(p){playing=p;$('#play').setAttribute('aria-label',p?'暂停':'播放');$('#playIcon').innerHTML=p?'<path d="M4 2h3v12H4zM9 2h3v12H9z"/>':'<path d="M4 2l10 6-10 6z"/>'}
+$('#play').onclick=()=>{if(!playing&&cur===FLAT.length-1&&stepClock>=FLAT[cur].st.dur){go(0,true)}setPlay(!playing)};
+$('#prev').onclick=()=>go(cur-1);
+$('#next').onclick=()=>go(cur+1);
+track.addEventListener('click',e=>{const r=track.getBoundingClientRect();const fr=clamp((e.clientX-r.left)/r.width);
+ // map through segment widths
+ let acc=0;for(let i=0;i<segEls.length;i++){const sr=segEls[i].getBoundingClientRect();if(e.clientX<=sr.right+2.5||i===segEls.length-1){const loc=clamp((e.clientX-sr.left)/sr.width);const n=SCENES[i].steps.length;go(firstOf(i)+Math.min(n-1,Math.floor(loc*n)),true);return}}});
+track.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}});
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))return;if(e.target===track)return;
+ if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}else if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}else if(e.key===' '){setPlay(!playing);e.preventDefault()}});
+
+// tooltip
+let mouse=null,hoverHot=null;
+function showTip(){
+ if(!mouse){tip.hidden=true;cv.style.cursor='default';return}
+ const h=hit(mouse.x,mouse.y);hoverHot=h;
+ if(!h){tip.hidden=true;cv.style.cursor='default';return}
+ cv.style.cursor=h.click?'pointer':'help';
+ if(tip.dataset.key!==h.t+h.b){tip.innerHTML=`<b>${h.t}</b>${h.b}`;tip.dataset.key=h.t+h.b}
+ tip.hidden=false;
+ const tw0=tip.offsetWidth,th0=tip.offsetHeight;let x=mouse.x+16,y=mouse.y+16;
+ if(x+tw0>W-8)x=mouse.x-tw0-14;if(x<8)x=8;if(y+th0>H-8)y=mouse.y-th0-14;if(y<8)y=8;
+ tip.style.left=x+'px';tip.style.top=y+'px';
+}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top}});
+cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){mouse=null}});
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top};const h=hit(mouse.x,mouse.y);if(h&&h.click){h.click();mouse=null}else if(!h&&e.pointerType!=='mouse'){mouse=null}});
+
+let last=performance.now();
+function frame(ts){
+ const dt=Math.min(.05,(ts-last)/1000);last=ts;
+ readColors();
+ const st=FLAT[cur].st;
+ stepAge+=dt;
+ if(playing){stepClock+=dt;if(stepClock>=st.dur){if(cur<FLAT.length-1)go(cur+1);else{stepClock=st.dur;setPlay(false)}}}
+ sceneT+=dt;sceneFade=Math.min(1,sceneFade+dt/.7);
+ const target=FLAT[cur].k,diff=target-sf;
+ if(REDUCED)sf=target;else{const sp=Math.max(1/1.1,Math.abs(diff)*1.8)*dt;sf+=Math.sign(diff)*Math.min(Math.abs(diff),sp)}
+ // render
+ ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);HOT=[];
+ const a=E.out(sceneFade);
+ const S={W,H,t:sceneT,dt,sf,age:stepAge,step:target,narrow:W<560,raw:k=>clamp(sf-k+1),v:k=>E.io(clamp(sf-k+1))};
+ ctx.save();ctx.globalAlpha=a;ctx.translate(0,(1-a)*16);
+ try{SCENES[sceneIdx].draw(S)}catch(err){console.error(err)}
+ ctx.restore();
+ showTip();
+ // progress
+ const gp=cur+clamp(stepClock/st.dur);
+ segEls.forEach((el,i)=>{const s0=firstOf(i),n=SCENES[i].steps.length;const f=clamp((gp-s0)/n);el.firstChild.style.width=(f*100)+'%';el.classList.toggle('past',gp>=s0+n)});
+ track.setAttribute('aria-valuenow',cur+1);track.setAttribute('aria-valuemax',FLAT.length);
+ requestAnimationFrame(frame);
+}
+readColors();
+const hs=/^#s(\d)$/.exec(location.hash);
+go(hs?firstOf(clamp(+hs[1],0,SCENES.length-1)):0,true);
+setPlay(playing);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

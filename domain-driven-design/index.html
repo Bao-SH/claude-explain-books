@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="用 Canvas 动画逐步拆解《领域驱动设计》：通用语言、分层架构、实体与值对象、聚合、突破、柔性设计、限界上下文与精炼。">
+<title>领域驱动设计 · 动态解读</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: drafting-table stage (canvas sheet + annotation rail) above a tape-transport bar */
+:root{
+  --paper:#F2F0EA; --sheet:#FBFAF6; --ink:#1A1F2E; --muted:#686D79; --line:#D9D6CC;
+  --grid:rgba(36,99,235,.07); --grid2:rgba(36,99,235,.035);
+  --red:#E5432A; --blue:#2463EB; --amber:#E39500; --teal:#0C9C7B; --violet:#7A48D8;
+  --tar:#2B2622; --soft:#E9E6DD; --grain:.35; --acc:#0B7A64;
+  --f-display:"Noto Serif SC","Songti SC","STSong",serif;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E121B; --sheet:#121826; --ink:#ECE8DE; --muted:#8E94A3; --line:#273042;
+    --grid:rgba(120,160,255,.07); --grid2:rgba(120,160,255,.03);
+    --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+    --tar:#05070B; --soft:#1C2333; --grain:.18; --acc:#3DDBB0; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E121B; --sheet:#121826; --ink:#ECE8DE; --muted:#8E94A3; --line:#273042;
+  --grid:rgba(120,160,255,.07); --grid2:rgba(120,160,255,.03);
+  --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+  --tar:#05070B; --soft:#1C2333; --grain:.18; --acc:#3DDBB0; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;margin:0;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,36px);padding-block:20px 28px;display:grid;gap:16px}
+.top{display:flex;align-items:center;gap:16px 24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.seal{width:44px;height:44px;border-radius:4px;background:var(--acc);color:var(--sheet);display:grid;place-items:center;font:900 15px/1 var(--f-display);letter-spacing:.02em;flex:none}
+.brand h1{font:900 26px/1.1 var(--f-display);margin:0;letter-spacing:.06em}
+.brand p{margin:3px 0 0;font:500 10.5px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto}
+.nav button{font:500 13px/1 var(--f-body);color:var(--muted);background:none;border:0;padding:8px 11px;border-radius:999px;cursor:pointer;transition:color .2s,background .2s}
+.nav button:hover{color:var(--ink);background:var(--soft)}
+.nav button[aria-current="true"]{color:var(--sheet);background:var(--ink)}
+.nav button:focus-visible,.btn:focus-visible,.track:focus-visible,.theme:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.theme{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;font-size:15px;display:grid;place-items:center}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+.sheet{position:relative;aspect-ratio:16/10;max-width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background-color:var(--sheet);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(var(--grid2) 1px,transparent 1px),linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+  background-size:100px 100px,100px 100px,20px 20px,20px 20px;background-position:-1px -1px}
+canvas{display:block;width:100%;height:100%;touch-action:manipulation}
+.hint{position:absolute;left:12px;top:10px;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.06em;pointer-events:none}
+.tip{position:absolute;pointer-events:none;max-width:290px;background:var(--ink);color:var(--sheet);padding:10px 13px 11px;border-radius:6px;font-size:13px;line-height:1.65;box-shadow:0 10px 30px -12px rgba(0,0,0,.45);z-index:3}
+.tip b{display:block;font:600 14.5px/1.4 var(--f-display);margin-bottom:3px;color:var(--sheet)}
+.rail{display:flex;flex-direction:column;gap:12px;min-width:0;padding-top:2px}
+.eyebrow{font:700 11px/1 var(--f-mono);color:var(--acc);letter-spacing:.14em;text-transform:uppercase}
+.rail h2{font:900 27px/1.25 var(--f-display);margin:0;text-wrap:balance;letter-spacing:.02em}
+.steps{display:flex;gap:5px;align-items:center}
+.steps i{width:18px;height:3px;border-radius:2px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--ink)}
+.steps span{font:500 11px var(--f-mono);color:var(--muted);margin-left:6px;font-variant-numeric:tabular-nums}
+.rail h3{font:700 17px/1.4 var(--f-body);margin:6px 0 0}
+.rail p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink)}
+.rail p b{color:var(--acc);font-weight:700}
+blockquote{margin:4px 0 0;padding:2px 0 2px 14px;border-left:2px solid var(--acc);font:600 14.5px/1.7 var(--f-display);color:var(--ink)}
+blockquote small{display:block;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.08em;margin-bottom:3px}
+[hidden]{display:none!important}
+.ctrl{display:grid;gap:8px;padding:12px 14px;border:1px dashed var(--line);border-radius:6px;margin-top:4px}
+.ctrl label{font:700 13px var(--f-body);display:flex;justify-content:space-between;align-items:baseline}
+.ctrl output{font:700 20px var(--f-mono);color:var(--acc);font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl .note{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btns{display:flex;gap:6px}
+.btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .15s,background .2s}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:scale(.94)}
+.btn.play{background:var(--ink);color:var(--sheet);border-color:var(--ink);width:46px;height:46px}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.track{flex:1 1 280px;min-width:0;display:flex;gap:5px;height:30px;align-items:center;cursor:pointer}
+.seg{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden;min-width:8px}
+.seg i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--acc)}
+.seg.past i{background:var(--ink)}
+.count{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+.keys{font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+@media (max-width:980px){.stage{grid-template-columns:minmax(0,1fr)}.sheet{aspect-ratio:4/3}.nav{margin-left:0;width:100%}}
+@media (max-width:560px){.sheet{aspect-ratio:4/5}.brand h1{font-size:22px}.rail h2{font-size:23px}.keys{display:none}.nav button{padding:7px 9px;font-size:12.5px}}
+.ctrl .lbl{font:700 13px var(--f-body)}
+.segbtns{display:flex;flex-wrap:wrap;gap:6px}
+.segbtns button{flex:1 1 auto;font:600 12.5px/1.25 var(--f-body);color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:999px;padding:8px 11px;cursor:pointer;transition:background .2s,color .2s}
+.segbtns button:hover{background:var(--soft)}
+.segbtns button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--sheet)}
+.segbtns button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.bgcard{position:absolute;inset:0;z-index:3;overflow:auto;background:color-mix(in srgb,var(--sheet) 94%,transparent);backdrop-filter:blur(3px);display:flex;padding:28px 34px}
+.bgin{margin:auto;max-width:640px;width:100%;animation:bgup .5s ease-out}
+@keyframes bgup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.bgtag{display:inline-block;font:700 11px/1 var(--f-mono);letter-spacing:.14em;color:var(--sheet);background:var(--acc);padding:6px 9px;border-radius:3px}
+.bgcard h4{font:900 26px/1.3 var(--f-display);margin:12px 0 10px;color:var(--ink)}
+.bgcard p{margin:0 0 14px;font-size:14.5px;line-height:1.85;color:var(--ink)}
+.bgcard b{color:var(--acc)}
+.bgcard dl{display:grid;grid-template-columns:max-content 1fr;gap:9px 16px;margin:0 0 14px;padding:14px 16px;border:1px solid var(--line);border-radius:6px;background:var(--sheet)}
+.bgcard dt{font:700 13.5px/1.6 var(--f-body);color:var(--acc)}
+.bgcard dd{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.bgask{font:600 14.5px/1.7 var(--f-display);border-left:2px solid var(--amber);padding-left:12px;color:var(--ink)}
+.bgnext{margin-top:14px;font:500 11px var(--f-mono);color:var(--muted);letter-spacing:.06em}
+@media (max-width:560px){.bgcard{padding:18px 16px}.bgcard h4{font-size:21px}.bgcard dl{grid-template-columns:1fr;gap:2px}.bgcard dd{margin-bottom:8px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="seal">领域</div>
+      <div><h1>领域驱动设计</h1><p>Domain-Driven Design · Eric Evans · 软件核心复杂性应对之道</p></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="章节"></nav>
+    <button class="theme" id="theme" aria-label="切换明暗主题" title="切换明暗主题">◐</button>
+  </header>
+
+  <main class="stage">
+    <div class="sheet" id="sheet">
+      <canvas id="cv" aria-label="动态示意图"></canvas>
+      <div class="hint">HOVER · 悬停图形查看详解</div>
+      <div class="tip" id="tip" hidden></div>
+      <div class="bgcard" id="bgcard" hidden></div>
+    </div>
+    <aside class="rail" aria-live="polite">
+      <div class="eyebrow" id="chap"></div>
+      <h2 id="stitle"></h2>
+      <div class="steps" id="steps"></div>
+      <h3 id="caph"></h3>
+      <p id="cap"></p>
+      <blockquote id="quote" hidden></blockquote>
+      <div class="ctrl" id="ctrl" hidden></div>
+    </aside>
+  </main>
+
+  <footer class="transport">
+    <div class="btns">
+      <button class="btn" id="prev" aria-label="上一步"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+      <button class="btn play" id="play" aria-label="暂停"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button>
+      <button class="btn" id="next" aria-label="下一步"><svg viewBox="0 0 16 16"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+    </div>
+    <div class="track" id="track" role="slider" tabindex="0" aria-label="播放进度"></div>
+    <div class="count" id="count">01 / 01</div>
+    <div class="keys">← → 切换 · 空格 播放/暂停</div>
+  </footer>
+</div>
+
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const TAU=Math.PI*2;
+const E={
+  io:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  out:t=>1-Math.pow(1-t,3),
+  back:t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)},
+  expo:t=>t>=1?1:1-Math.pow(2,-10*t)
+};
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const cv=$('#cv'),ctx=cv.getContext('2d'),sheet=$('#sheet'),tip=$('#tip');
+let W=0,H=0,DPR=1;
+function resize(){const r=sheet.getBoundingClientRect();W=r.width;H=r.height;DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}
+new ResizeObserver(resize).observe(sheet);resize();
+
+/* ---------- theme ---------- */
+let C={};
+const KEYS=['paper','sheet','ink','muted','line','red','blue','amber','teal','violet','tar','soft','acc'];
+function readColors(){const cs=getComputedStyle(document.documentElement);KEYS.forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+function rgba(hex,a){hex=(hex||'#000').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+$('#theme').onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'};
+
+/* ---------- drawing helpers ---------- */
+const FD='"Noto Serif SC","Songti SC",serif',FB='"Noto Sans SC","PingFang SC",system-ui,sans-serif',FM='"JetBrains Mono",ui-monospace,Menlo,monospace';
+const font=(size,w=500,f='b')=>`${w} ${size}px ${f==='d'?FD:f==='m'?FM:FB}`;
+function txt(s,x,y,o={}){ctx.save();ctx.font=font(o.size||13,o.w||500,o.f);ctx.fillStyle=o.color||C.ink;ctx.textAlign=o.align||'center';ctx.textBaseline=o.base||'middle';if(o.a!=null)ctx.globalAlpha*=o.a;ctx.fillText(s,x,y);ctx.restore()}
+function tw(s,size,w=500,f){ctx.save();ctx.font=font(size,w,f);const m=ctx.measureText(s).width;ctx.restore();return m}
+function dot(x,y,r,fill,stroke,lw=1.5){ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,TAU);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function seg(x1,y1,x2,y2,color,lw=1,dash){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrow(x1,y1,x2,y2,color,lw=1.5,head=8){seg(x1,y1,x2,y2,color,lw);const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-head*Math.cos(a-.42),y2-head*Math.sin(a-.42));ctx.lineTo(x2-head*Math.cos(a+.42),y2-head*Math.sin(a+.42));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+function rr(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
+function pill(s,x,y,o={}){const size=o.size||12,pad=o.pad||9,w=tw(s,size,o.w||600,o.f)+pad*2,h=size+pad*1.1;const x0=o.align==='left'?x:o.align==='right'?x-w:x-w/2;rr(x0,y-h/2,w,h,h/2);ctx.fillStyle=o.bg||C.ink;ctx.fill();if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=1;ctx.stroke()}txt(s,x0+w/2,y+.5,{size,w:o.w||600,color:o.color||C.sheet,f:o.f});return {x:x0,y:y-h/2,w,h}}
+function layer(a,fn){if(a<=.004)return;ctx.save();ctx.globalAlpha*=Math.min(1,a);fn();ctx.restore()}
+function glow(x,y,r,color,a){if(r<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(color,a));g.addColorStop(1,rgba(color,0));ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+const along=(x1,y1,x2,y2,p)=>[lerp(x1,x2,p),lerp(y1,y2,p)];
+
+/* ---------- hotspots ---------- */
+let HOT=[];
+const live=()=>ctx.globalAlpha>.45;
+function hotC(x,y,r,t,b,click){if(live())HOT.push({k:'c',x,y,r,t,b,click})}
+function hotR(x,y,w,h,t,b,click){if(live())HOT.push({k:'r',x,y,w,h,t,b,click})}
+function hotF(fn,t,b){if(live())HOT.push({k:'f',fn,t,b})}
+function hit(mx,my){for(let i=HOT.length-1;i>=0;i--){const h=HOT[i];if(h.k==='c'&&Math.hypot(mx-h.x,my-h.y)<=h.r)return h;if(h.k==='r'&&mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h)return h;if(h.k==='f'&&h.fn(mx,my))return h}return null}
+
+
+/* ---------- DDD-specific helpers ---------- */
+function box(x,y,w,h,o={}){rr(x,y,w,h,o.r==null?6:o.r);if(o.fill){ctx.fillStyle=o.fill;ctx.fill()}if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=o.lw||1.2;if(o.dash)ctx.setLineDash(o.dash);ctx.stroke();if(o.dash)ctx.setLineDash([])}}
+function curve(x1,y1,qx,qy,x2,y2,color,lw=1.4,dash){ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo(qx,qy,x2,y2);ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+function curveArrow(x1,y1,qx,qy,x2,y2,color,lw=1.4,head=7){curve(x1,y1,qx,qy,x2,y2,color,lw);const a=Math.atan2(y2-qy,x2-qx);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-head*Math.cos(a-.42),y2-head*Math.sin(a-.42));ctx.lineTo(x2-head*Math.cos(a+.42),y2-head*Math.sin(a+.42));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+const qpt=(x1,y1,qx,qy,x2,y2,p)=>{const u=1-p;return [u*u*x1+2*u*p*qx+p*p*x2,u*u*y1+2*u*p*qy+p*p*y2]};
+function poly(pts,p){let L=0;const d=[];for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);d.push(l);L+=l}let r=clamp(p)*L;for(let i=0;i<d.length;i++){if(r<=d[i]||i===d.length-1){const f=d[i]?clamp(r/d[i]):0;return along(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],f)}r-=d[i]}return pts[0]}
+function polyline(pts,color,lw=1.4,dash){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+const solo=(s,k)=>(k?s.v(k):1)*(1-s.v(k+1));
+const mkClock=()=>{let key=null,t0=0;return (s,x='')=>{const k=s.step+'|'+x;if(k!==key){key=k;t0=s.t}return REDUCED?99:s.t-t0}};
+// rich text: CJK wraps per char, latin words and highlighted terms stay whole
+const LC=new Map();
+if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',()=>LC.clear());
+const esc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function toks(s,terms){const out=[];const plain=p=>(p.match(/[A-Za-z0-9_.()<>!=$,#]+|\s|./gu)||[]).forEach(c=>out.push({s:c}));
+ if(terms&&terms.length){const re=new RegExp('('+terms.map(esc).join('|')+')');s.split(re).forEach((p,i)=>{if(!p)return;if(i%2)out.push({s:p,hl:true});else plain(p)})}else plain(s);return out}
+function layout(s,maxW,size,w,f,terms){const key=[s,maxW|0,size,w,f,terms&&terms.join('|')].join('§');let L=LC.get(key);if(L)return L;
+ L=[];let line=[],lw=0;
+ toks(s,terms).forEach(t=>{const wd=tw(t.s,size,t.hl?700:w,f);if(lw+wd>maxW&&line.length&&t.s!==' '){L.push(line);line=[];lw=0}if(!line.length&&t.s===' ')return;line.push({s:t.s,hl:t.hl,x:lw,w:wd});lw+=wd});
+ if(line.length)L.push(line);if(LC.size>600)LC.clear();LC.set(key,L);return L}
+function rich(s,x,y,maxW,o={}){const size=o.size||12,w=o.w||500,lh=o.lh||Math.round(size*1.6);const L=layout(s,maxW,size,w,o.f,o.terms);const hits=[];
+ L.forEach((line,i)=>{const yy=y+i*lh;let run='',rx=0,rh=null;
+  const flush=()=>{if(run)txt(run,x+rx,yy,{size,w:rh?700:w,f:o.f,color:rh?(o.hl||C.acc):(o.color||C.ink),align:'left'});run=''};
+  line.forEach(t=>{if(!!t.hl!==rh||t.hl){flush();rx=t.x;rh=!!t.hl}run+=t.s;if(t.hl)hits.push({s:t.s,x:x+t.x,y:yy,w:t.w})});flush()});
+ return {h:L.length*lh,hits}}
+const richH=(s,maxW,o={})=>layout(s,maxW,o.size||12,o.w||500,o.f,o.terms).length*(o.lh||Math.round((o.size||12)*1.6));
+function segCtl(sel,get,set){const bs=[...document.querySelectorAll(sel+' button')];const sync=()=>bs.forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===String(get())?'true':'false'));bs.forEach(b=>b.onclick=()=>{set(b.dataset.k);sync()});sync()}
+function code(lines,x,y,w,o={}){const size=o.size||11.5,lh=size*1.75,h=lines.length*lh+size*1.6;box(x,y,w,h,{fill:C.tar,r:6});
+ lines.forEach((l,i)=>{const isC=l.trim().startsWith('//');txt(l,x+size*1.1,y+size*.8+lh*(i+.5),{size,f:'m',w:500,align:'left',color:isC?'#8A93A6':(o.hl&&o.hl.includes(i)?(o.hlc||'#5EEAC0'):'#E8E4DA')})});
+ return {h,line:i=>y+size*.8+lh*(i+.5)}}
+function lockIcon(x,y,sz,color){ctx.beginPath();ctx.arc(x,y-sz*.25,sz*.32,Math.PI,0);ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.4,sz*.13);ctx.stroke();box(x-sz*.48,y-sz*.25,sz*.96,sz*.72,{fill:color,r:2})}
+function person(x,y,r,color){dot(x,y-r*1.25,r*.62,color);ctx.beginPath();ctx.arc(x,y+r*.95,r*1.05,Math.PI,0);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+const LEND=()=>[C.blue,C.amber,C.violet];
+function pie(x,y,r,parts,o={}){const tot=parts.reduce((a,p)=>a+p.v,0)||1;let a0=-Math.PI/2;parts.forEach(p=>{const a1=a0+p.v/tot*TAU*(o.sweep==null?1:o.sweep);if(a1>a0+1e-4){ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,r,a0,a1);ctx.closePath();ctx.fillStyle=p.c;ctx.fill();ctx.strokeStyle=C.sheet;ctx.lineWidth=2;ctx.stroke();
+ const am=(a0+a1)/2;p._x=x+Math.cos(am)*r*.62;p._y=y+Math.sin(am)*r*.62;p._a0=a0;p._a1=a1}a0=a1})}
+const inSlice=(x,y,r,a0,a1)=>(mx,my)=>{const d=Math.hypot(mx-x,my-y);if(d>r)return false;let a=Math.atan2(my-y,mx-x);while(a<a0)a+=TAU;return a<=a1};
+
+/* ====================================================================
+   SCENES
+   ==================================================================== */
+const MODEL0=[['Cargo','货物',0,-.95],['Customer','客户',-1.05,-.35],['RouteSpec','路线说明',1.05,-.35],['Itinerary','航线',.75,.75],['Leg','运输段',-.15,1.0],['Location','位置',-.95,.6]];
+const EDGE0=[[0,1],[0,2],[0,3],[3,4],[4,5],[2,5]];
+const NOISE0=['报关单格式','船员排班','燃油价格','港口天气','发票模板','吊车型号','打印机设置','历史邮件','运价谈判','保险条款','屏幕配色','船舶涂装','办公室座位','会议纪要','传真号码','表格字段'];
+const PARTS=[['第一部分','运用领域模型',1,'第 1–3 章：知识消化、通用语言、模型驱动设计。'],['第二部分','模型驱动设计的构造块',2,'第 4–7 章：分层架构、ENTITY、VALUE OBJECT、SERVICE、AGGREGATE、FACTORY、REPOSITORY。'],['第三部分','通过重构来加深理解',5,'第 8–13 章：突破、显式概念、柔性设计、分析模式。'],['第四部分','战略设计',7,'第 14–17 章：限界上下文、精炼、大型结构。']];
+let ulMode='a',addrMode='mail',lockMode='row',lockT0=0,draws=0,specOn=true,ctxRel=-1;
+
+const SCENES=[
+/* ---------------- 0 · Overview ---------------- */
+{nav:'总览',chap:'序言 · 全书主线',title:'软件的核心是领域',
+steps:[
+ {h:'软件为领域服务',dur:7,c:'每个软件都是为某个领域服务的：航运、银行、电路设计……领域里有大量知识，相互交织，看上去杂乱无章。软件真正的难度在这里，不在技术。',q:'软件的核心是其为用户解决领域相关的问题的能力。所有其他特性，不管有多么重要，都要服务于这个基本目的。（序言）'},
+ {h:'知识消化',dur:7,c:'开发人员和<b>领域专家</b>一起交谈、画图、尝试，反复多轮。专家的知识和开发人员的抽象能力在中间汇合，这个过程叫<b>知识消化</b>（Knowledge Crunching）。'},
+ {h:'模型是一种简化',dur:7.5,c:'消化的结果是<b>模型</b>：从杂乱的信息里挑出和问题相关的几个概念，以及它们之间的关系。“燃油价格”“打印机设置”这类与当前问题无关的细节被丢掉。',q:'模型是一种简化。它是对现实的解释——把与解决问题密切相关的方面抽象出来，而忽略无关的细节。（第 1 章）'},
+ {h:'模型的三种用途',dur:8,c:'模型不只是一张图。① 它是团队<b>通用语言</b>的骨架，专家和开发人员用同一组词说话；② 它和<b>代码</b>直接对应，改了代码就是改了模型；③ 它是<b>浓缩的知识</b>，新成员可以从这里学起。'},
+ {h:'全书四个部分',dur:9,c:'全书围绕这个循环展开：先讲怎样用模型（第一部分），再讲模型落到代码的构造块（第二部分），然后讲怎样通过重构让模型更深刻（第三部分），最后讲系统变大以后的<b>战略设计</b>（第四部分）。点击下方卡片可跳转。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ const cx=W/2,cy=H*(n?.4:.43)-v4*H*.04,R=m*(n?.2:.19);
+ const ex=n?W*.12:W*.12,dx=W-ex,py=cy+(n?R*.2:0),pr=Math.max(7,m*.022);
+ // knowledge particles between people and the model
+ layer(v1*(1-v4*.5),()=>{
+  for(let k=0;k<26;k++){const fromE=k%2===0,p=(t*.18+rnd(k))%1;const x0=fromE?ex:dx;const [x,y]=qpt(x0,py,(x0+cx)/2,py-R*.9*(rnd(k+3)-.3),cx,cy,p);ctx.globalAlpha=Math.sin(p*Math.PI)*.85;dot(x,y,2.2,fromE?C.amber:C.blue)}
+ });
+ // cloud words
+ const all=MODEL0.map(m0=>m0[1]).concat(NOISE0);
+ all.forEach((w,i)=>{
+  const isM=i<MODEL0.length;
+  const sx=cx+(rnd(i+1)-.5)*W*(n?.8:.62),sy=cy+(rnd(i+40)-.5)*H*(n?.5:.56);
+  const jx=Math.sin(t*.7+i)*6*(1-v2),jy=Math.cos(t*.6+i*1.7)*5*(1-v2);
+  if(isM){
+   const M=MODEL0[i],tx=cx+M[2]*R*1.25,ty=cy+M[3]*R;
+   const p=E.io(clamp(s.sf-1.3)),x=lerp(sx+jx,tx,p),y=lerp(sy+jy,ty,p);
+   M._x=x;M._y=y;
+   layer(1-p,()=>txt(w,x,y,{size:n?11:12.5,w:500,color:lerp(0,1,v1)>.5?C.ink:C.muted,f:'d'}));
+  }else{
+   const a=(1-v2)*(.75-.15*v1);
+   layer(a,()=>txt(w,sx+jx-(v2*20*(rnd(i)-.5)),sy+jy+v2*14,{size:n?10.5:12,color:C.muted,f:'d'}));
+  }
+ });
+ // model graph
+ const pg=E.io(clamp(s.sf-1.3));
+ layer(pg,()=>{
+  EDGE0.forEach(([a,b])=>seg(MODEL0[a]._x,MODEL0[a]._y,MODEL0[b]._x,MODEL0[b]._y,rgba(C.acc,.6),1.4));
+  MODEL0.forEach(M=>{const b=pill(M[0],M._x,M._y,{size:n?10.5:12,f:'m',bg:C.sheet,color:C.acc,stroke:C.acc,pad:n?6:8});txt(M[1],M._x,M._y+b.h/2+9,{size:n?9.5:10.5,color:C.muted});
+   hotR(b.x,b.y,b.w,b.h+18,M[0]+' · '+M[1],'航运系统模型中的一个概念。它和代码中的同名类一一对应，团队在讨论中也直接使用这个词。')});
+ });
+ glow(cx,cy,R*2.2,C.acc,.1*pg);
+ // people
+ [[ex,'领域专家',C.amber,'懂业务，但通常不懂软件。他们的知识分散、隐含、常常前后不一致。'],[dx,'开发人员',C.blue,'懂抽象和代码，但起初对业务一无所知。']].forEach(([x,l,c,b],i)=>layer(v1,()=>{
+  person(x,py,pr,c);txt(l,x,py+pr*2.6,{size:n?11:12.5,w:700});hotC(x,py,pr*2.4,l,b)}));
+ // three uses
+ const ulY=cy-R*1.55-(n?14:18);
+ layer(v3,()=>{
+  const b=pill(n?'通用语言':'通用语言 UBIQUITOUS LANGUAGE',cx,ulY,{size:n?11:12,bg:C.acc,color:C.sheet});
+  hotR(b.x,b.y,b.w,b.h,'用途 ①：语言的骨架','模型是团队所有成员使用的通用语言的中枢。专家和开发人员说同一组词，不需要翻译。');
+  seg(cx,ulY+b.h/2,cx,cy-R*1.05,rgba(C.acc,.5),1.2,[3,3]);
+  [[ex,-1],[dx,1]].forEach(([x,sg])=>{const by=py-pr*3.6,bw=n?50:150;
+   if(!n){box(x-bw/2+sg*20,by-30,bw,24,{fill:C.sheet,stroke:C.line,r:12});txt('Itinerary 满足 RouteSpec',x+sg*20,by-18,{size:10.5,f:'m',color:C.acc})}
+   else txt('…',x,by-14,{size:16,w:700,color:C.acc})});
+ });
+ const cy0=cy+R*1.5+(n?14:22);
+ layer(v3*(1-v4),()=>{
+  const cw=n?Math.min(W-40,250):300,c=code(['class Cargo {','  RouteSpecification spec;','  Itinerary itinerary;','}'],cx-cw/2,cy0,cw,{size:n?10:11});
+  hotR(cx-cw/2,cy0,cw,c.h,'用途 ②：模型与代码相互塑造','代码里的类与模型中的概念一一对应。修改代码就是修改模型，所以可以根据对模型的理解来维护代码。');
+  curveArrow(cx+cw/2+6,cy0+c.h*.5,cx+cw/2+40,cy0-10,MODEL0[3]._x+10,MODEL0[3]._y+14,rgba(C.acc,.7),1.3);
+  curveArrow(cx-cw/2-6,cy0+c.h*.5,cx-cw/2-40,cy0-10,MODEL0[5]._x-10,MODEL0[5]._y+16,rgba(C.blue,.7),1.3);
+  if(!n)txt('用途 ③：浓缩的知识',cx,cy-R*.02,{size:11,w:700,color:C.muted});
+ });
+ hotC(cx,cy,R*.5,'用途 ③：浓缩的知识','模型是团队对领域的理解的结晶。术语的选择、概念的划分、关系的建立都经过了反复讨论，新成员可以从模型学起。');
+ // four parts
+ layer(v4,()=>{
+  const cols=n?2:4,gap=n?8:12,cw=(W-(n?24:48)-gap*(cols-1))/cols,ch=n?50:58,rows=Math.ceil(4/cols);
+  const y0=H-(n?16:22)-rows*ch-(rows-1)*gap;
+  PARTS.forEach((P,i)=>{const r=Math.floor(i/cols),c=i%cols,x=(n?12:24)+c*(cw+gap),y=y0+r*(ch+gap)+(1-v4)*10;
+   box(x,y,cw,ch,{fill:C.sheet,stroke:C.acc,r:6});
+   txt(P[0],x+12,y+(n?16:19),{size:n?10:11,f:'m',w:700,color:C.acc,align:'left'});
+   txt(P[1],x+12,y+ch-(n?16:19),{size:n?11.5:13.5,w:700,f:'d',align:'left'});
+   txt('→',x+cw-14,y+ch/2,{size:14,color:C.acc});
+   hotR(x,y,cw,ch,P[0]+' · '+P[1],P[3]+'（点击跳转）',()=>jumpScene(P[2]))});
+ });
+}},
+/* ---------------- 1 · Ubiquitous language ---------------- */
+{nav:'通用语言',chap:'第 1–3 章 · 运用领域模型',title:'一种语言，从对话贯穿到代码',
+ctrlSteps:[2],ctrl:`<div class="lbl">同一段需求讨论，两种说法</div><div class="segbtns" id="ulb"><button data-k="a">对话一 · 技术术语</button><button data-k="b">对话二 · 模型术语</button></div><div class="note">对比两段对话的长度，以及术语能否直接对应到代码。</div>`,
+enter(){segCtl('#ulb',()=>ulMode,k=>ulMode=k)},
+steps:[
+ {h:'从听不懂开始',dur:7,c:'Evans 接手印制电路板（PCB）设计工具时，对电子学一窍不通。专家们讲的 net、ref-des、拓扑，他一句也听不懂。他注意到报告里反复出现一个词：<b>net</b>。',q:'用不了3分钟，他们就令我晕头转向。（第 1 章）'},
+ {h:'术语结晶成模型',dur:8,c:'他让专家用最简单的图解释：“元件实例”有“引脚”，<b>net</b> 把一个实例的引脚连到另一个实例的引脚。专家又提出“信号每通过一个 net 就算 1 跳”，需要找出超过 2～3 跳的路径。模型就这样一轮轮长出来。',q:'他们不断地纠正我的错误，在这个过程中我开始学习他们的知识。（第 1 章）'},
+ {bg:1,h:"背景：货运系统改清关地点",dur:15,c:"这个例子来自一个国际货运订舱系统。客户托运一批货，系统要为它安排从起点到终点的运输路线，中间可能换好几艘船、经过好几个港口。货物入境时要在某个地点办理<b>清关</b>（海关检查放行）。现在客户要求<b>换一个清关地点</b>，路线就得重新安排。",terms:[["Cargo 货物","客户托运的一批货，也就是要运送的对象。"],["Route Specification 路线规格","对路线的要求：从哪里出发、到哪里、在哪里清关、什么时候到。它只说“要什么”，不管具体怎么走。"],["Itinerary 行程","实际排好的路线，由一段段航程（Leg）组成：哪艘船、在哪个港口装卸。"],["Routing Service 路线服务","根据路线规格，找出一条满足要求的行程。"]],ask:"下面两段对话讨论的是同一件事。注意：哪一段业务专家能听懂，又能直接对应到代码？"},
+ {h:'两段对话',dur:9.5,c:'航运系统里讨论“改了清关地点要不要重排路线”。<b>对话一</b>用数据库术语：货运表、删除行、布尔值；<b>对话二</b>用模型术语：Route Specification、Itinerary、Routing Service。用右侧按钮切换对比。',q:'第一段对话显得更啰嗦……第二段对话使用了基于领域模型的术语，因此讨论更简洁。（第 2 章）'},
+ {h:'翻译让知识流失',dur:8,c:'专家说业务行话，开发人员说技术行话，中间靠少数人翻译。每次转述都会丢失细节、引入误解。DDD 的做法是建立<b>通用语言</b>：以模型为骨架，所有讨论、文档、代码都用它。',q:'翻译使得沟通不畅，并削弱了知识消化。（第 2 章）'},
+ {h:'模型驱动设计',dur:9,c:'分析模型和代码分家，模型很快就失去意义。<b>模型驱动设计</b>要求代码忠实反映模型；写代码的人要懂模型，建模的人也要接触代码，书中称为<b>亲身实践的建模者</b>。',q:'软件系统各个部分的设计应该忠实地反映领域模型，以便体现出这二者之间的明确对应关系。（第 3 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ const pcb=1-v2;
+ // ---- PCB part ----
+ layer(pcb,()=>{
+  const cx=W/2,cy=H*.44,sc=m/520;
+  const chips=[[-1.1,-.35,'U1'],[0,.45,'U2'],[1.1,-.35,'U3'],[.15,-.8,'U4']];
+  const cw=70*sc*(n?1.2:1),chh=44*sc*(n?1.2:1);
+  const pos=chips.map(c=>[cx+c[0]*W*(n?.3:.24),cy+c[1]*H*.3]);
+  const nets=[[0,1],[1,2],[0,3],[3,2]];
+  const pt=E.io(clamp(s.sf-.3));
+  // nets
+  nets.forEach(([a,b],i)=>{const [x1,y1]=pos[a],[x2,y2]=pos[b];const mx=(x1+x2)/2,my=Math.min(y1,y2)-20*sc;
+   ctx.globalAlpha*=.4+.6*pt;polyline([[x1+cw/2,y1],[mx,y1],[mx,y2],[x2-cw/2,y2]].map((p,j)=>j===0&&x1>x2?[x1-cw/2,y1]:j===3&&x1>x2?[x2+cw/2,y2]:p),pt>.5?C.acc:C.muted,1.6);ctx.globalAlpha/=.4+.6*pt;
+   if(pt>.5){const P=[[x1,y1],[mx,y1],[mx,y2],[x2,y2]];const [hx,hy]=poly(P,.5);hotC(hx,hy,12,'net','把一个元件实例的某个引脚与另一个实例的某个引脚相连。专家口中的 net，就是这些连接。')}});
+  // hop probe
+  layer(v1,()=>{const path=[pos[0],pos[3],pos[2],pos[1]];const p=(t*.22)%1;const [x,y]=poly(path,p);glow(x,y,26,C.amber,.6);dot(x,y,4,C.amber);
+   const hop=Math.min(3,Math.floor(p*3)+1);pill(hop+' 跳',x,y-18,{size:10.5,f:'m',bg:hop>2?C.red:C.amber});
+   hotC(x,y,14,'探针模拟（跳）','信号每通过一个 net，就称为 1 跳。专家要找出超过 2～3 跳的信号路径，这个需求后来成为模型的一部分。')});
+  pos.forEach((p,i)=>{const [x,y]=p;box(x-cw/2,y-chh/2,cw,chh,{fill:C.tar,r:4});
+   for(let k=0;k<4;k++){const px=x-cw/2+cw*(k+.5)/4;seg(px,y-chh/2,px,y-chh/2-6,C.muted,2);seg(px,y+chh/2,px,y+chh/2+6,C.muted,2)}
+   txt(chips[i][2],x,y,{size:11,f:'m',w:700,color:'#E8E4DA'});
+   hotR(x-cw/2,y-chh/2-6,cw,chh+12,pt>.5?'元件实例 '+chips[i][2]:'ref-des '+chips[i][2],pt>.5?'专家原本叫它 ref-des，统一后称为“元件实例”（component instance）。每个实例有若干引脚。':'专家报告里的 ref-des。Evans 一开始并不知道它指什么。')});
+  // labels: jargon -> terms
+  const jar=[['net ?',-.3,-.92],['ref-des ?',-1.05,.15],['拓扑 ?',1,.35],['探针 ?',.6,.82]];
+  jar.forEach((j,i)=>{const x=cx+j[1]*W*(n?.32:.28),y=cy+j[2]*H*.3;
+   layer(1-pt,()=>txt(j[0],x+Math.sin(t+i)*3,y,{size:n?12:14,w:700,color:C.red,f:'d'}))});
+  const terms=['元件实例','引脚','net','拓扑','跳'];
+  layer(pt,()=>{const fs=n?11:12.5,gap=n?6:10;let ws=terms.map(x=>tw(x,fs,600)+18),tot=ws.reduce((a,b)=>a+b,0)+gap*(terms.length-1),x=W/2-tot/2,y=H-(n?40:46);
+   txt('结晶出的术语',W/2,y-26,{size:10.5,f:'m',color:C.muted});
+   terms.forEach((x0,i)=>{pill(x0,x+ws[i]/2,y,{size:fs,bg:C.acc});x+=ws[i]+gap})});
+  layer(1-pt,()=>{person(W*.1,H*.82,m*.02,C.blue);txt('Evans：？',W*.1+m*.06,H*.82,{size:12,w:700,align:'left',color:C.muted})});
+ });
+ // ---- dialogues ----
+ const dl=v2*(1-v3);
+ layer(dl,()=>{
+  const A=ulMode==='a';
+  const lines=A?[
+   ['U','那么，当更改清关地点时，需要重新制定整个路线计划啰。'],
+   ['D','是的。我们将从货运表中删除所有与该货物id相关联的行，然后将出发地、目的地和新的清关地点传递给Routing Service，它会重新填充货运表。Cargo中必须设立一个布尔值，用于指示货运表中是否有数据。'],
+   ['U','是的，但为新航线制定所有支持计划的工作量很大，因此，除非非改不可，我们一般不想更改航线。'],
+   ['D','哦，好的，当第一次输入清关地点时，我们需要查询表格，找到以前的清关地点，然后与新的清关地点进行比较，从而判断是否需要重做。']
+  ]:[
+   ['U','那么，当更改清关地点时，需要重新制定整个路线计划啰。'],
+   ['D','是的。当更改Route Specification的任意属性时，都将删除原有的Itinerary，并要求Routing Service基于新的Route Specification生成一个新的Itinerary。'],
+   ['U','是的，但为新航线制定所有支持计划的工作量很大，因此，除非非改不可，我们一般不想更改路线。'],
+   ['D','那么需要在Route Specification添加一些功能：查看Itinerary是否仍满足Specification。只有当不满足时，才重新生成Itinerary。']
+  ];
+  const terms=A?['货运表','删除所有与该货物id相关联的行','重新填充货运表','布尔值','查询表格','比较']:['Route Specification','Itinerary','Routing Service','Specification','满足'];
+  const hl=A?C.red:C.acc;
+  const pad=n?10:14,x0=n?12:28,full=W-x0*2,bw=n?full-24:Math.min(full*.72,560),fs=n?11:12.5;
+  let y=n?34:40;
+  txt(A?'对话一 · 用数据库和实现细节讨论':'对话二 · 用领域模型的术语讨论',W/2,y-12,{size:n?11:12,w:700,color:hl,f:'m'});
+  y+=8;
+  const codeW=n?0:Math.min(220,full-bw-30);
+  lines.forEach((L,i)=>{const isU=L[0]==='U',w=bw-pad*2-26,h=richH(L[1],w,{size:fs})+pad*1.4;
+   const bx=isU?x0:x0+full-bw-(codeW&&!A?0:0),by=y;
+   box(bx,by,bw,h,{fill:isU?C.soft:C.sheet,stroke:isU?null:C.line,r:10});
+   person(bx+16,by+16,5.5,isU?C.amber:C.blue);
+   const r=rich(L[1],bx+30,by+pad*.7+fs*.8,w,{size:fs,terms,hl});
+   r.hits.forEach(h0=>hotR(h0.x,h0.y-fs*.8,h0.w,fs*1.6,h0.s,A?'技术术语：讨论的是表和行，而不是业务概念。用户只能被动接受（“删除行？好，就按你说的做”）。':'模型术语：这个词在模型里是一个对象，在代码里有一个同名的类。'));
+   y+=h+(n?6:9)});
+  const total=lines.reduce((a,L)=>a+L[1].length,0);
+  layer(1,()=>{const yy=Math.min(H-24,y+14);pill(`共 ${total} 字`,W/2,yy,{size:11,f:'m',bg:hl})});
+  if(!A&&!n){const names=['RouteSpecification','Itinerary','RoutingService'];const x=x0,yy=H-90;
+   names.forEach((nm,i)=>{const b=pill('class '+nm,x+10+i*(full/3.1),yy+16,{size:10.5,f:'m',bg:C.tar,color:'#5EEAC0',align:'left'});hotR(b.x,b.y,b.w,b.h,nm,'对话里的词就是代码里的类名，讨论和实现不需要转换。')})}
+ });
+ // ---- translation ----
+ const tr=v3*(1-v4);
+ layer(tr,()=>{
+  const cy=H*.42,ex=W*(n?.2:.17),dx=W*(n?.8:.83),pr=m*.026;
+  const p2=clamp((s.age-3.2)/1.6);const sw=REDUCED?1:E.io(p2);
+  person(ex,cy,pr,C.amber);person(dx,cy,pr,C.blue);
+  txt('领域专家',ex,cy+pr*2.6,{size:12,w:700});txt('开发人员',dx,cy+pr*2.6,{size:12,w:700});
+  // translator
+  layer(1-sw,()=>{person(W/2,cy,pr*.85,C.muted);txt('翻译者',W/2,cy+pr*2.6,{size:11.5,w:700,color:C.muted});
+   hotC(W/2,cy,pr*2,'翻译者','团队里少数既懂业务又懂技术的人，在两边之间转述。其他人的知识消化依赖他们，一旦理解有偏差，没人察觉。');
+   const ph=[['业务行话',ex,C.amber],['技术行话',dx,C.blue]];ph.forEach(([w0,x,c])=>txt(w0,x,cy-pr*3.4,{size:n?11:12.5,w:700,color:c,f:'d'}));
+   for(let k=0;k<14;k++){const p=(t*.25+rnd(k))%1,fromE=k%2===0;const a=fromE?ex:dx,b=fromE?dx:ex;const x=lerp(a,b,p);const y=cy-pr*.4+Math.sin(p*TAU+k)*8;const lost=Math.abs(p-.5)<.08&&rnd(k+5)>.4;
+    ctx.globalAlpha=lost?.9:Math.min(1,Math.abs(p-.5)<.08?1:p<.5?1:.35);dot(x,y+(p>.5&&rnd(k+5)>.4?(p-.5)*60:0),2.4,lost?C.red:fromE?C.amber:C.blue)}
+   ctx.globalAlpha=1;
+   pill('知识在转述中流失',W/2,cy+pr*4.6,{size:11,bg:C.red})});
+  // UL
+  layer(sw,()=>{const bw=Math.min(W*.5,420),bh=pr*3;box(W/2-bw/2,cy-bh/2,bw,bh,{fill:rgba(C.acc,.12),stroke:C.acc,r:bh/2});
+   txt('通用语言',W/2,cy-6,{size:n?14:17,w:900,f:'d',color:C.acc});txt('UBIQUITOUS LANGUAGE',W/2,cy+14,{size:9.5,f:'m',color:C.acc});
+   hotR(W/2-bw/2,cy-bh/2,bw,bh,'通用语言','以模型为语言的支柱。团队内部所有交流、图、文档以及代码都坚持使用这种语言；语言变了，模型也跟着变。');
+   for(let k=0;k<18;k++){const p=(t*.3+rnd(k))%1,fromE=k%2===0;const x=lerp(fromE?ex:dx,fromE?dx:ex,p);dot(x,cy+(rnd(k+9)-.5)*bh*.5,2.4,C.acc)}
+   const uses=n?['对话','图','代码']:['需求讨论','白板图','文档','类和方法名','测试'];
+   uses.forEach((u,i)=>pill(u,W/2+(i-(uses.length-1)/2)*(n?78:96),cy+bh*1.1,{size:n?10.5:11,bg:C.sheet,color:C.ink,stroke:C.line}))});
+ });
+ // ---- MDD ----
+ layer(v4,()=>{
+  const half=n?W:W/2,cy=H*(n?.3:.42);
+  // left: split
+  const L=(ox,oy,sw,title,good)=>{
+   txt(title,ox,oy-m*.22,{size:n?11.5:12.5,w:700,color:good?C.acc:C.red,f:'d'});
+   const bw=Math.min(sw*.36,140),bh=m*.11,gx=good?0:bw*.25*(1+Math.sin(t*.8)*.15);
+   box(ox-bw-6-gx,oy-bh/2,bw,bh,{fill:C.sheet,stroke:good?C.acc:C.muted,r:6});
+   txt('分析模型',ox-bw/2-6-gx,oy,{size:n?11:12.5,w:700,f:'d'});
+   box(ox+6+gx,oy-bh/2,bw,bh,{fill:C.tar,r:6});
+   txt('代码',ox+bw/2+6+gx,oy,{size:n?11:12.5,w:700,color:'#E8E4DA'});
+   if(good){seg(ox-6,oy-bh*.2,ox+6,oy-bh*.2,C.acc,3);seg(ox-6,oy+bh*.2,ox+6,oy+bh*.2,C.acc,3);
+    pill('同一个模型',ox,oy+bh*.95,{size:10.5,bg:C.acc})}
+   else{seg(ox-6-gx,oy,ox+6+gx,oy,C.red,1.2,[3,4]);pill('逐渐脱节',ox,oy+bh*.95,{size:10.5,bg:C.red})}
+   hotR(ox-bw-6-gx,oy-bh/2,bw*2+12+gx*2,bh,good?'MODEL-DRIVEN DESIGN':'分析模型与设计分离',good?'不再区分分析模型和程序设计，而是寻求一个同时满足两者的模型。代码里能直接看出模型。':'分析人员做的模型不考虑实现，开发人员实现时只好另起炉灶。分析模型很快被遗弃，其中的知识也随之丢失。');
+  };
+  if(n){L(W/2,cy,W,'分析模型和代码分家',false);L(W/2,cy+H*.32,W,'模型驱动设计',true)}
+  else{L(W*.27,cy,half,'分析模型和代码分家',false);L(W*.73,cy,half,'模型驱动设计',true);seg(W/2,H*.2,W/2,H*.64,C.line,1,[4,4])}
+  const hy=H-(n?44:58);
+  const hb=pill(n?'亲身实践的建模者':'HANDS-ON MODELER · 亲身实践的建模者',W/2,hy,{size:n?11:12,bg:C.ink});
+  hotR(hb.x,hb.y,hb.w,hb.h,'HANDS-ON MODELER','任何参与建模的技术人员，都必须花时间了解代码。任何负责修改代码的人员则必须学会用代码来表达模型。');
+  txt('建模的人写代码，写代码的人懂模型',W/2,hy+(n?22:24),{size:n?10.5:11.5,color:C.muted});
+ });
+}},
+/* ---------------- 2 · Layered architecture ---------------- */
+{nav:'分层架构',chap:'第 4 章 · 分离领域',title:'把领域层隔离出来',
+steps:[
+ {h:'一个下拉框背后的五件事',dur:8,c:'运输系统里“从城市列表选目的地”这个简单操作，代码要做五件事：画控件、查数据库取城市、校验输入、<b>把城市和货物关联</b>、提交数据库。它们写在同一个程序里，只有一件和运输业务相关。',q:'上面所有的代码都在同一个程序中，但是只有一小部分代码与运输业务相关。（第 4 章）'},
+ {h:'分成四层',dur:8,c:'按关注点分层：<b>用户界面层</b>、<b>应用层</b>、<b>领域层</b>、<b>基础设施层</b>。每层只依赖下面的层。悬停各层查看职责。',q:'将领域层分离出来才是实现MODEL-DRIVEN DESIGN的关键。（第 4 章）'},
+ {bg:1,h:"背景：网上银行转账",dur:15,c:"用户在网上银行把钱从自己的一个账户转到另一个账户。看起来简单，其实要同时做好几件事：显示表单、检查输入、真正改变两个账户的余额、保证不会只做一半，最后记账并通知用户。",terms:[["借记 / 贷记","从转出账户扣钱叫借记（debit），给转入账户加钱叫贷记（credit）。"],["借贷相等","一次转账扣掉的金额必须等于加上的金额，钱不能凭空多出来或消失。这是银行的业务规则。"],["事务","一组操作要么全部成功，要么全部撤销。不能出现钱扣了却没加上的情况。"]],ask:"看每件事落在哪一层：哪些是业务规则，哪些只是技术支持？"},
+ {h:'例：网上转账',dur:8.5,c:'用户发起转账，应用层协调事务，<b>领域层</b>的两个 Account 执行借贷并守住“借贷相等”的规则，基础设施层负责持久化和通知。业务规则在领域层，不在应用层。'},
+ {h:'替换界面，领域不动',dur:7.5,c:'把网页表单换成基于 XML 的电汇请求，应用层以下各层<b>完全不受影响</b>。这说明关注点真正分开了，每一层可以按自己的节奏演化。',q:'也可以用基于XML的电汇请求来替换，这并不会影响应用层及其下面的各层。（第 4 章）'},
+ {h:'反面：SMART UI',dur:8,c:'另一条路是把业务逻辑直接写进界面事件里，书中称为 <b>SMART UI</b>“反模式”。简单项目可以这样做，开发快；但逻辑会散落、重复，无法复用，也不能演进成模型驱动设计。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ const L=[['用户界面层','User Interface',C.blue,'向用户显示信息并解释用户指令。用户可以是人，也可以是另一个系统。'],
+  ['应用层','Application',C.violet,'定义软件要完成的任务，协调领域对象完成工作。这一层很薄，不包含业务规则，只有任务的进度状态。'],
+  ['领域层','Domain',C.acc,'表达业务概念、业务状态和业务规则。它是业务软件的核心。'],
+  ['基础设施层','Infrastructure',C.muted,'提供通用的技术能力：持久化、消息发送、界面绘制等。']];
+ const C5=[['绘制下拉框',0],['查询城市',3],['解析并校验输入',1],['把城市与货物关联',2],['提交到数据库',3]];
+ const lx=n?12:W*.08,lw=n?W-24:W*.84,top=n?H*.1:H*.13,lh=(n?H*.6:H*.66)/4;
+ const cy=H*.45;
+ const smart=v4,lay=v1*(1-smart);
+ // layers
+ layer(lay,()=>{
+  L.forEach((l,i)=>{const y=top+i*lh,dom=i===2;
+   box(lx,y+3,lw,lh-6,{fill:dom?rgba(C.acc,.13):C.sheet,stroke:dom?C.acc:C.line,lw:dom?1.8:1,r:6});
+   txt(l[0],lx+(n?10:16),y+(n?16:20),{size:n?12:14,w:700,f:'d',align:'left',color:dom?C.acc:C.ink});
+   if(!n)txt(l[1],lx+16,y+38,{size:10,f:'m',align:'left',color:C.muted});
+   hotR(lx,y+3,lw,lh-6,l[0],l[3]);
+   if(i<3)arrow(lx+lw-(n?14:22),y+lh-14,lx+lw-(n?14:22),y+lh+6,rgba(C.ink,.35),1.2,6);
+  });
+  if(!n)txt('依赖方向 ↓',lx+lw-22,top-12,{size:10,f:'m',color:C.muted,align:'right'});
+ });
+ // five concerns
+ const pl=E.io(clamp(s.sf-.4));
+ layer((1-v2)*(1-smart),()=>{
+  C5.forEach((c,i)=>{
+   const ax=W/2+(rnd(i+2)-.5)*W*.32+Math.sin(t+i)*4*(1-pl),ay=cy+(rnd(i+11)-.5)*H*.3;
+   const bx=lx+lw*(n?.56:.5)+(i%2)*(n?0:lw*.22)-(n?0:lw*.06),by=top+c[1]*lh+lh/2+(c[1]===3?(i===1?-lh*.12:lh*.16):0)+(n?6:0);
+   const x=lerp(ax,bx,pl),y=lerp(ay,by,pl),isD=c[1]===2;
+   const b=pill((i+1)+' '+c[0],x,y,{size:n?10.5:12,bg:isD?C.acc:C.sheet,color:isD?C.sheet:C.ink,stroke:isD?null:C.line});
+   hotR(b.x,b.y,b.w,b.h,c[0],isD?'五件事里唯一与运输业务相关的部分，属于领域层。':'技术性的工作，与运输业务无关，属于'+L[c[1]][0]+'。');
+  });
+  layer(1-pl,()=>{box(W*.3,cy-H*.2,W*.4,H*.4,{stroke:C.red,dash:[5,5],r:14});txt('同一段程序',W/2,cy-H*.2-12,{size:11,f:'m',color:C.red})});
+ });
+ // transfer example
+ const tr=v2*(1-smart);
+ layer(tr,()=>{
+  const ly=i=>top+i*lh+lh/2,xs=n?[lx+lw*.36,lx+lw*.58,lx+lw*.8]:[lx+lw*.3,lx+lw*.5,lx+lw*.7,lx+lw*.88];
+  const xml=v3;
+  // UI element
+  const uiX=xs[0];
+  layer(1-xml,()=>{const b=pill('网页表单 · 转账',uiX,ly(0)+(n?8:0),{size:n?10:11,bg:C.blue});hotR(b.x,b.y,b.w,b.h,'用户界面','用户输入账号和金额后点击“转账”。')});
+  layer(xml,()=>{const b=pill('XML 电汇请求',uiX,ly(0)+(n?8:0)+(1-xml)*-20,{size:n?10:11,bg:C.amber});hotR(b.x,b.y,b.w,b.h,'换掉界面','请求来源换成 XML 电汇报文。只需要换掉用户界面层，下面三层一行都不用改。')});
+  const ap=pill('转账服务 · 开启事务',xs[1]-(n?0:0),ly(1)+(n?8:0),{size:n?10:11,bg:C.violet});
+  hotR(ap.x,ap.y,ap.w,ap.h,'应用层','协调这个任务：开启事务，调用领域对象，提交事务，请求发送通知。它不知道“借贷必须相等”。');
+  const a1x=n?xs[0]:xs[1]-lw*.1,a2x=n?xs[2]:xs[2]+lw*.02,ay=ly(2)+(n?8:0);
+  const p1=pill('Account A  −100',a1x,ay,{size:n?10:11,f:'m',bg:C.acc}),p2=pill('Account B  +100',a2x,ay,{size:n?10:11,f:'m',bg:C.acc});
+  hotR(p1.x,p1.y,p1.w,p1.h,'领域层：借方','账户对象自己执行借记，并检查余额等业务规则。');
+  hotR(p2.x,p2.y,p2.w,p2.h,'领域层：贷方','业务规则“每笔借记必须有与其数目相同的贷记”在这一层，而不是应用层。');
+  const db=pill('数据库',xs[0]+(n?-10:-lw*.05),ly(3)+(n?8:0),{size:n?10:11,bg:C.muted}),ms=pill('通知服务',xs[n?2:3],ly(3)+(n?8:0),{size:n?10:11,bg:C.muted});
+  hotR(ms.x,ms.y,ms.w,ms.h,'基础设施 SERVICE','发送通知的接口放在基础设施层，后面可以接邮件、传真或其他服务。应用层只请求“发送通知”。');
+  hotR(db.x,db.y,db.w,db.h,'持久化','由基础设施层负责。领域对象只关心业务，不关心自己怎样被存储。');
+  // flow
+  const fl=[[uiX,ly(0)+(n?8:0)],[xs[1],ly(1)+(n?8:0)],[a1x,ay],[a2x,ay],[xs[1],ly(1)+(n?8:0)],[xs[0]+(n?-10:-lw*.05),ly(3)+(n?8:0)],[xs[1],ly(1)+(n?8:0)],[xs[n?2:3],ly(3)+(n?8:0)]];
+  for(let i=0;i<fl.length-1;i++)seg(fl[i][0],fl[i][1],fl[i+1][0],fl[i+1][1],rgba(C.ink,.12),1,[2,4]);
+  const p=(t*.12)%1,[fx,fy]=poly(fl,p);glow(fx,fy,18,xml>.5?C.amber:C.blue,.6);dot(fx,fy,3.5,xml>.5?C.amber:C.blue);
+  layer(xml,()=>{const yy=top+lh+4;pill('不受影响',lx+lw-(n?50:70),yy+lh*1.5,{size:10.5,bg:C.acc});seg(lx+lw-(n?50:70),yy+8,lx+lw-(n?50:70),yy+lh*2.6,C.acc,1.2,[3,3])});
+ });
+ // smart UI
+ layer(smart,()=>{
+  const bw=Math.min(W*.62,520),bh=H*.5,bx=W/2-bw/2,by=H*.14;
+  box(bx,by,bw,bh,{fill:rgba(C.red,.06),stroke:C.red,r:10});
+  txt('SMART UI · 转账按钮的 onClick',bx+14,by+18,{size:n?10.5:11.5,f:'m',w:700,color:C.red,align:'left'});
+  const items=['读取输入框','校验金额格式','SQL：查余额','if 余额 < 金额 …','SQL：更新两行','发送邮件','刷新表格','借贷相等?'];
+  items.forEach((it,i)=>{const x=bx+20+(i%2)*(bw/2-6)+Math.sin(t*1.3+i)*3,y=by+44+Math.floor(i/2)*(bh-60)/4+Math.cos(t+i)*2;
+   const isD=it.includes('余额')||it.includes('借贷');const b=pill(it,x,y+10,{size:n?10:11,align:'left',bg:isD?C.acc:C.sheet,color:isD?C.sheet:C.ink,stroke:isD?null:C.line,f:'m'});
+   hotR(b.x,b.y,b.w,b.h,it,isD?'业务规则被埋在按钮事件里。另一个界面需要同样的规则时，只能复制一份。':'界面、数据访问、业务逻辑混在一起。')});
+  const n2=pill('另一个界面：批量转账',bx+bw*.5,by+bh+36,{size:11,bg:C.sheet,color:C.ink,stroke:C.red});
+  hotR(n2.x,n2.y,n2.w,n2.h,'逻辑被复制','同样的余额检查和借贷规则，在新界面里再写一遍。规则一改，要改许多处。');
+  curveArrow(bx+bw*.3,by+bh*.55,bx-20,by+bh+20,n2.x+4,n2.y+n2.h/2,rgba(C.red,.7),1.3);
+  if(!n){txt('适合：简单、只需短期交付的应用',W/2,H-48,{size:12,color:C.muted});txt('代价：不能复用，也不能演进为模型驱动设计',W/2,H-26,{size:12,w:700,color:C.red})}
+  else txt('无法复用，也不能演进',W/2,H-28,{size:11.5,w:700,color:C.red});
+ });
+ // title of five concerns
+ layer((1-v1)*(1-smart),()=>txt('“选择目的地城市”',W/2,H*.12,{size:n?14:17,w:700,f:'d'}));
+}},
+/* ---------------- 3 · Building blocks ---------------- */
+{nav:'构造块',chap:'第 5 章 · 软件中所表示的模型',title:'ENTITY、VALUE、SERVICE、MODULE',
+ctrlSteps:[2],ctrl:`<div class="lbl">同一个“地址”，在三种业务里</div><div class="segbtns" id="adb"><button data-k="mail">邮购公司</button><button data-k="post">邮政服务</button><button data-k="power">电力公司</button></div><div class="note">地址是 ENTITY 还是 VALUE，取决于业务怎样使用它。</div>`,
+enter(){segCtl('#adb',()=>addrMode,k=>addrMode=k)},
+steps:[
+ {h:'ENTITY：一条标识线',dur:8.5,c:'有些对象首先由<b>标识</b>定义，而不是由属性定义。一个客户十几年里改了名字、搬了家、换了工作，系统里他仍然是同一个人。这条贯穿整个生命周期的线就是 <b>ENTITY</b> 的标识。',q:'一些对象主要不是由它们的属性定义的。它们实际上表示了一条“标识线”（A Thread of Identity），这条线跨越时间，而且常常经历多种不同的表示。（第 5 章）'},
+ {h:'VALUE OBJECT：只关心是什么',dur:8,c:'另一些对象没有身份：两枚一元硬币可以随意交换，没人在乎是哪一枚。这样的对象是 <b>VALUE OBJECT</b>，应当设计成<b>不可变</b>的；需要改变时整体替换，而不是修改。',q:'当我们只关心一个模型元素的属性时，应把它归类为VALUE OBJECT……我们只关心它们是什么，而不关心它们是谁。（第 5 章）'},
+ {bg:1,h:"背景：三家公司怎样用“地址”",dur:15,c:"同一个“某某路 12 号”，在三家公司的软件里作用完全不同。它该建模成 ENTITY 还是 VALUE OBJECT，要看业务<b>是否需要追踪“这一个”地址</b>。",terms:[["邮购公司","地址只用来核对信用卡、寄送包裹。两个室友从同一个地址分别下单，系统不需要知道这是同一个地方。"],["邮政服务","要把地址组织成层级：地区 → 城市 → 邮区 → 街区 → 具体地址，用来安排投递路线、调整邮区划分。每个地址都要能单独识别。"],["电力公司","地址对应电线接入的那处住所。两个室友分别打电话开通服务时，公司必须认出他们住在同一处。"]],ask:"在右侧切换三种业务，看同一个地址在模型里是“可以互换的值”，还是“有身份的对象”。"},
+ {h:'地址：取决于上下文',dur:10,c:'同一个“地址”可以是 VALUE，也可以是 ENTITY。用右侧按钮切换三种业务：<b>邮购</b>只拿它来寄货；<b>邮政</b>要把地址组织成层级、重划邮区；<b>电力</b>要知道两个打电话的人是不是住在同一处。'},
+ {h:'SERVICE：不属于任何对象的操作',dur:8,c:'转账要动两个账户，还要遵守全局规则。把它硬塞给 Account 很别扭，于是建模为一个 <b>SERVICE</b>：名字取自通用语言里的动词，接口无状态，参数和结果都是领域对象。',q:'资金转账服务……涉及两个账户和一些全局规则。（第 5 章）'},
+ {h:'MODULE：按概念划分',dur:8.5,c:'<b>MODULE</b> 把高内聚的概念放在一起。常见错误是按技术分包（entities、services、daos），这样一个概念被拆散到各处。按领域概念分组，代码结构读起来就和模型一致。',q:'MODULE并不仅仅是代码的划分，而且也是概念的划分。（第 5 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=solo(s,2),a3=solo(s,3),a4=s.v(4);
+ // ENTITY timeline
+ layer(a0,()=>{
+  const snaps=[['2009','王小明','北京','学生'],['2014','王小明','上海','工程师'],['2019','王晓明','上海','经理'],['2024','王晓明','深圳','顾问']];
+  const y=H*(n?.36:.38),x0=W*(n?.06:.1),x1=W*(n?.94:.9);
+  const pr=E.out(clamp(s.age/4));
+  const tx=lerp(x0,x1,pr);
+  seg(x0,y,tx,y,C.acc,3);glow(tx,y,26,C.acc,.5);dot(tx,y,4,C.acc);
+  pill('ID · C-1029',x0,y-(n?62:74),{size:n?10:11,f:'m',bg:C.acc,align:'left'});
+  snaps.forEach((sn,i)=>{
+   const x=lerp(x0,x1,(i+.5)/4),on=clamp((pr-(i+.2)/4)*6);
+   layer(on,()=>{
+    const bw=n?W*.21:Math.min(150,W*.18),bh=n?78:92,by=y+18;
+    box(x-bw/2,by,bw,bh,{fill:C.sheet,stroke:C.line});
+    txt(sn[0],x,by+14,{size:n?9.5:10.5,f:'m',color:C.muted});
+    [sn[1],sn[2],sn[3]].forEach((v,k)=>{const ch=i>0&&v!==snaps[i-1][k+1];txt(v,x,by+(n?32:36)+k*(n?16:19),{size:n?10.5:12.5,w:ch?700:500,color:ch?C.amber:C.ink,f:'d'})});
+    dot(x,y,6,C.sheet,C.acc,2);
+    hotR(x-bw/2,by,bw,bh,sn[0]+' 年的客户记录','名字、城市、职业都可能变，但标识 C-1029 不变。系统靠它判断“这是同一个人”。橙色是相对上一次发生变化的属性。');
+   });
+  });
+  const sy=H*(n?.82:.8);
+  layer(clamp(s.age/4-1),()=>{
+   txt('体育场座位',W/2,sy-(n?30:34),{size:n?11:12.5,w:700});
+   [['对号入座 → 座位是 ENTITY',W*(n?.27:.32),C.acc,'每张票对应一个具体座位，座位号就是标识。'],['自由入座 → 座位不必是 ENTITY',W*(n?.73:.68),C.muted,'只需要统计售出多少张票，座位之间没有区别。']].forEach(([l,x,c,b])=>{
+    for(let k=0;k<5;k++)box(x-50+k*21,sy-8,16,14,{fill:rgba(c,.25+(k===2&&c===C.acc?.6:0)),r:3});
+    txt(l,x,sy+20,{size:n?9.5:11,color:c,w:600});hotR(x-70,sy-12,140,40,l,b)});
+  });
+ });
+ // VALUE coins
+ layer(a1,()=>{
+  const cx=W/2,cy=H*(n?.33:.36),N=5,gap=n?54:76;
+  const ph=(t*.35)%1,sw=Math.floor(t*.35)%N;
+  for(let i=0;i<N;i++){
+   let x=cx+(i-(N-1)/2)*gap,y=cy;
+   const j=(sw+1)%N;
+   if(i===sw||i===j){const e=E.io(clamp(ph*2)),d=(j-sw)*gap*(i===sw?1:-1);x+=d*e;y+=Math.sin(e*Math.PI)*(i===sw?-28:28)}
+   glow(x,y,30,C.amber,.25);dot(x,y,n?19:24,C.amber);dot(x,y,n?15:19,null,rgba(C.sheet,.7),1.2);
+   txt('¥1',x,y,{size:n?12:14,w:700,color:C.sheet,f:'m'});
+   hotC(x,y,24,'硬币','两枚一元硬币可以随意交换。我们只关心面值，不关心是哪一枚。');
+  }
+  txt('可以互换 → 没有标识',cx,cy+(n?50:62),{size:n?11:12.5,w:600,color:C.muted});
+  // immutable color
+  const y2=H*(n?.66:.68),bw=n?96:130;
+  const c1=['Color(255, 0, 0)',C.red],c2=['Color(0, 0, 255)',C.blue];
+  const xs=[W/2-(n?120:200),W/2,W/2+(n?120:200)];
+  box(xs[0]-bw/2,y2-20,bw,40,{fill:rgba(C.red,.15),stroke:C.red});txt(c1[0],xs[0],y2,{size:n?9:11,f:'m'});
+  arrow(xs[0]+bw/2+4,y2,xs[1]-bw/2-6,y2,C.muted,1.3);
+  txt('mixedWith(blue)',(xs[0]+xs[1])/2,y2-14,{size:n?8.5:10,f:'m',color:C.muted});
+  const p=E.out(clamp((t%5)/1.5));
+  layer(p,()=>{box(xs[1]-bw/2,y2-20,bw,40,{fill:rgba(C.violet,.18),stroke:C.violet});txt('Color(128,0,128)',xs[1],y2,{size:n?9:11,f:'m'})});
+  hotR(xs[0]-bw/2,y2-20,bw,40,'原值不变','VALUE OBJECT 不可变：混色不会改动原来的红色，而是返回一个新的颜色对象。');
+  hotR(xs[1]-bw/2,y2-20,bw,40,'新值','操作的结果是另一个 VALUE。不可变的值可以被放心地共享、复制。');
+  layer(p,()=>{txt('原对象没有被修改，得到的是一个新的值',W/2,y2+(n?40:44),{size:n?10.5:12,color:C.acc,w:600})});
+ });
+ // address
+ layer(a2,()=>{
+  const cx=W/2,cy=H*.44;
+  const ent=(x,y,l,sub,b)=>{const bb=pill(l,x,y,{size:n?11:12.5,bg:C.acc,f:'d'});txt(sub,x,y+bb.h/2+10,{size:n?9:10,f:'m',color:C.acc});hotR(bb.x,bb.y,bb.w,bb.h+16,l+' · ENTITY',b);return bb};
+  const val=(x,y,l,sub,b)=>{const bb=pill(l,x,y,{size:n?11:12.5,bg:C.sheet,color:C.ink,stroke:C.amber,f:'d'});txt(sub,x,y+bb.h/2+10,{size:n?9:10,f:'m',color:C.amber});hotR(bb.x,bb.y,bb.w,bb.h+16,l+' · VALUE',b);return bb};
+  const k=addrMode,ck=E.out(clamp(s.age*1.5));
+  ctx.save();ctx.globalAlpha*=ck;
+  if(k==='mail'){
+   const a=ent(cx-(n?80:150),cy,'客户 Customer','ENTITY','客户有标识，需要跟踪他的订单。');
+   const b=val(cx+(n?80:150),cy,'地址 Address','VALUE','邮购公司只需要地址来寄货。两个客户地址一样也无所谓，谁也不关心这是不是“同一个”地址对象。');
+   arrow(cx-(n?80:150)+a.w/2+4,cy,cx+(n?80:150)-b.w/2-6,cy,C.muted,1.3);
+   txt('寄货用的一串属性 → VALUE',cx,cy+H*.22,{size:n?12:14,w:700,color:C.amber,f:'d'});
+  }else if(k==='post'){
+   const lv=['省','市','邮政区','街区','地址'];
+   lv.forEach((l,i)=>{const y=H*.15+i*H*(n?.12:.12),x=cx+(i-2)*(n?28:48);
+    ent(x,y,l,'',`邮政服务的软件要把地址组织成层级（省、市、邮政区、街区、地址），而且区域会被重新划分。每一级都有自己的身份。`);
+    if(i)seg(cx+(i-3)*(n?28:48),y-H*.12+12,x,y-12,rgba(C.acc,.6),1.2)});
+   txt('层级结构、邮区重划 → ENTITY',cx,H*.82,{size:n?12:14,w:700,color:C.acc,f:'d'});
+  }else{
+   const hy=cy+10;
+   const h=ent(cx,hy,'住处 Dwelling','ENTITY','两个室友分别打电话订电，公司需要知道这是同一处住所。于是“住处”是 ENTITY。');
+   const v=val(cx,hy+(n?70:80),'地址 Address','VALUE','住处 ENTITY 的地址属性可以仍然是 VALUE。');
+   seg(cx,hy+h.h/2+12,cx,hy+(n?70:80)-v.h/2,C.muted,1.2,[3,3]);
+   [[-1,'室友甲'],[1,'室友乙']].forEach(([sg,l],i)=>{const x=cx+sg*(n?110:200),y=hy-(n?70:80);person(x,y,n?9:11,C.blue);txt(l,x,y+(n?26:30),{size:n?10:11.5});
+    const r=(t*.5+i*.5)%1;const [px,py]=along(x,y+10,cx+sg*(h.w/2),hy,r);dot(px,py,3,C.blue);seg(x,y+12,cx+sg*h.w/2,hy,rgba(C.blue,.35),1.1,[3,3])});
+   txt('“是不是同一处”很重要 → 住处是 ENTITY',cx,H*.84,{size:n?11.5:14,w:700,color:C.acc,f:'d'});
+  }
+  ctx.restore();
+ });
+ // SERVICE
+ layer(a3,()=>{
+  const cx=W/2,cy=H*.36,dx=n?W*.32:W*.3;
+  const A=pill('Account A',cx-dx,cy,{size:n?11:13,f:'m',bg:C.acc}),B=pill('Account B',cx+dx,cy,{size:n?11:13,f:'m',bg:C.acc});
+  hotR(A.x,A.y,A.w,A.h,'ENTITY：账户','账户有自己的职责（余额、借记、贷记），但转账不该是某一个账户的职责。');
+  hotR(B.x,B.y,B.w,B.h,'ENTITY：账户','同上。转账涉及两个账户，放在任何一边都会让模型变形。');
+  const sy=cy+(n?70:90),S=pill('转账 SERVICE',cx,sy,{size:n?11.5:13,bg:C.violet,f:'d'});
+  hotR(S.x,S.y,S.w,S.h,'SERVICE 的三个特征','① 操作与领域概念相关，但不属于任何 ENTITY 或 VALUE；② 接口用其他领域元素来定义；③ 操作是无状态的。');
+  curveArrow(cx-dx+20,cy+12,cx-dx*.5,sy,cx-S.w/2-4,sy,rgba(C.violet,.6),1.3);curveArrow(cx+S.w/2+4,sy,cx+dx*.5,sy,cx+dx-20,cy+12,rgba(C.violet,.6),1.3);
+  const p=(t*.35)%1,[mx,my]=p<.5?qpt(cx-dx+20,cy+12,cx-dx*.5,sy,cx-S.w/2,sy,p*2):qpt(cx+S.w/2,sy,cx+dx*.5,sy,cx+dx-20,cy+12,(p-.5)*2);
+  glow(mx,my,16,C.amber,.6);dot(mx,my,4,C.amber);
+  txt('全局规则：借贷相等、限额、审计…',cx,sy+(n?30:34),{size:n?10:11.5,color:C.muted});
+  const cw=n?W-30:Math.min(520,W*.62);
+  code(['// 名字来自通用语言，接口无状态','FundsTransferService.transfer(','    Account from, Account to, Money amount)'],cx-cw/2,H*(n?.68:.66),cw,{size:n?9.5:11.5,hl:[1]});
+ });
+ // MODULE morph
+ layer(a4,()=>{
+  const items=[['Customer',0,0],['Contact',2,0],['CustomerRepository',3,0],['Cargo',0,1],['HandlingEvent',0,1],['CargoFactory',1,1],['Itinerary',0,2],['Leg',1,2],['RoutingService',1,2],['Invoice',0,3],['BillingService',1,3]];
+  const tech=['entities','values','repositories','services'],con=['customer','cargo','routing','billing'];
+  // technical grouping: by kind index (0 entity,1 service/factory,2 value,3 repo)
+  const kind=i=>{const nm=items[i][0];return nm.endsWith('Repository')?2:nm.endsWith('Service')||nm.endsWith('Factory')?3:(nm==='Contact'||nm==='Leg')?1:0};
+  const pm=E.io(clamp((s.age-2.5)/2));
+  const cols=n?2:4,gw=(W-(n?24:60))/cols,gh=n?H*.33:H*.5,top=H*(n?.14:.2);
+  const gx=g=>(n?12:30)+(g%cols)*gw,gy=g=>top+Math.floor(g/cols)*(gh+(n?14:10));
+  for(let g=0;g<4;g++){
+   const x=gx(g)+4,y=gy(g),w=gw-8;
+   box(x,y,w,gh,{fill:lerp(0,1,pm)>.5?rgba(C.acc,.07):C.sheet,stroke:pm>.5?C.acc:C.line,dash:pm>.5?null:[4,4],r:8});
+   layer(1-pm,()=>txt(tech[g]+'/',x+10,y+14,{size:n?10:11,f:'m',color:C.muted,align:'left'}));
+   layer(pm,()=>txt(con[g]+'/',x+10,y+14,{size:n?10:11,f:'m',w:700,color:C.acc,align:'left'}));
+  }
+  const cnt=[0,0,0,0],cnt2=[0,0,0,0];
+  items.forEach((it,i)=>{
+   const k=kind(i),c=it[2],ia=cnt[k]++,ib=cnt2[c]++;
+   const ax=gx(k)+gw/2,ay=gy(k)+34+ia*(n?22:28),bx=gx(c)+gw/2,by=gy(c)+34+ib*(n?22:28);
+   const x=lerp(ax,bx,pm),y=lerp(ay,by,pm)-Math.sin(pm*Math.PI)*20;
+   const col=[C.blue,C.amber,C.violet,C.acc][c];
+   const b=pill(it[0],x,y,{size:n?8.5:10.5,f:'m',bg:C.sheet,color:col,stroke:col,pad:n?5:7});
+   hotR(b.x,b.y,b.w,b.h,it[0],'颜色表示它属于哪个领域概念。按技术分包时，同一种颜色散落在各个包里；按概念分包后，它们聚到一起。');
+  });
+  txt(pm<.5?'按技术分包：同一个概念被拆散':'按领域概念分包：高内聚、低耦合',W/2,H-(n?18:26),{size:n?11:13,w:700,color:pm<.5?C.red:C.acc,f:'d'});
+ });
+}},
+/* ---------------- 4 · Aggregate ---------------- */
+{nav:'聚合',chap:'第 6 章 · 领域对象的生命周期',title:'AGGREGATE：一致性的边界',
+ctrlSteps:[2],ctrl:`<div class="lbl">两人同时修改采购单 #0012946</div><div class="segbtns" id="lkb"><button data-k="row">只锁定修改的行</button><button data-k="po">锁定整个采购单</button></div><div class="note">采购单限额 $1,000。切换后动画会重放。</div>`,
+enter(){segCtl('#lkb',()=>lockMode,k=>{lockMode=k;lockT0=performance.now()})},
+steps:[
+ {h:'对象之间的关联太多',dur:8,c:'模型里对象之间的关联密密麻麻，删除一个人要不要删掉他的地址？修改一辆车时哪些对象必须一起保持一致？没有边界，就没法回答。<b>AGGREGATE</b> 就是一组被当作整体对待的对象，用来回答这些问题。'},
+ {bg:1,h:"背景：汽车和它的轮胎",dur:15,c:"设想一家汽车修理厂的系统，要记录每辆车的保养情况，包括轮胎的换位和磨损。车有全球唯一的车架号（VIN）；轮胎只在这辆车上被叫作“左前轮”“右后轮”，离开这辆车，没人关心它是哪一只。",terms:[["VIN 车架号","每辆车全球唯一的编号，在任何地方都能用它找到这辆车。"],["轮胎","标识只在“这辆车”内部有意义：左前、右后。"],["要回答的问题","外部系统能不能绕过汽车直接改一只轮胎？删掉一辆车时，它的轮胎怎么处理？"]],ask:"看哪个对象是对外的入口，边界画在哪里。"},
+ {h:'根与边界',dur:8.5,c:'汽车是 AGGREGATE 的<b>根</b>，有全局标识 VIN；轮胎在边界内，只有局部标识（“左前轮”）。外部对象只能引用根，不能直接抓住内部的轮胎；删除操作必须一次删掉边界内的所有东西。',q:'在每个事务完成时，AGGREGATE内部所应用的固定规则必须得到满足。（第 6 章）'},
+ {bg:1,h:"背景：采购单和它的限额",dur:15,c:"员工通过系统提交<b>采购单（Purchase Order）</b>。一张单子有多个<b>条目（Line Item）</b>，每条写着买什么商品、买几件、单价多少。每张采购单有一个审批过的<b>限额</b>，所有条目加起来不能超过它。系统允许多个人同时编辑同一张采购单。",terms:[["Part 商品","商品目录里的一项，比如吉他、长号，带有当前价格。"],["固定规则（invariant）","任何时候都必须成立的业务规则。这里是：条目总额 ≤ 限额。"],["数据库锁","改数据前先把它“锁住”，别人要等你改完才能改，避免同时修改互相覆盖。锁住多大范围，是这个例子的关键。"]],ask:"两个人的修改各自都没超限，合起来却超了。应该锁住什么，才能守住这条规则？"},
+ {h:'例：采购单限额',dur:11,c:'采购单 #0012946 的规则是“所有条目总额不超过限额 $1,000”。George 加了 2 把吉他（总额 900），Amanda 同时加了 1 支长号（总额也是 900）。两个人各自都合规，合起来却是 <b>1,100</b>。用右侧按钮对比两种锁定方式。',q:'显然，锁定单个行并不是一种充分的保护机制。（第 6 章）'},
+ {h:'边界不要画得太大',dur:9,c:'能不能把 Part（商品目录）也锁进来？这样一个人改价格，所有引用该商品的采购单都被锁住。书中的做法是：把价格<b>复制</b>到 Line Item 中。采购单只依赖自己内部的数据，边界就清晰了。',q:'过于谨慎的锁定会妨碍人们的工作。（第 6 章）'},
+ {h:'FACTORY 与 REPOSITORY',dur:9,c:'AGGREGATE 的生命周期由两个模式管理：<b>FACTORY</b> 负责把它作为整体创建出来，并保证固定规则成立；<b>REPOSITORY</b> 负责保存和取回，像一个内存中的集合，只为 AGGREGATE 根提供。',q:'在创建AGGREGATE时要把它作为一个整体，并确保它满足固定规则。（第 6 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=solo(s,2),a3=solo(s,3),a4=s.v(4);
+ // tangled graph
+ layer(a0,()=>{
+  const N=14,cx=W/2,cy=H*.46,R=Math.min(W,H)*.32;
+  const P=[];for(let i=0;i<N;i++){const a=i/N*TAU+rnd(i)*.4;P.push([cx+Math.cos(a)*R*(.55+rnd(i+5)*.5)+Math.sin(t*.6+i)*4,cy+Math.sin(a)*R*(.55+rnd(i+9)*.5)*(n?1.1:.85)+Math.cos(t*.5+i)*4])}
+  for(let i=0;i<N;i++)for(let j=i+1;j<N;j++)if(rnd(i*31+j)<.27)seg(P[i][0],P[i][1],P[j][0],P[j][1],rgba(C.ink,.18),1);
+  P.forEach((p,i)=>{dot(p[0],p[1],7,C.sheet,C.muted,1.5);hotC(p[0],p[1],10,'没有边界的对象','它和多个对象相关联。修改它时，哪些对象必须一起改变？删除它时，哪些对象也应该删除？')});
+  const pr=(t*.3)%1,i0=Math.floor(t*.3)%N;dot(P[i0][0],P[i0][1],9,null,C.red,2);
+  txt('删除一个对象时，要不要删掉和它相关的对象？',W/2,H*(n?.88:.9),{size:n?11:13,w:600,color:C.red});
+ });
+ // car aggregate
+ layer(a1,()=>{
+  const cx=W/2,cy=H*.44,bw=Math.min(W*.7,520),bh=H*.48;
+  box(cx-bw/2,cy-bh/2,bw,bh,{fill:rgba(C.acc,.06),stroke:C.acc,lw:1.6,dash:[7,5],r:16});
+  txt('AGGREGATE 边界',cx-bw/2+14,cy-bh/2+16,{size:10.5,f:'m',color:C.acc,align:'left'});
+  const car=pill('Car · VIN 1HGCM82633',cx,cy-bh*.18,{size:n?11:13,f:'m',bg:C.acc});
+  hotR(car.x,car.y,car.w,car.h,'AGGREGATE 根','根是一个 ENTITY，具有全局标识。它负责检查边界内的固定规则。外部对象只能持有对根的引用。');
+  const ty=cy+bh*.2,pos=['左前','右前','左后','右后'];
+  pos.forEach((p,i)=>{const x=cx+(i-1.5)*(bw/4.6);dot(x,ty,n?15:19,C.ink);dot(x,ty,n?7:9,C.sheet);txt(p,x,ty+(n?26:32),{size:n?9.5:11,color:C.muted});
+   seg(cx,car.y+car.h,x,ty-(n?15:19),rgba(C.acc,.5),1.2);hotC(x,ty,20,'轮胎 · 局部标识','“'+p+'轮”只在这辆车里有意义。外部不能直接引用轮胎，只能通过 Car 访问。')});
+  const ox=n?cx:cx+bw/2+(W-cx-bw/2)/2,oy=n?cy+bh/2+36:cy-bh*.18;
+  const o=pill('外部对象',ox,oy,{size:n?10:11.5,bg:C.sheet,color:C.ink,stroke:C.line});
+  if(!n){arrow(o.x-4,oy,car.x+car.w+6,oy,C.acc,1.4);
+   const tx=cx+1.5*(bw/4.6);seg(o.x+10,oy+12,tx+22,ty-10,C.red,1.4,[4,4]);txt('✗',(o.x+tx)/2+20,(oy+ty)/2,{size:16,w:700,color:C.red})}
+  hotR(o.x,o.y,o.w,o.h,'从外部只能引用根','直接持有内部对象的引用会绕过根的检查，固定规则就无法保证。');
+ });
+ // PO concurrency
+ layer(a2,()=>{
+  const el=REDUCED?99:(performance.now()-lockT0)/1000,ck=Math.max(el,s.age);
+  const T=lockT0&&el<s.age?el:s.age;
+  const po=lockMode==='po';
+  const bw=Math.min(n?W-24:W*.52,460),bx=n?12:W*.06,by=H*(n?.06:.1);
+  const base=[['Guitars','3','100','300'],['Trombones','2','200','400']];
+  const gA=E.out(clamp(T-1.2)),aA=E.out(clamp(T-2.6)),fin=E.out(clamp(T-4.4));
+  const rowH=n?22:27;
+  const rows=[...base];
+  const tot=700+200*gA*(1)+200*(po?0:aA);
+  box(bx,by,bw,rowH*5+46,{fill:C.sheet,stroke:po?C.acc:C.line,lw:po?2:1.2});
+  txt('PO #0012946',bx+12,by+16,{size:n?11:12.5,f:'m',w:700,align:'left'});
+  txt('限额 $1,000',bx+bw-12,by+16,{size:n?10:11,f:'m',color:C.muted,align:'right'});
+  if(po)lockIcon(bx+bw-(n?96:110),by+15,13,C.acc);
+  const hdr=['Item','Qty','Price','Amount'],cx=[.06,.5,.66,.84];
+  hdr.forEach((h,i)=>txt(h,bx+bw*cx[i],by+38,{size:n?9:10,f:'m',color:C.muted,align:'left'}));
+  const draw=(r,i,a,col,who)=>layer(a,()=>{const y=by+38+rowH*(i+1);if(col){box(bx+4,y-rowH/2+1,bw-8,rowH-2,{fill:rgba(col,.14),r:3})}
+   r.forEach((c,k)=>txt(k?c:c,bx+bw*cx[k],y,{size:n?10:11.5,f:'m',align:'left',w:col?700:500}));
+   if(who)txt(who,bx+bw-6,y,{size:n?8.5:9.5,color:col,align:'right'});
+   if(!po&&col)lockIcon(bx+bw*.02+2,y,9,col)});
+  draw(base[0],0,1,null);draw(base[1],1,1,null);
+  draw(['Guitars','2','100','200'],2,gA,C.blue,'George');
+  if(!po)draw(['Trombones','1','200','200'],3,aA,C.amber,'Amanda');
+  const ty=by+38+rowH*5+2;seg(bx+8,ty-rowH/2,bx+bw-8,ty-rowH/2,C.line,1);
+  const over=tot>1000;
+  txt('Total',bx+bw*.06,ty,{size:n?11:12,f:'m',w:700,align:'left'});
+  txt('$'+Math.round(tot).toLocaleString('en-US'),bx+bw*.84,ty,{size:n?11.5:13,f:'m',w:700,align:'left',color:over?C.red:C.ink});
+  hotR(bx,by,bw,rowH*5+46,'采购单是 AGGREGATE 根','固定规则“总额 ≤ 限额”涉及所有 Line Item，所以采购单和它的条目是一个整体。');
+  // people
+  const px=n?W*.25:bx+bw+W*.1,py=n?by+rowH*5+100:by+40,qx=n?W*.75:px,qy=n?py:by+rowH*5+10;
+  person(px,py,n?9:11,C.blue);txt('George',px,py+(n?24:28),{size:n?10:11.5,w:700});
+  person(qx,qy,n?9:11,C.amber);txt('Amanda',qx,qy+(n?24:28),{size:n?10:11.5,w:700});
+  hotC(px,py,24,'George','在采购单里增加 2 把吉他。单看他的修改，总额 900，合规。');
+  hotC(qx,qy,24,'Amanda',po?'采购单整体被 George 锁住，她必须等待。提交时会发现总额已是 900，她可以提高限额或减少一把吉他。':'同时增加 1 支长号。单看她的修改，总额也是 900，合规。');
+  if(po){layer(aA,()=>{const b=pill('等待：采购单已被锁定',qx+(n?0:70),qy+(n?44:0),{size:n?9.5:10.5,bg:C.amber,align:n?undefined:'left'});})}
+  layer(fin,()=>{
+   const my=n?H*.9:H*.84,mx=n?W/2:W*.6;
+   if(!po){pill('✗  $1,100 超出限额：两个合规的修改破坏了固定规则',mx,my,{size:n?10:12,bg:C.red,f:'d'})}
+   else{pill('✓  一次只有一人修改，固定规则得到保护',mx,my,{size:n?10:12,bg:C.acc,f:'d'})}
+  });
+ });
+ // Part price copy
+ layer(a3,()=>{
+  const n2=n,lx=n?W*.26:W*.24,rx=n?W*.74:W*.72,cy=H*.4;
+  const pw=n?W*.4:Math.min(260,W*.3);
+  const ps=[['PO #0012946',cy-H*.18],['PO #0012951',cy],['PO #0012977',cy+H*.18]];
+  const part=box(rx-pw/2,cy-36,pw,72,{fill:C.sheet,stroke:C.violet,lw:1.6});
+  txt('Part · Guitar',rx,cy-14,{size:n?11:12.5,f:'m',w:700,color:C.violet});
+  const price=100+Math.round(20*Math.max(0,Math.sin(t*.8)));
+  txt('price: $'+price,rx,cy+12,{size:n?11:13,f:'m'});
+  hotR(rx-pw/2,cy-36,pw,72,'商品目录 Part','价格会被管理员修改。它被很多采购单引用，属于另一个边界。');
+  const copied=E.io(clamp((s.age-3)/1.5));
+  ps.forEach(([l,y],i)=>{
+   const b=box(lx-pw/2,y-24,pw,48,{fill:C.sheet,stroke:copied>.5?C.acc:C.line,lw:1.3});
+   txt(l,lx-pw/2+10,y-9,{size:n?9.5:10.5,f:'m',w:700,align:'left'});
+   txt(copied>.5?'Guitar · price: $100（已复制）':'Guitar → Part',lx-pw/2+10,y+10,{size:n?9:10.5,f:'m',align:'left',color:copied>.5?C.acc:C.muted});
+   layer(1-copied,()=>{seg(lx+pw/2,y,rx-pw/2,cy,rgba(C.red,.6),1.3);lockIcon(lx+pw/2+18,y-(y-cy)*.12,10,C.red)});
+   hotR(lx-pw/2,y-24,pw,48,l,copied>.5?'下单时把价格复制进 Line Item。之后商品目录改价，不影响已有采购单，采购单也不用锁 Part。':'如果把 Part 放进采购单的边界，改价格就要锁住所有引用它的采购单。');
+  });
+  layer(1-copied,()=>txt('锁定 Part → 所有采购单被牵连',W/2,H*.82,{size:n?11:13,w:700,color:C.red,f:'d'}));
+  layer(copied,()=>txt('把价格复制进 Line Item → 边界清晰',W/2,H*.82,{size:n?11:13,w:700,color:C.acc,f:'d'}));
+ });
+ // lifecycle
+ layer(a4,()=>{
+  const y=H*.42,xs=n?[W*.17,W*.5,W*.83]:[W*.2,W*.5,W*.8];
+  const F=pill('FACTORY',xs[0],y,{size:n?11:14,f:'m',bg:C.violet}),A=pill('AGGREGATE',xs[1],y,{size:n?11:14,f:'m',bg:C.acc}),R=pill('REPOSITORY',xs[2],y,{size:n?11:14,f:'m',bg:C.blue});
+  hotR(F.x,F.y,F.w,F.h,'FACTORY','封装复杂对象的创建过程。创建是原子的：要么得到满足固定规则的完整 AGGREGATE，要么失败。客户不需要知道内部结构。');
+  hotR(A.x,A.y,A.w,A.h,'AGGREGATE','通过根访问，作为一个整体被修改、保存、删除。');
+  hotR(R.x,R.y,R.w,R.h,'REPOSITORY','像一个内存中的集合，按条件查询已存在的对象。只为需要直接访问的 AGGREGATE 根提供，持久化细节被隐藏在后面。');
+  arrow(F.x+F.w+4,y,A.x-6,y,C.muted,1.3);
+  curveArrow(A.x+A.w*.8,A.y-4,(xs[1]+xs[2])/2,y-H*.12,R.x+R.w*.2,R.y-4,rgba(C.blue,.7),1.3);
+  curveArrow(R.x+R.w*.2,R.y+R.h+4,(xs[1]+xs[2])/2,y+H*.12,A.x+A.w*.8,A.y+A.h+4,rgba(C.blue,.7),1.3);
+  txt('保存',(xs[1]+xs[2])/2,y-H*.12+(n?10:4),{size:n?9.5:11,color:C.blue});txt('重建',(xs[1]+xs[2])/2,y+H*.12-(n?10:4),{size:n?9.5:11,color:C.blue});
+  txt('创建',(xs[0]+xs[1])/2,y-16,{size:n?9.5:11,color:C.violet});
+  const p=(t*.25)%1,pts=[[F.x+F.w,y],[A.x,y],[A.x+A.w*.8,A.y-4]];
+  const [mx,my]=poly(pts,p);glow(mx,my,16,C.acc,.6);dot(mx,my,4,C.acc);
+  const cw=n?W-24:Math.min(560,W*.7);
+  code(['Order order = orderFactory.createOrder(customer);','order.addLineItem(guitar, 2);   // 根检查限额','orderRepository.add(order);','Order o = orderRepository.forId(id);'],W/2-cw/2,H*(n?.62:.62),cw,{size:n?9:11,hl:[1]});
+ });
+}},
+/* ---------------- 5 · Breakthrough ---------------- */
+{nav:'突破',chap:'第 8 章 · 突破',title:'从“份额跟着贷款走”到“股份无处不在”',
+ctrlSteps:[1,2],ctrl:`<div class="lbl">银团贷款的提款</div><div class="segbtns" id="dwb"><button data-k="0">尚未提款</button><button data-k="1">第一次 5000 万</button><button data-k="2">第二次 3000 万</button></div><div class="note">第二次提款时 B 决定不参与，由 A 承担。</div>`,
+enter(){segCtl('#dwb',()=>String(draws),k=>draws=+k)},
+steps:[
+ {bg:1,h:"背景：什么是银团贷款",dur:15,c:"Evans 的团队为一家投资银行开发管理<b>银团贷款</b>的系统。一家大企业要借很多钱，任何一家银行单独放贷风险都太大，于是几家银行组成<b>银团（syndicate）</b>，按比例出资，也按比例分享利息和费用。",terms:[["Facility 信贷额度","银团承诺借给企业的总额度，比如 1 亿美元。有点像信用卡额度：承诺了，但不一定马上用完。"],["Loan 提款","企业在额度内实际借走的一笔钱，可以分多次提。"],["Share 份额","每家银行在一笔钱里占多少。收到的本金、利息、费用都要按份额分给各家银行。"]],ask:"注意 Facility 的份额和每笔 Loan 的份额：它们一定相同吗？"},
+ {h:'银团贷款',dur:9,c:'几家银行组成银团，为一家企业提供 1 亿美元的<b>信贷额度（Facility）</b>：A 出 50%、B 出 30%、C 出 20%。企业按需<b>提款（Loan）</b>，每次提款的份额一开始都按 Facility 的比例分摊。'},
+ {h:'份额不再成比例',dur:11,c:'第一次提款 5000 万，按比例分。第二次提款 3000 万时，<b>B 决定不参与</b>，由 A 承担。于是 Loan 的份额变成 A 4900 万、B 1500 万、C 1600 万，和 Facility 的 50/30/20 <b>不再成比例</b>。旧模型把 Loan 的份额强行绑在 Facility 上，处处出错。',q:'公司B决定不参与Loan，而由公司A来承担这部分额外的股份……Loan的股份份额就不再与Facility的股份成比例了。（第 8 章）'},
+ {h:'还有舍入问题',dur:8,c:'按比例分摊本金和利息时，几分钱的舍入误差不断冒出来。团队用各种补丁修补，却越修越乱。',q:'在1亿美元的交易中，确实没有人会在意几美分的去向，但是银行家是不会信任无法精确计算到美分的软件的。（第 8 章）'},
+ {h:'突破：Share Pie',dur:10,c:'团队意识到：Loan 的股份和 Facility 的股份是<b>两个独立的</b>东西，可以互不影响地改变。“股份”本身应成为一个显式概念：<b>Share Pie</b>。任何可分配的价值（本金、利息、费用）都是一张股份饼。',q:'股份无处不在。任何可分配的价值都是股份。（第 8 章）'},
+ {h:'要不要冒这个险？',dur:9.5,c:'这次重构需要 3 周，而且离发布很近。项目经理问了两个问题。最后他们决定做。重构之后，原来非常复杂的功能变得简单，新功能的开发速度明显加快。突破不是计划出来的，而是持续重构的回报。',q:'新模型的效果很好。非常非常好。（第 8 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a12=s.v(1)*(1-s.v(3)),a2=solo(s,2),a3=solo(s,3),a4=s.v(4);
+ const L=LEND(),names=['A','B','C'];
+ const fac=[50,30,20];
+ const d1=[25,15,10],d2=[24,0,6];
+ const dr=s.step<1?0:draws;
+ const loan=[0,1,2].map(i=>(dr>=1?d1[i]:0)+(dr>=2?d2[i]:0));
+ const ltot=loan.reduce((a,b)=>a+b,0);
+ const ck=mkClock;
+ // Facility bar
+ const bx=n?16:W*.1,bw=n?W-32:W*.8,fy=H*(n?.16:.18),bh=n?26:34;
+ const barA=Math.max(a0,a12);
+ layer(barA,()=>{
+  txt('Facility · 信贷额度 $1亿',bx,fy-16,{size:n?11:12.5,w:700,align:'left',f:'d'});
+  let x=bx;fac.forEach((f,i)=>{const w=bw*f/100*E.out(clamp(s.age/1.5+(s.step>0?1:0)));box(x,fy,Math.max(0,w-2),bh,{fill:L[i],r:4});
+   if(w>30)txt(names[i]+' '+f+'%',x+w/2,fy+bh/2,{size:n?10:12,w:700,color:'#fff',f:'m'});
+   hotR(x,fy,w,bh,'银行 '+names[i]+' 在 Facility 中的股份',f+'%，即 '+f*100+' 万美元的承诺额度。');x+=w});
+ });
+ layer(a0,()=>{
+  const by=H*.5;person(W/2,by,n?12:15,C.ink);txt('借款企业',W/2,by+(n?30:36),{size:n?11:12.5,w:700});
+  const p=(t*.3)%1;for(let i=0;i<3;i++){const x0=bx+bw*([25,65,90][i])/100,[x,y]=along(x0,fy+bh+4,W/2,by-20,(p+i*.2)%1);dot(x,y,3.5,L[i])}
+  txt('提款（Loan）的份额通常按 Facility 的比例分摊',W/2,H*.8,{size:n?11:13,color:C.muted});
+ });
+ // Loan bar
+ layer(a12,()=>{
+  const ly=fy+bh+(n?62:80);
+  txt('Loan · 已提款 $'+ltot*100+'万',bx,ly-16,{size:n?11:12.5,w:700,align:'left',f:'d'});
+  box(bx,ly,bw,bh,{stroke:C.line,dash:[4,4],r:4});
+  let x=bx;loan.forEach((v,i)=>{const w=bw*v/100;if(w>1){box(x,ly,w-2,bh,{fill:L[i],r:4});if(w>40)txt(names[i]+' '+v*100+'万',x+w/2,ly+bh/2,{size:n?9.5:11.5,w:700,color:'#fff',f:'m'});
+   hotR(x,ly,w,bh,'银行 '+names[i]+' 在 Loan 中的份额',v*100+' 万美元，占已提款的 '+(ltot?Math.round(v/ltot*1000)/10:0)+'%。Facility 中是 '+fac[i]+'%。')}x+=w});
+  // ratio compare
+  if(ltot){
+   const ry=ly+bh+(n?40:56);
+   names.forEach((nm,i)=>{const x=bx+bw*(i+.5)/3,pr=Math.round(loan[i]/ltot*1000)/10,ok=Math.abs(pr-fac[i])<.5;
+    txt(nm,x,ry,{size:n?12:14,w:700,color:L[i],f:'m'});
+    txt('Facility '+fac[i]+'%',x,ry+(n?20:24),{size:n?9.5:11,f:'m',color:C.muted});
+    txt('Loan '+pr+'%',x,ry+(n?38:46),{size:n?10.5:12.5,f:'m',w:700,color:ok?C.acc:C.red});
+    txt(ok?'✓ 成比例':'✗ 不成比例',x,ry+(n?56:68),{size:n?9.5:11,w:600,color:ok?C.acc:C.red})});
+   if(dr>=2){const b=pill('旧模型：Loan 份额 = 金额 × Facility 比例 → 错',W/2,H*(n?.9:.88),{size:n?9.5:11.5,bg:C.red});
+    hotR(b.x,b.y,b.w,b.h,'旧模型的假设','把份额看成 Facility 的属性，Loan 只能按比例分。现实里每次提款的参与者可以不同，这个假设被打破了。')}
+  }else txt('点击右侧按钮模拟提款',W/2,ly+bh+50,{size:n?11:12.5,color:C.muted});
+ });
+ // rounding
+ layer(a2,()=>{
+  const cx=W/2,cy=H*.42;
+  const amt=1000000.01,parts=[.5,.3,.2];
+  const vals=parts.map(p=>Math.round(amt*p*100)/100);
+  const sum=vals.reduce((a,b)=>a+b,0);
+  txt('利息 $1,000,000.01 按比例分配',cx,H*.15,{size:n?13:16,w:700,f:'d'});
+  vals.forEach((v,i)=>{const y=H*.27+i*(n?42:50);txt(names[i]+' × '+parts[i]*100+'%',cx-(n?20:40),y,{size:n?11:13,f:'m',align:'right',color:L[i],w:700});txt('$'+v.toLocaleString('en-US',{minimumFractionDigits:2}),cx-(n?10:20),y,{size:n?11:13,f:'m',align:'left'})});
+  const y=H*.27+3*(n?42:50);seg(cx-(n?110:180),y-18,cx+(n?110:180),y-18,C.line,1);
+  txt('合计 $'+sum.toLocaleString('en-US',{minimumFractionDigits:2}),cx,y+2,{size:n?12:14,f:'m',w:700});
+  const diff=Math.round((amt-sum)*100);
+  const fl=.5+.5*Math.sin(t*3);
+  pill(diff?'少了 '+Math.abs(diff)+' 美分':'正好',cx,y+(n?36:44),{size:n?11:12,bg:rgba(C.red,.6+.4*fl)});
+  hotR(cx-180,H*.24,360,y-H*.2,'舍入误差','各自四舍五入后，合计与原金额差了一美分。旧模型只能在各处打补丁去追这几分钱。');
+  txt('补丁：调整最后一家？平摊？按历史？…',cx,H*.84,{size:n?10.5:12.5,color:C.muted});
+ });
+ // share pie
+ layer(a3,()=>{
+  const r=Math.min(W,H)*(n?.16:.17),cy=H*.42,x1=W*(n?.27:.3),x2=W*(n?.73:.7);
+  const F=fac.map((v,i)=>({v,c:L[i]})),Lp=[49,15,16].map((v,i)=>({v,c:L[i]}));
+  const sw=E.out(clamp(s.age/1.6));
+  pie(x1,cy,r,F,{sweep:sw});pie(x2,cy,r,Lp,{sweep:sw});
+  txt('Facility 的 Share Pie',x1,cy-r-18,{size:n?11:13,w:700,f:'d'});txt('Loan 的 Share Pie',x2,cy-r-18,{size:n?11:13,w:700,f:'d'});
+  F.forEach((p,i)=>{if(p._a1){txt(names[i],p._x,p._y,{size:12,w:700,color:'#fff',f:'m'});hotF(inSlice(x1,cy,r,p._a0,p._a1),'Facility · '+names[i],fac[i]+'%。它的变化（例如 B 转让额度）不影响 Loan。')}});
+  Lp.forEach((p,i)=>{if(p._a1){txt(names[i],p._x,p._y,{size:12,w:700,color:'#fff',f:'m'});hotF(inSlice(x2,cy,r,p._a0,p._a1),'Loan · '+names[i],[49,15,16][i]*100+' 万。它有自己的饼，不再由 Facility 推算。')}});
+  layer(clamp(s.age/2-1),()=>{
+   txt('互不影响，各自独立变化',W/2,cy,{size:n?10:12,w:600,color:C.acc});
+   const ky=cy+r+(n?40:52),items=['本金','利息','费用'];
+   items.forEach((it,i)=>{const x=W/2+(i-1)*(n?96:160);pie(x,ky,n?16:20,[{v:5,c:L[0]},{v:3,c:L[1]},{v:2,c:L[2]}]);txt(it,x,ky+(n?28:34),{size:n?10:11.5,w:600});
+    hotC(x,ky,22,it+'也是一张 Share Pie','分配本金、利息、费用都用同一个概念。舍入规则也只需在 Share Pie 里实现一次。')});
+   const cw=n?W-24:Math.min(520,W*.6);
+   code(['SharePie pie = loan.getSharePie();','Map<Company,Money> d = pie.prorate(payment);'],W/2-cw/2,H*(n?.83:.84),cw,{size:n?9:11,hl:[1]});
+  });
+ });
+ // PM Q&A
+ layer(a4,()=>{
+  const qa=[['项目经理','做这次修改需要多长时间？','大约3周。'],['项目经理','如果不改，能不能用补丁解决问题？','有可能。但我们无法保证。']];
+  const cx=W/2,w=Math.min(W-32,560);
+  const ck2=s.age;
+  qa.forEach((q,i)=>{const y=H*(n?.14:.15)+i*H*(n?.2:.2);
+   layer(clamp(ck2*1.2-i*1.4),()=>{
+    box(cx-w/2,y,w*.72,n?32:36,{fill:C.sheet,stroke:C.amber});txt(q[0]+'：'+q[1],cx-w/2+12,y+(n?16:18),{size:n?10.5:12.5,align:'left'});
+    box(cx+w/2-w*.62,y+(n?40:46),w*.62,n?32:36,{fill:rgba(C.acc,.12),stroke:C.acc});txt('开发人员：'+q[2],cx+w/2-12,y+(n?56:64),{size:n?10.5:12.5,align:'right',w:600,color:C.acc})});
+  });
+  // velocity chart
+  const gx=cx-w/2,gy=H*(n?.62:.6),gw=w,gh=H*(n?.26:.28);
+  layer(clamp(ck2/1.5-1.6),()=>{
+   seg(gx,gy+gh,gx+gw,gy+gh,C.line,1);seg(gx,gy,gx,gy+gh,C.line,1);
+   txt('时间 →',gx+gw,gy+gh+14,{size:10,f:'m',color:C.muted,align:'right'});txt('交付的价值',gx+4,gy-8,{size:10,f:'m',color:C.muted,align:'left'});
+   const bk=.42,pts=[];for(let k=0;k<=40;k++){const u=k/40;let v=u<bk?u*.35:bk*.35+(u<bk+.12?0:(u-bk-.12)*1.6);pts.push([gx+u*gw,gy+gh-Math.min(1,v)*gh])}
+   const p=E.out(clamp(ck2/3-1));polyline(pts.slice(0,Math.max(2,Math.round(40*p))),C.acc,2.2);
+   const bxk=gx+bk*gw;box(bxk,gy,gw*.12,gh,{fill:rgba(C.amber,.15),r:2});txt('3 周重构',bxk+gw*.06,gy+12,{size:n?9:10.5,color:C.amber,w:700});
+   hotR(bxk,gy,gw*.12,gh,'突破','重构期间看不到新功能，之后模型变得深刻而简洁，开发速度大幅提高。');
+   txt('补丁式开发：越来越慢',gx+gw*.18,gy+gh-gh*.25,{size:n?9:10.5,color:C.muted});
+  });
+ });
+}},
+/* ---------------- 6 · Supple design ---------------- */
+{nav:'柔性设计',chap:'第 9–10 章 · 显式概念与柔性设计',title:'让设计易于理解、易于修改',
+ctrlSteps:[1],ctrl:`<div class="lbl">SPECIFICATION：拖欠发票筛选</div><div class="segbtns" id="spb"><button data-k="on">应用规格</button><button data-k="off">不应用</button></div><div class="note">规格是一个谓词：isSatisfiedBy(invoice)。</div>`,
+enter(){segCtl('#spb',()=>specOn?'on':'off',k=>specOn=k==='on')},
+steps:[
+ {h:'隐式概念要显式化',dur:8,c:'业务规则常常散落在 if 语句里。第 9 章说：听专家的话，留意那些反复出现、却在模型里找不到的词；把<b>约束、过程、规则</b>提炼成显式的对象。'},
+ {bg:1,h:"背景：拖欠发票",dur:15,c:"公司给客户开<b>发票（Invoice）</b>，上面写着金额和到期日。客户过了期限还没付清，财务就要把这张发票标为<b>拖欠</b>，进行催收，甚至停止给这个客户赊账。",terms:[["到期日","发票要求付款的最后一天。"],["宽限期","到期后再给的几天缓冲，不同客户可能不一样。"],["拖欠规则","“过了到期日加宽限期，仍未付清”。系统里很多地方都要用这条规则：检查一张发票、找出所有拖欠的发票、生成催收清单。"]],ask:"这条规则原来散落在各处的 if 语句里。把它做成一个独立的对象之后，会怎样？"},
+ {h:'SPECIFICATION',dur:9.5,c:'“发票拖欠”是一条规则：到期超过宽限期仍未付清。把它做成 <b>SPECIFICATION</b> 对象，同一条规则可以用于三件事：<b>验证</b>一个对象、从集合中<b>选择</b>对象、按要求<b>创建</b>新对象。',q:'SPECIFICATION就是一个谓词，可用来确定对象是否满足某些标准。（第 9 章）'},
+ {bg:1,h:"背景：油漆店的调色程序",dur:15,c:"这是一个给油漆店用的程序。顾客想要某种颜色，店员把几种颜料按比例倒进同一个桶里混合。程序要算出<b>混合后的颜色和体积</b>，告诉店员怎么调。",terms:[["Paint 一桶漆","有体积（volume），还有红、黄、蓝三种颜料的含量，合起来决定颜色。"],["mixIn(另一桶漆)","把另一桶漆倒进这一桶：体积相加，颜色按比例混合。"],["发现的问题","现实中倒完以后另一桶应该空了，但代码执行后另一桶的体积没变。这是故意的还是 bug？只看方法名看不出来。"]],ask:"一个方法既修改自己的状态，又计算新的颜色。怎样拆开，调用的人才能不看实现就放心使用？"},
+ {h:'例：调漆',dur:10,c:'原来的 Paint.mixIn() 把另一桶漆混进来，同时改了自己的体积和颜色，<b>被混进来的那桶漆的体积却没变</b>。读代码的人必须看实现才知道发生了什么。',q:'看起来并不是十分合乎逻辑……我们似乎为Paint分配了两种不同的基本职责。让我们试着把它们分开。（第 10 章）'},
+ {h:'分离命令与函数',dur:10,c:'把颜色提取为不可变的 VALUE <b>Pigment Color</b>，混色变成无副作用的函数 mixedWith()，返回新颜色，结果仍然是 Pigment Color（<b>闭合操作</b>）。Paint 只保留一个命令 mixIn()，再用 <b>ASSERTION</b> 写明它的后置条件。',q:'现在只有一个命令，即mixIn()……所有其他操作都是SIDE-EFFECT-FREE FUNCTION。（第 10 章）'},
+ {h:'柔性设计的样子',dur:9,c:'这一组模式让设计像用旧的手套：经常弯曲的地方变得柔软，其他地方仍然坚固。<b>释意接口</b>让名字说明意图；<b>概念轮廓</b>让拆分沿着领域的自然边界；<b>独立的类</b>减少依赖。',q:'戴久了的手套在手指关节处会变得柔软；而其他部分则依然硬实。（第 10 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=solo(s,2),a3=solo(s,3),a4=s.v(4);
+ layer(a0,()=>{
+  const cw=n?W-24:Math.min(440,W*.46),x=n?12:W*.06,y=H*.16;
+  const c=code(['if (invoice.dueDate + 20 < today','    && invoice.amount > invoice.paid','    && !customer.hasCredit','    && …) {','  // 这到底是什么规则？','}'],x,y,cw,{size:n?9.5:11.5,hl:[0,1,2]});
+  const px=n?W/2:x+cw+(W-x-cw)/2,py=n?y+c.h+70:y+c.h/2;
+  const p=E.io(clamp((s.age-2)/1.5));
+  layer(p,()=>{const b=pill('DelinquentInvoiceSpecification',px,py,{size:n?10:12,f:'m',bg:C.acc});hotR(b.x,b.y,b.w,b.h,'把规则命名','条件判断被提炼成一个有名字的领域对象，团队用这个词讨论，它在代码里也有一个明确的家。');
+   if(!n)arrow(x+cw+8,y+c.h/2,b.x-6,py,C.acc,1.4);else arrow(W/2,y+c.h+8,W/2,b.y-6,C.acc,1.4)});
+  hotR(x,y,cw,c.h,'隐式的规则','规则被埋在条件判断里，名字不在通用语言中出现，别人很难看出这就是“拖欠”。');
+  txt('约束 · 过程 · 规则 → 显式的对象',W/2,H*.85,{size:n?11.5:13.5,w:700,color:C.acc,f:'d'});
+ });
+ layer(a1,()=>{
+  const N=n?12:18,cols=n?4:6,gw=n?W*.2:Math.min(84,W*.1),gh=n?44:52,x0=W/2-cols*gw/2,y0=H*.12;
+  const sp=specOn;
+  for(let i=0;i<N;i++){
+   const due=Math.round(rnd(i+3)*60),paid=rnd(i+8)>.45,bad=due>20&&!paid;
+   const r=Math.floor(i/cols),c=i%cols,x=x0+c*gw+gw/2,y=y0+r*(gh+10)+gh/2;
+   const pass=sp?bad:true;
+   layer(sp&&!bad?.25:1,()=>{
+    box(x-gw/2+4,y-gh/2,gw-8,gh,{fill:C.sheet,stroke:sp&&bad?C.red:C.line,lw:sp&&bad?1.8:1});
+    txt('#'+(1040+i),x,y-gh*.2,{size:n?9:10.5,f:'m',w:700});
+    txt((paid?'已付':'未付')+' · '+due+'天',x,y+gh*.2,{size:n?8.5:10,color:paid?C.acc:C.amber});
+    hotR(x-gw/2+4,y-gh/2,gw-8,gh,'发票 #'+(1040+i),'逾期 '+due+' 天，'+(paid?'已付清':'未付清')+'。isSatisfiedBy() = '+(bad?'true（拖欠）':'false'));
+   });
+  }
+  const cy=H*(n?.62:.6),uses=[['验证','spec.isSatisfiedBy(invoice)','检查一个对象是否满足要求。'],['选择','repo.selectSatisfying(spec)','从集合中找出所有满足条件的对象，查询可以被翻译成 SQL。'],['根据要求创建','builder.build(spec)','按规格生成新对象，例如按路线规格生成航线。']];
+  uses.forEach((u,i)=>{const x=n?W/2:W*(.2+i*.3),y=n?cy+i*48:cy+20;const b=pill(u[0],x,y,{size:n?10.5:12,bg:C.acc,f:'d'});txt(u[1],x,y+(n?18:24),{size:n?8.5:10,f:'m',color:C.muted});hotR(b.x,b.y,b.w,b.h+24,'用途：'+u[0],u[2])});
+ });
+ // paint
+ const pc=(x,y,r,col,vol,l)=>{const h=r*1.6*vol;box(x-r,y-r*.8,r*2,r*1.6,{stroke:C.ink,lw:1.4,r:6});box(x-r+3,y+r*.8-h,r*2-6,Math.max(0,h-3),{fill:col,r:4});txt(l,x,y+r+16,{size:n?9.5:11,f:'m'})};
+ layer(a2,()=>{
+  const r=n?28:38,y=H*.3,x1=W*(n?.2:.25),x2=W*(n?.5:.5),x3=W*(n?.8:.75);
+  const p=E.io(clamp((s.age-1.2)/2));
+  pc(x1,y,r,C.blue,lerp(.45,.9,p),'paint1');
+  pc(x2,y,r,C.amber,.45,'paint2');
+  hotR(x1-r,y-r,r*2,r*2+20,'paint1.mixIn(paint2)','paint1 的体积增加，颜色变了。');
+  hotR(x2-r,y-r,r*2,r*2+20,'paint2','它的漆已经倒进去了，体积却没有变化。这个副作用（或没有副作用）在接口上看不出来。');
+  const [dx,dy]=along(x2,y-r,x1,y-r,p);layer(1-p,()=>dot(dx,dy-6*Math.sin(p*Math.PI),5,C.amber));
+  layer(p,()=>{pill('体积没变？',x2,y-r-18,{size:n?9.5:11,bg:C.red})});
+  const cw=n?W-24:Math.min(560,W*.6);
+  code(['public void mixIn(Paint other) {','  volume = volume + other.getVolume();','  // 复杂的混色逻辑，修改 red / yellow / blue','}'],W/2-cw/2,H*(n?.58:.56),cw,{size:n?9:11,hl:[1]});
+ });
+ layer(a3,()=>{
+  const r=n?24:34,y=H*.24,cx=W/2;
+  const xs=n?[W*.18,W*.5,W*.82]:[W*.25,W*.5,W*.75];
+  const cols=[[C.blue,'Pigment(蓝)'],[C.amber,'Pigment(黄)'],['#3E9E5B','Pigment(绿)']];
+  cols.forEach(([c,l],i)=>{dot(xs[i],y,r,c);txt(l,xs[i],y+r+14,{size:n?9:10.5,f:'m'});
+   hotC(xs[i],y,r,l,i<2?'Pigment Color 是不可变的 VALUE OBJECT。':'mixedWith() 返回一个新的 Pigment Color，原来的两个颜色都没变。结果和参数是同一类型，这就是闭合操作。')});
+  txt('mixedWith',(xs[0]+xs[1])/2,y,{size:n?9:11,f:'m',color:C.muted});txt('=',(xs[1]+xs[2])/2,y,{size:18,w:700,color:C.muted});
+  const cw=n?W-24:Math.min(600,W*.7),cy=H*(n?.42:.44);
+  const c=code(['class PigmentColor {  // VALUE，不可变','  PigmentColor mixedWith(PigmentColor other, double ratio)','}','class Paint {','  void mixIn(Paint other)   // 唯一的命令','  // ASSERTION: 之后 other.volume == 0','}'],W/2-cw/2,cy,cw,{size:n?8.5:11,hl:[1,4,5]});
+  hotR(W/2-cw/2,cy,cw,c.h,'SIDE-EFFECT-FREE FUNCTION + ASSERTION','查询与命令分开：函数没有副作用，可以随意组合和测试；命令只有一个，并用断言写明执行后的状态。');
+ });
+ layer(a4,()=>{
+  const cx=W/2,cy=H*.4,s0=Math.min(W,H)*(n?.32:.3);
+  // glove: palm + fingers, joints glow
+  ctx.save();ctx.translate(cx-(n?0:W*.15),cy);
+  const fs=[[-.55,-.95,.17],[-.2,-1.1,.18],[.15,-1.05,.18],[.48,-.85,.16],[.75,-.1,.15]];
+  box(-s0*.62,-s0*.45,s0*1.3,s0*1.1,{fill:rgba(C.amber,.22),stroke:C.amber,lw:1.5,r:s0*.3});
+  fs.forEach(([fx,fy,fw],i)=>{const x=fx*s0,y=fy*s0,ww=fw*s0;
+   ctx.save();ctx.translate(x,y+s0*.25);ctx.rotate(i===4?-.9:(fx*.15));
+   box(-ww/2,-s0*.32,ww,s0*.78,{fill:rgba(C.amber,.22),stroke:C.amber,lw:1.5,r:ww/2});
+   [0,.22].forEach(k=>{const jy=-s0*.08+k*s0;glow(0,jy,ww,C.acc,.45+.25*Math.sin(t*2+i+k*3));});
+   ctx.restore()});
+  ctx.restore();
+  hotC(cx-(n?0:W*.15),cy-s0*.5,s0*.7,'柔软的关节','经常需要变化的地方（领域里真正会变的部分），设计要容易修改。');
+  hotC(cx-(n?0:W*.15),cy+s0*.2,s0*.5,'硬实的手掌','不常变的地方保持稳定、简单，不必为不会发生的变化付出代价。');
+  const pats=[['INTENTION-REVEALING INTERFACES','释意接口','名字和接口说明“做什么”，而不是“怎么做”。客户不需要读实现。'],['SIDE-EFFECT-FREE FUNCTION','无副作用函数','尽量把逻辑放到返回结果、不改变状态的函数里。'],['ASSERTION','断言','把命令的后置条件和固定规则写出来。'],['CONCEPTUAL CONTOURS','概念轮廓','按领域里自然的概念来拆分。书里打比方：铀原子的一半并不是铀。'],['STANDALONE CLASS','独立的类','减少依赖，让一个类能被单独理解。'],['CLOSURE OF OPERATIONS','闭合操作','返回类型与参数类型相同，便于组合。']];
+  const px=n?16:W*.56,py=n?H*.66:H*.14,lh=n?(H*.32)/6:H*.11;
+  pats.forEach((p,i)=>{const y=py+i*lh;layer(clamp(s.age*1.5-i*.3),()=>{
+   txt(p[1],px,y,{size:n?11:13,w:700,f:'d',align:'left',color:C.acc});if(!n)txt(p[0],px,y+17,{size:9.5,f:'m',color:C.muted,align:'left'});
+   hotR(px-4,y-12,n?W-32:W*.4,lh-4,p[1]+' · '+p[0],p[2])})});
+ });
+}},
+/* ---------------- 7 · Bounded context ---------------- */
+{nav:'限界上下文',chap:'第 14 章 · 保持模型的完整性',title:'盲人摸象与 BOUNDED CONTEXT',
+steps:[
+ {bg:1,h:"背景：一个古老的寓言",dur:15,c:"印度有个寓言：几个盲人第一次遇到大象，每人摸到一个部位，就以为大象是那个样子。每个人说得都有道理，但都只是一部分。Evans 用它来比喻大型项目：好几个团队各自为自己负责的那部分建模。",terms:[["盲人","一个团队或一个子系统，只接触到业务的一部分。"],["各自的说法","每个团队的模型，在自己的范围内是对的，也好用。"],["大象","整个业务领域，很少有人能看清全貌。"]],ask:"这些模型需要对接时，应该硬拼成一个，还是划清边界、各自保持一致？"},
+ {h:'六个盲人摸大象',dur:9.5,c:'摸到身体的说大象像<b>墙</b>，摸到鼻子的说像<b>蛇</b>，摸到膝盖的说像<b>树</b>，摸到尾巴的说像<b>绳子</b>。大型项目里各个团队的模型也是这样：每个都对了一部分。',q:'尽管他们每人都有正确的地方，但从整体上都是错误的!（第 14 章）'},
+ {h:'硬拼起来更糟',dur:9,c:'不集成时，各自相安无事。粗糙地拼在一起，就得到一个怪物：“一堵墙，下面用树干撑着，一头儿是绳子，另一头儿是条蛇”。真正统一需要<b>新的、更深的模型</b>：这是一只动物。',q:'统一多个模型几乎总是意味着创建一个新模型。（第 14 章）'},
+ {h:'BOUNDED CONTEXT',dur:9,c:'在大系统里，一个统一的模型往往做不到，也不划算。更现实的做法是：明确每个模型适用的<b>边界</b>，在边界内保持模型严格一致，不去管边界外的事。'},
+ {h:'CONTEXT MAP',dur:11,c:'再画一张<b>上下文图</b>，标出各个上下文之间的联系和翻译方式。悬停每条连线，看书中给出的七种关系模式。',q:'描述模型之间的联系点，明确所有通信需要的转换，并突出任何共享的内容。（第 14 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=solo(s,2),a3=s.v(3);
+ const ex=W*(n?.5:.5),ey=H*(n?.42:.44),es=Math.min(W*(n?.7:.42),H*.62);
+ const parts=[['墙','身体',-.05,-.05,'摸到身体：像一堵墙'],['蛇','鼻子',.48,.1,'摸到鼻子：像一条蛇'],['树','膝盖',-.25,.35,'摸到膝盖：像一棵树'],['绳子','尾巴',-.52,-.02,'摸到尾巴：像一根绳子'],['矛','象牙',.42,-.08,'摸到象牙：像一支矛'],['扇子','耳朵',.25,-.25,'摸到耳朵：像一把扇子']];
+ const elephant=(a)=>layer(a,()=>{ctx.save();ctx.translate(ex,ey);
+  ctx.beginPath();ctx.ellipse(-es*.05,-es*.02,es*.36,es*.24,0,0,TAU);ctx.fillStyle=rgba(C.muted,.2);ctx.fill();ctx.strokeStyle=C.muted;ctx.lineWidth=1.4;ctx.stroke();
+  ctx.beginPath();ctx.ellipse(es*.33,-es*.1,es*.14,es*.13,0,0,TAU);ctx.fill();ctx.stroke();
+  [-.25,-.05,.12,.22].forEach(x=>{box(es*x-es*.04,es*.15,es*.08,es*.25,{fill:rgba(C.muted,.2),stroke:C.muted,r:4})});
+  ctx.beginPath();ctx.moveTo(es*.44,-es*.06);ctx.quadraticCurveTo(es*.56,es*.12,es*.5,es*.3);ctx.lineWidth=es*.05;ctx.strokeStyle=rgba(C.muted,.45);ctx.stroke();
+  ctx.beginPath();ctx.moveTo(-es*.41,-es*.04);ctx.lineTo(-es*.55,es*.12);ctx.lineWidth=2;ctx.strokeStyle=C.muted;ctx.stroke();
+  ctx.restore()});
+ layer(a0,()=>{
+  elephant(1);
+  parts.forEach((p,i)=>{const x=ex+p[2]*es,y=ey+p[3]*es;const bx=n?x:x+(p[2]>0?es*.22:-es*.22),by=y+(p[3]>0?es*.22:-es*.22)*(n?.8:1);
+   const pr=clamp(s.age*.8-i*.35);
+   layer(pr,()=>{seg(x,y,bx,by,rgba(LEND()[i%3],.6),1.2,[3,3]);dot(x,y,4,LEND()[i%3]);
+    const b=pill('“像'+p[0]+'”',bx,by,{size:n?10:12,bg:LEND()[i%3],f:'d'});person(bx,by-(n?24:30),n?7:9,LEND()[i%3]);
+    hotR(b.x,b.y,b.w,b.h,p[4],'每个人的模型都对了一部分，也都错了。项目里各团队对同一事物的模型就是这样。')});
+  });
+ });
+ layer(a1,()=>{
+  const st=n?[[W*.5,H*.16],[W*.5,H*.4],[W*.5,H*.64]]:[[W*.2,H*.45],[W*.5,H*.45],[W*.8,H*.45]];
+  const rr0=Math.min(W,H)*(n?.09:.13);
+  const lab=[['粗糙集成','墙 + 树干 + 绳子 + 蛇',C.red,'“把大象看成一堵墙，下面通过树干支撑着，一头儿是一根绳子，另一头儿是一条蛇。”拼接出来的模型更糟。'],['毒牙的教训','宁缺毋滥',C.amber,'“蛇”的模型带着毒牙。书中说：宁可缺少喷水功能，也不要包含不正确的毒牙特性。'],['更深的模型','这是一只动物',C.acc,'统一多个模型，几乎总是意味着创建一个新模型。']];
+  lab.forEach((L0,i)=>{const [x,y]=st[i];layer(clamp(s.age-i*1.2),()=>{
+   if(i===0){box(x-rr0,y-rr0*.6,rr0*1.4,rr0*1,{fill:rgba(C.muted,.3),stroke:C.muted});[-.6,.2].forEach(k=>box(x+k*rr0,y+rr0*.4,rr0*.2,rr0*.6,{fill:rgba('#7A5A3A',.5)}));seg(x-rr0,y-rr0*.2,x-rr0*1.4,y+rr0*.3,C.ink,1.6);curve(x+rr0*.4,y-rr0*.2,x+rr0*1.1,y-rr0*.8,x+rr0*1.2,y+rr0*.2,'#3E9E5B',3)}
+   else if(i===1){curve(x-rr0,y,x,y-rr0*1.2,x+rr0*.6,y,'#3E9E5B',5);dot(x+rr0*.7,y,rr0*.18,'#3E9E5B');txt('✗ 毒牙',x+rr0*.9,y+rr0*.4,{size:n?10:11,w:700,color:C.red})}
+   else{ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.ellipse(0,0,rr0*.9,rr0*.6,0,0,TAU);ctx.fillStyle=rgba(C.acc,.2);ctx.fill();ctx.strokeStyle=C.acc;ctx.lineWidth=1.6;ctx.stroke();ctx.restore();txt('动物',x,y,{size:n?13:16,w:700,f:'d',color:C.acc})}
+   const ly=y+rr0*(n?1:1.3);txt(L0[0],x,ly,{size:n?11:13,w:700,f:'d',color:L0[2]});txt(L0[1],x,ly+(n?16:20),{size:n?9.5:11,color:C.muted});
+   hotR(x-rr0*1.3,y-rr0*1.1,rr0*2.6,rr0*2.4+30,L0[0],L0[3]);
+   if(i<2&&!n)arrow(x+rr0*1.5,y,st[i+1][0]-rr0*1.5,y,C.muted,1.2)})});
+ });
+ // contexts layout shared by step 2 and 3
+ const CTX=[['订舱','Booking',.22,.3,C.blue],['航线规划','Routing',.62,.22,C.violet],['计费','Billing',.2,.72,C.amber],['旧系统','Legacy',.84,.62,C.muted],['事件处理','Handling',.52,.66,C.acc]];
+ const cxy=i=>[W*(n?lerp(.18,.82,(CTX[i][2]-.2)/.64):CTX[i][2]),H*(n?CTX[i][3]*.85+.04:CTX[i][3]*.92)];
+ const REL=[[0,1,'CUSTOMER/SUPPLIER','客户/供应商','上下游团队协作：下游把需求提给上游，双方一起定验收测试，上游的计划要考虑下游。'],[0,4,'SHARED KERNEL','共享内核','两个团队共享模型的一个子集（以及对应代码），任何修改都要双方商量并通过测试。'],[0,3,'ANTICORRUPTION LAYER','防腐层','创建一个隔离层，以便根据客户自己的领域模型来为客户提供相关功能……在两个模型之间进行必要的双向转换。'],[2,0,'CONFORMIST','跟随者','下游团队没有影响力，干脆完全采用上游的模型，省去翻译。'],[1,4,'OPEN HOST SERVICE','开放主机服务','把子系统的访问定义成一组服务协议，开放给所有需要集成的系统。'],[2,3,'SEPARATE WAYS','各行其道','集成的代价大于收益时，就别集成。各自独立开发简单、专门的方案。'],[1,3,'PUBLISHED LANGUAGE','公开发布的语言','用一种文档完善的共享语言（例如行业标准 XML 格式）作为交换的媒介。']];
+ const ctxA=Math.max(a2,a3);
+ layer(ctxA,()=>{
+  const R=Math.min(W,H)*(n?.1:.11);
+  layer(a3,()=>{REL.forEach((r,i)=>{const [x1,y1]=cxy(r[0]),[x2,y2]=cxy(r[1]);const mx=(x1+x2)/2,my=(y1+y2)/2;
+   const hl=ctxRel===i;seg(x1,y1,x2,y2,hl?C.acc:rgba(C.ink,.35),hl?2.5:1.4,i===5?[5,5]:null);
+   const b=pill(n?r[2].split(/[ /]/)[0]:r[2],mx,my,{size:n?7.5:9.5,f:'m',bg:hl?C.acc:C.sheet,color:hl?C.sheet:C.ink,stroke:C.line,pad:n?4:6});
+   if(live())HOT.push({k:'r',x:b.x-4,y:b.y-4,w:b.w+8,h:b.h+8,t:r[3]+' · '+r[2],b:r[4],click:()=>{ctxRel=ctxRel===i?-1:i}})});});
+  CTX.forEach((c,i)=>{const [x,y]=cxy(i);ctx.save();ctx.translate(x,y);ctx.beginPath();ctx.ellipse(0,0,R*1.25,R*.8,0,0,TAU);ctx.fillStyle=rgba(c[4],.14);ctx.fill();ctx.strokeStyle=c[4];ctx.lineWidth=1.6;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+   txt(c[0],x,y-6,{size:n?11:13.5,w:700,f:'d'});txt(c[1]+' Context',x,y+(n?10:12),{size:n?8:9.5,f:'m',color:C.muted});
+   hotC(x,y,R*.8,c[0]+' · BOUNDED CONTEXT','在这个边界内，模型保持严格一致：同一个词只有一个意思。边界外的模型可以不同。');
+   // small internal model
+   layer(a2*(1-a3*.6),()=>{for(let k=0;k<3;k++){const a=k/3*TAU+t*.3+i;dot(x+Math.cos(a)*R*.85,y+Math.sin(a)*R*.5,3,c[4])}})});
+  layer(a2*(1-a3),()=>txt('“Cargo” 在订舱里和在计费里可以是两个不同的模型',W/2,H*.95,{size:n?10:12.5,w:600,color:C.muted}));
+  layer(a3,()=>txt(ctxRel<0?'悬停或点击连线查看关系模式':REL[ctxRel][3]+'：'+REL[ctxRel][4].slice(0,n?24:48)+'…',W/2,H*.95,{size:n?9.5:11.5,w:600,color:ctxRel<0?C.muted:C.acc}));
+ });
+}},
+/* ---------------- 8 · Distillation & large-scale structure ---------------- */
+{nav:'精炼与结构',chap:'第 15–17 章 · 精炼、大型结构、战略设计',title:'把力气花在 CORE DOMAIN 上',
+steps:[
+ {h:'找到核心领域',dur:9.5,c:'系统里不是所有部分都一样重要。<b>CORE DOMAIN</b> 是让系统有价值、和别人不同的部分。要尽量把它压缩得小一些，并且<b>让最有才能的人来开发它</b>。',q:'尽量压缩CORE DOMAIN……让最有才能的人来开发CORE DOMAIN。（第 15 章）'},
+ {h:'一个反例：时区',dur:9,c:'书中说，作者两次亲眼看到项目里最好的开发人员花好几周时间去解决时区的存储和转换问题。这些工作很必要，但属于 <b>GENERIC SUBDOMAIN</b>，可以买现成方案或外包，不该占用核心人员。'},
+ {h:'精炼的手段',dur:10,c:'从轻到重：写一页<b>领域愿景说明</b>；<b>突出核心</b>（标记核心元素）；把通用机制提取为<b>内聚机制</b>；把核心从支撑代码中剥离成<b>分离的核心</b>；最后是<b>抽象内核</b>。',q:'每种技术都需要我们连续不断地投入越来越多的工作，但刀磨得越薄，就会越锋利。（第 15 章）'},
+ {bg:1,h:"背景：五层职责是什么意思",dur:15,c:"书中用一家<b>航运公司</b>的系统来说明“职责层”。系统大到几百个类以后，光看代码很难理解整体。把对象按它在业务中承担的职责分成几层，就有了一张能看清全局的大图。每一层回答一个不同的问题。",terms:[["潜能 Potential","能做什么？比如拥有的船舶、运力和设施。"],["作业 Operation","正在做什么、做过什么？比如货物现在在哪里、哪段航程正在执行。"],["决策支持 Decision Support","应该做什么？比如路线规划、运力分析。"],["策略 Policy","规则和目标是什么？比如超订比例、危险品的运输规定。"],["承诺 Commitment","答应了客户什么？比如服务协议和订舱承诺。"]],ask:"注意依赖方向：上层可以使用下层，下层不知道上层的存在。"},
+ {h:'大型结构：职责层',dur:10,c:'系统大到一定程度，需要一个能让人看清整体的结构。书中的例子是按职责分层：<b>潜能 → 作业 → 决策支持 → 策略 → 承诺</b>。下层不能依赖上层。悬停查看每层的问题。'},
+ {h:'战略设计的六个要点',dur:10.5,c:'第 17 章把战略设计落回到团队：谁来做决策、怎样收集反馈、怎样允许演变。悬停查看每一条。',q:'对象的职责要专一，而开发人员应该是多面手。（第 17 章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=solo(s,2),a3=solo(s,3),a4=s.v(4);
+ const cx=W/2,cy=H*.46,R=Math.min(W,H)*(n?.36:.36);
+ const ring=(a)=>layer(a,()=>{
+  const gen=[['时区','GENERIC：买现成的或者外包。'],['货币','GENERIC：通用的数值和换算。'],['日志 / 审计','GENERIC：与业务无关的技术工作。'],['权限','GENERIC：通用的组织结构和授权。'],['报表','支撑性的功能。'],['通知','GENERIC：邮件、短信等。']];
+  gen.forEach((g,i)=>{const a=i/gen.length*TAU+t*.05,x=cx+Math.cos(a)*R*.82,y=cy+Math.sin(a)*R*.62;const b=pill(g[0],x,y,{size:n?10:12,bg:C.sheet,color:C.muted,stroke:C.line});hotR(b.x,b.y,b.w,b.h,g[0],g[1]);g._x=x;g._y=y;g._b=b});
+  const pul=1+.04*Math.sin(t*2);glow(cx,cy,R*.6,C.acc,.25);
+  ctx.save();ctx.translate(cx,cy);ctx.scale(pul,pul);ctx.beginPath();ctx.arc(0,0,R*.34,0,TAU);ctx.fillStyle=rgba(C.acc,.18);ctx.fill();ctx.strokeStyle=C.acc;ctx.lineWidth=2;ctx.stroke();ctx.restore();
+  txt('CORE DOMAIN',cx,cy-8,{size:n?11:13,f:'m',w:700,color:C.acc});txt('路线规划与运力分配',cx,cy+12,{size:n?10:12,w:700,f:'d'});
+  hotC(cx,cy,R*.34,'CORE DOMAIN','系统中最有价值、最体现竞争力的那一小部分模型。投入最好的人，持续深化。');
+  return gen;
+ });
+ layer(a0,()=>{
+  ring(1);
+  [[-1,'最好的开发人员',C.acc],[1,'其他成员',C.muted]].forEach(([sg,l,c],i)=>{const x=cx+sg*(n?W*.36:R*1.45),y=n?H*.88:cy;person(x,y,n?9:12,c);txt(l,x,y+(n?24:30),{size:n?10:11.5,w:700})});
+  const p=E.io(clamp(s.age/2-.4));const [px,py]=along(cx-(n?W*.36:R*1.45),n?H*.88:cy,cx-R*.15,cy,p);person(px,py-(n?0:4),n?7:9,C.acc);
+ });
+ layer(a1,()=>{
+  ring(.35);
+  const bx=n?W/2:cx+R*.95,by=n?H*.15:cy-R*.6;
+  const p=E.io(clamp(s.age/1.5)),x=lerp(cx-R*.1,bx,p),y=lerp(cy,by,p);
+  person(x,y,n?9:12,C.acc);
+  layer(p,()=>{const b=pill('几周：时区存储与转换',bx,by+(n?28:34),{size:n?10:11.5,bg:C.red});hotR(b.x,b.y,b.w,b.h,'被错配的人才','这是 GENERIC SUBDOMAIN 的工作。核心模型却在这段时间里被搁置。');
+   for(let k=0;k<6;k++){const a=t*.8+k;txt(['UTC','+08:00','DST','-05:00','GMT','+09:30'][k],bx+Math.cos(a)*(n?60:80),by-10+Math.sin(a)*24,{size:n?9:10.5,f:'m',color:C.muted})}});
+  layer(clamp(s.age-2),()=>txt('通用子域：买、外包，或用最小的投入完成',W/2,H*.92,{size:n?11:13,w:700,color:C.acc,f:'d'}));
+ });
+ layer(a2,()=>{
+  const tech=[['DOMAIN VISION STATEMENT','领域愿景说明','一页纸，说明核心领域的价值。'],['HIGHLIGHTED CORE','突出核心','在文档或模型中标出核心元素，可以是一份精炼文档。'],['GENERIC SUBDOMAIN','通用子域','把通用部分识别出来，降低其优先级。'],['COHESIVE MECHANISM','内聚机制','把复杂的算法或计算机制提取为独立框架，核心只说“做什么”。'],['SEGREGATED CORE','分离的核心','重构代码，把核心概念和支撑代码分开。'],['ABSTRACT CORE','抽象内核','把最基本的概念抽象成接口，放进单独的模块。']];
+  const x0=n?16:W*.08,x1=n?W-16:W*.92,y=H*.42;
+  const pr=E.out(clamp(s.age/3));
+  // blade
+  ctx.beginPath();ctx.moveTo(x0,y-26);ctx.lineTo(x1,y-2);ctx.lineTo(x1,y+2);ctx.lineTo(x0,y+26);ctx.closePath();
+  const g=ctx.createLinearGradient(x0,0,x1,0);g.addColorStop(0,rgba(C.muted,.3));g.addColorStop(1,rgba(C.acc,.7));ctx.fillStyle=g;ctx.fill();
+  const sx=lerp(x0,x1,pr);glow(sx,y,30,C.acc,.5);
+  tech.forEach((tc,i)=>{const x=lerp(x0+30,x1-30,i/5),yy=y+(i%2?1:-1)*(n?60:70);layer(clamp(pr*6-i),()=>{seg(x,y,x,yy+(i%2?-12:12),C.line,1);
+   const b=pill(tc[1],x,yy,{size:n?9.5:12,bg:i===5?C.acc:C.sheet,color:i===5?C.sheet:C.ink,stroke:C.acc,f:'d'});if(!n)txt(tc[0],x,yy+(i%2?22:-22),{size:9,f:'m',color:C.muted});
+   hotR(b.x,b.y,b.w,b.h,tc[1]+' · '+tc[0],tc[2])})});
+  txt('投入越来越多 →',x0,y+(n?110:120),{size:n?10:11.5,color:C.muted,align:'left'});txt('越来越锋利',x1,y+(n?110:120),{size:n?10:11.5,color:C.acc,w:700,align:'right'});
+ });
+ layer(a3,()=>{
+  const L=[['承诺层','Commitment','我们承诺了什么？例如与客户的协议、服务条款。',C.violet],['策略层','Policy','规则和目标是什么？例如路线选择的规则。',C.blue],['决策支持层','Decision Support','应该采取什么行动或制定什么策略？分析与规划。',C.amber],['作业层','Operations','我们正在做什么？正在执行的运输、装卸。',C.acc],['潜能层','Potential','我们能够做什么？船、码头、运力。',C.muted]];
+  const lx=n?16:W*.18,lw=n?W-32:W*.48,top=H*.1,lh=H*.15;
+  L.forEach((l,i)=>{const y=top+i*lh,pr=clamp(s.age*1.5-(4-i)*.4);layer(pr,()=>{
+   box(lx,y+3+(1-pr)*12,lw,lh-6,{fill:rgba(l[3],.14),stroke:l[3],r:6});
+   txt(l[0],lx+14,y+lh/2-(n?6:8),{size:n?12:14,w:700,f:'d',align:'left'});txt(l[1],lx+14,y+lh/2+(n?10:12),{size:n?8.5:10,f:'m',color:C.muted,align:'left'});
+   if(!n)txt(l[2].split('？')[0]+'？',lx+lw-14,y+lh/2,{size:11.5,align:'right',color:C.ink});
+   hotR(lx,y+3,lw,lh-6,l[0]+' · '+l[1],l[2])})});
+  if(!n){const ax=lx+lw+40;arrow(ax,top+lh*4.6,ax,top+lh*.4,C.acc,1.5);txt('可以依赖下层',ax+10,top+lh*2.5,{size:11,color:C.acc,align:'left'});
+   const bx=ax+110;seg(bx,top+lh*.6,bx,top+lh*3.4,C.red,1.5,[4,4]);txt('✗',bx,top+lh*3.5+8,{size:16,w:700,color:C.red});txt('下层不能引用上层',bx+10,top+lh*2,{size:11,color:C.red,align:'left'});
+   hotR(bx-10,top+lh*.5,130,lh*3,'违规的依赖','书中的例子：作业层的 Cargo 直接调用策略层的危险品路线策略服务（HazMat Route Policy Service），这违反了分层原则。');}
+ });
+ layer(a4,()=>{
+  const pts=[['决策必须传达到整个团队','否则开发人员会忽视或绕开它。'],['决策过程必须收集反馈意见','结构来自应用开发中的真实经验，而不是凭空设计。'],['计划必须允许演变','大型结构要随着理解的加深而演变（EVOLVING ORDER）。'],['架构团队不必吸收所有最好的人','最好的人也要留在应用开发里，尤其是 CORE DOMAIN。'],['战略设计需要遵守简约和谦逊的原则','不要编写“傻瓜式”的框架，不要把开发人员当傻瓜。'],['对象的职责要专一，开发人员应该是多面手','建模者也要动手写代码，开发人员也要懂建模。']];
+  const cols=n?1:2,gw=n?W-32:(W*.86-14)/2,gh=n?(H*.84)/6-6:(H*.72)/3-12,x0=n?16:W*.07,y0=n?H*.07:H*.14;
+  pts.forEach((p,i)=>{const c=i%cols,r=Math.floor(i/cols),x=x0+c*(gw+14),y=y0+r*(gh+(n?6:12));layer(clamp(s.age*1.6-i*.35),()=>{
+   box(x,y,gw,gh,{fill:C.sheet,stroke:C.line});txt(String(i+1),x+(n?18:24),y+gh/2,{size:n?16:24,w:700,f:'d',color:C.acc});
+   rich(p[0],x+(n?36:50),y+gh/2-(n?6:9),gw-(n?46:64),{size:n?11:13,w:700,f:'d',lh:n?15:19});
+   hotR(x,y,gw,gh,'要点 '+(i+1),p[0]+'。'+p[1])})});
+ });
+}},
+/* ---------------- 9 · Epilogue ---------------- */
+{nav:'结语',chap:'结语 · 回顾',title:'建模需要想象力和自律',
+steps:[
+ {h:'全书地图',dur:10,c:'回到起点：<b>知识消化</b>产生模型，<b>通用语言</b>让模型和代码保持一致，<b>构造块</b>把模型落到代码，<b>重构</b>带来突破，<b>战略设计</b>让大系统保持完整。点击任意节点回到对应场景。'},
+ {h:'这些项目后来怎样了',dur:10,c:'书末回顾了几个项目的结局。好的模型不能保证商业成功，但它让软件能长期演进。悬停每张卡片查看。'},
+ {h:'最后一句话',dur:9,c:'领域驱动设计不是一套框架，而是一种做软件的方式：持续学习领域，持续改进模型，让代码说出领域的语言。',q:'创建好的软件是一项需要学习和思考的活动。建模需要想象力和自律。（结语）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow;
+ const a0=solo(s,0),a1=solo(s,1),a2=s.v(2);
+ layer(a0,()=>{
+  const nodes=[['知识消化',0,.5,.12],['通用语言',1,.2,.32],['分层架构',2,.8,.32],['构造块',3,.15,.58],['聚合',4,.42,.58],['突破',5,.7,.56],['柔性设计',6,.88,.72],['限界上下文',7,.3,.84],['精炼与结构',8,.62,.86]];
+  const P=nodes.map(nd=>[W*(n?lerp(.12,.88,nd[2]):nd[2]),H*nd[3]]);
+  const E2=[[0,1],[0,2],[1,3],[2,3],[3,4],[4,5],[1,5],[5,6],[3,7],[7,8],[5,8],[6,8]];
+  E2.forEach(([a,b],i)=>{seg(P[a][0],P[a][1],P[b][0],P[b][1],rgba(C.acc,.35),1.3);const p=(t*.2+rnd(i))%1,[x,y]=along(P[a][0],P[a][1],P[b][0],P[b][1],p);dot(x,y,2.4,C.acc)});
+  nodes.forEach((nd,i)=>{const pr=clamp(s.age*2-i*.25);layer(pr,()=>{const b=pill(nd[0],P[i][0],P[i][1],{size:n?10.5:13,bg:i?C.sheet:C.acc,color:i?C.ink:C.sheet,stroke:C.acc,f:'d'});
+   hotR(b.x,b.y,b.w,b.h,nd[0],'点击跳转到“'+SCENES[nd[1]].nav+'”场景。',()=>jumpScene(nd[1]))})});
+ });
+ layer(a1,()=>{
+  const cards=[['PCB 设计工具','测试版引起轰动，但公司的市场营销失败了，项目没能继续。好的模型挽救不了商业决策。',C.blue],['银团贷款系统','七年之后还在持续添加功能。深层模型让它一直保持可演进。',C.acc],['航运系统','团队文化排斥迭代，模型难以深化。',C.amber],['Evant','团队缩减到 4 名开发人员，仍然能处理数十亿规划元素；公司被收购后，这种开发文化被带到了新的团队。',C.violet]];
+  const cols=n?1:2,gw=n?W-32:(W*.84-16)/2,gh=n?(H*.86)/4-8:H*.34,x0=n?16:W*.08,y0=n?H*.06:H*.12;
+  cards.forEach((c,i)=>{const cc=i%cols,r=Math.floor(i/cols),x=x0+cc*(gw+16),y=y0+r*(gh+(n?8:16));layer(clamp(s.age*1.5-i*.4),()=>{
+   box(x,y,gw,gh,{fill:C.sheet,stroke:c[2],lw:1.5,r:8});box(x,y,5,gh,{fill:c[2],r:2});
+   txt(c[0],x+18,y+(n?18:26),{size:n?12:15,w:700,f:'d',align:'left',color:c[2]});
+   rich(c[1],x+18,y+(n?40:56),gw-34,{size:n?10.5:12.5,lh:n?16:20});
+   hotR(x,y,gw,gh,c[0],c[1])})});
+ });
+ layer(a2,()=>{
+  const cx=W/2,cy=H*.42;
+  for(let k=0;k<40;k++){const a=rnd(k)*TAU+t*.05,r=Math.min(W,H)*(.25+rnd(k+7)*.3);glow(cx+Math.cos(a)*r,cy+Math.sin(a)*r*.6,8,C.acc,.3*(.5+.5*Math.sin(t+k)))}
+  txt('创建好的软件是一项需要学习和思考的活动。',cx,cy-(n?18:24),{size:n?14:22,w:700,f:'d'});
+  txt('建模需要想象力和自律。',cx,cy+(n?16:24),{size:n?16:26,w:700,f:'d',color:C.acc});
+  txt('Eric Evans ·《领域驱动设计：软件核心复杂性应对之道》',cx,cy+(n?60:80),{size:n?10:12,color:C.muted});
+  txt('赵俐 盛海艳 刘霞 等译 · 任发科 审校 · 人民邮电出版社 2016',cx,cy+(n?80:102),{size:n?9:11,color:C.muted});
+  const b=pill('↺ 从头再看一遍',cx,H*.84,{size:n?11:12.5,bg:C.acc});hotR(b.x,b.y,b.w,b.h,'重新开始','回到总览。',()=>jumpScene(0));
+ });
+}}
+];
+/* ====================================================================
+   ENGINE
+   ==================================================================== */
+const FLAT=[];SCENES.forEach((sc,si)=>{let a=0;sc.steps.forEach((st,k)=>{FLAT.push({si,k,st,ak:st.bg?Math.max(0,a-1):a});if(!st.bg)a++})});
+const bgEl=$('#bgcard');
+let cur=0,sceneIdx=-1,sf=-1,sceneT=0,sceneFade=0,stepClock=0,stepAge=0,playing=!REDUCED;
+const nav=$('#nav'),track=$('#track');
+SCENES.forEach((sc,i)=>{const b=document.createElement('button');b.textContent=sc.nav;b.onclick=()=>jumpScene(i);nav.appendChild(b)});
+const segEls=SCENES.map((sc,i)=>{const d=document.createElement('div');d.className='seg';d.style.flex=`${sc.steps.length} 1 0`;d.title=sc.nav;d.innerHTML='<i></i>';track.appendChild(d);return d});
+const firstOf=si=>FLAT.findIndex(f=>f.si===si);
+function jumpScene(si){go(firstOf(si),true)}
+function enterScene(si,k,fromStart){
+ sceneIdx=si;sceneT=0;sceneFade=REDUCED?1:0;sf=fromStart?k-1:k;
+ const sc=SCENES[si],ctrl=$('#ctrl');
+ if(sc.ctrl){ctrl.innerHTML=sc.ctrl;ctrl.hidden=false}else{ctrl.innerHTML='';ctrl.hidden=true}
+ sc.enter&&sc.enter();
+ [...nav.children].forEach((b,i)=>b.setAttribute('aria-current',i===si?'true':'false'));
+ try{history.replaceState(null,'','#s'+si)}catch(e){}
+}
+function go(i,fromStart){
+ i=clamp(i,0,FLAT.length-1);const prev=FLAT[cur];const f=FLAT[i];
+ const forward=i>cur;cur=i;stepClock=0;stepAge=0;
+ if(f.si!==sceneIdx)enterScene(f.si,f.ak,fromStart||forward);
+ panel();
+}
+function panel(){
+ const f=FLAT[cur],sc=SCENES[f.si];
+ $('#chap').textContent=sc.chap;$('#stitle').textContent=sc.title;
+ $('#steps').innerHTML=sc.steps.map((_,k)=>`<i class="${k<=f.k?'on':''}"></i>`).join('')+`<span>${f.k+1} / ${sc.steps.length}</span>`;
+ $('#caph').textContent=f.st.h;$('#cap').innerHTML=f.st.bg?'画面里是这个例子的业务背景和关键术语。读完后进入下一步，再看动画演示。':f.st.c;
+ const q=$('#quote');if(f.st.q){q.innerHTML='<small>原书要点</small>'+f.st.q;q.hidden=false}else q.hidden=true;
+ {const c=$('#ctrl');c.hidden=!!f.st.bg||!(sc.ctrl&&(!sc.ctrlSteps||sc.ctrlSteps.includes(f.ak)))}
+ if(f.st.bg){bgEl.innerHTML=`<div class="bgin"><div class="bgtag">例子背景</div><h4>${f.st.h.replace(/^背景：/,'')}</h4><p>${f.st.c}</p><dl>${f.st.terms.map(([t,d])=>`<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl><div class="bgask">${f.st.ask}</div><div class="bgnext">按 → 或“下一步”进入例子</div></div>`;bgEl.hidden=false;bgEl.scrollTop=0}else{bgEl.hidden=true}
+ $('#count').textContent=String(cur+1).padStart(2,'0')+' / '+String(FLAT.length).padStart(2,'0');
+}
+function setPlay(p){playing=p;$('#play').setAttribute('aria-label',p?'暂停':'播放');$('#playIcon').innerHTML=p?'<path d="M4 2h3v12H4zM9 2h3v12H9z"/>':'<path d="M4 2l10 6-10 6z"/>'}
+$('#play').onclick=()=>{if(!playing&&cur===FLAT.length-1&&stepClock>=FLAT[cur].st.dur){go(0,true)}setPlay(!playing)};
+$('#prev').onclick=()=>go(cur-1);
+$('#next').onclick=()=>go(cur+1);
+track.addEventListener('click',e=>{const r=track.getBoundingClientRect();const fr=clamp((e.clientX-r.left)/r.width);
+ // map through segment widths
+ let acc=0;for(let i=0;i<segEls.length;i++){const sr=segEls[i].getBoundingClientRect();if(e.clientX<=sr.right+2.5||i===segEls.length-1){const loc=clamp((e.clientX-sr.left)/sr.width);const n=SCENES[i].steps.length;go(firstOf(i)+Math.min(n-1,Math.floor(loc*n)),true);return}}});
+track.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}});
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))return;if(e.target===track)return;
+ if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}else if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}else if(e.key===' '){setPlay(!playing);e.preventDefault()}});
+
+// tooltip
+let mouse=null,hoverHot=null;
+function showTip(){
+ if(!mouse){tip.hidden=true;cv.style.cursor='default';return}
+ const h=hit(mouse.x,mouse.y);hoverHot=h;
+ if(!h){tip.hidden=true;cv.style.cursor='default';return}
+ cv.style.cursor=h.click?'pointer':'help';
+ if(tip.dataset.key!==h.t+h.b){tip.innerHTML=`<b>${h.t}</b>${h.b}`;tip.dataset.key=h.t+h.b}
+ tip.hidden=false;
+ const tw0=tip.offsetWidth,th0=tip.offsetHeight;let x=mouse.x+16,y=mouse.y+16;
+ if(x+tw0>W-8)x=mouse.x-tw0-14;if(x<8)x=8;if(y+th0>H-8)y=mouse.y-th0-14;if(y<8)y=8;
+ tip.style.left=x+'px';tip.style.top=y+'px';
+}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top}});
+cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){mouse=null}});
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top};const h=hit(mouse.x,mouse.y);if(h&&h.click){h.click();mouse=null}else if(!h&&e.pointerType!=='mouse'){mouse=null}});
+
+let last=performance.now();
+function frame(ts){
+ const dt=Math.min(.05,(ts-last)/1000);last=ts;
+ readColors();
+ const st=FLAT[cur].st;
+ stepAge+=dt;
+ if(playing){stepClock+=dt;if(stepClock>=st.dur){if(cur<FLAT.length-1)go(cur+1);else{stepClock=st.dur;setPlay(false)}}}
+ sceneT+=dt;sceneFade=Math.min(1,sceneFade+dt/.7);
+ const target=FLAT[cur].ak,diff=target-sf;
+ if(REDUCED)sf=target;else{const sp=Math.max(1/1.1,Math.abs(diff)*1.8)*dt;sf+=Math.sign(diff)*Math.min(Math.abs(diff),sp)}
+ // render
+ ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);HOT=[];
+ const a=E.out(sceneFade);
+ const S={W,H,t:sceneT,dt,sf,age:stepAge,step:target,narrow:W<560,raw:k=>clamp(sf-k+1),v:k=>E.io(clamp(sf-k+1))};
+ ctx.save();ctx.globalAlpha=a;ctx.translate(0,(1-a)*16);
+ try{SCENES[sceneIdx].draw(S)}catch(err){console.error(err)}
+ ctx.restore();
+ showTip();
+ // progress
+ const gp=cur+clamp(stepClock/st.dur);
+ segEls.forEach((el,i)=>{const s0=firstOf(i),n=SCENES[i].steps.length;const f=clamp((gp-s0)/n);el.firstChild.style.width=(f*100)+'%';el.classList.toggle('past',gp>=s0+n)});
+ track.setAttribute('aria-valuenow',cur+1);track.setAttribute('aria-valuemax',FLAT.length);
+ requestAnimationFrame(frame);
+}
+readColors();
+const hs=/^#s(\d)$/.exec(location.hash);
+go(hs?firstOf(clamp(+hs[1],0,SCENES.length-1)):0,true);
+setPlay(playing);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
