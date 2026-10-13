@@ -1,11 +1,12 @@
 # 动态读书 · Claude explains books
 
-经典软件工程书籍的非官方交互式可视化解读。每本书是一个单文件 HTML + Canvas 页面，没有构建步骤，也没有依赖。
+经典书籍（软件工程与通识）的非官方交互式可视化解读。每本书是一个单文件 HTML + Canvas 页面，没有构建步骤，也没有依赖。
 
 | 目录 | 书 | 跳转 |
 |---|---|---|
 | `mythical-man-month/` | 《人月神话》（40 周年中文纪念版），Frederick P. Brooks, Jr. 著，汪颖 译 | `#s0` – `#s7` |
 | `domain-driven-design/` | 《领域驱动设计：软件核心复杂性应对之道》，Eric Evans 著 | `#s0` – `#s9` |
+| `sapiens/` | 《人类简史：从动物到上帝》，尤瓦尔·赫拉利（Yuval Noah Harari）著，林俊宏 译 | `#s0` – `#s9` |
 
 在线访问：`https://<你的用户名>.github.io/claude-explain-books/`
 

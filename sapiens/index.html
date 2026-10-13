@@ -1,0 +1,1194 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>人类简史 · 动态解读</title>
+<meta name="description" content="用动画解读尤瓦尔·赫拉利《人类简史：从动物到上帝》：认知革命、农业革命、人类的融合统一、科学革命。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='8' fill='%23A4521E'/%3E%3Ctext x='32' y='44' font-size='30' text-anchor='middle' fill='%23FBF7EE' font-family='serif' font-weight='900'%3E史%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@600;900&family=Noto+Sans+SC:wght@400;500;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: drafting-table stage (canvas sheet + annotation rail) above a tape-transport bar */
+:root{
+  --paper:#F1ECE1; --sheet:#FBF7EE; --ink:#1A1F2E; --muted:#686D79; --line:#D9D6CC;
+  --grid:rgba(140,90,40,.07); --grid2:rgba(140,90,40,.035);
+  --red:#E5432A; --blue:#2463EB; --amber:#E39500; --teal:#0C9C7B; --violet:#7A48D8;
+  --tar:#2B2622; --soft:#EAE3D4; --grain:.35; --acc:#A4521E;
+  --f-display:"Noto Serif SC","Songti SC","STSong",serif;
+  --f-body:"Noto Sans SC","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#14110D; --sheet:#1B1712; --ink:#ECE8DE; --muted:#8E94A3; --line:#3A3229;
+    --grid:rgba(240,170,100,.06); --grid2:rgba(240,170,100,.03);
+    --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+    --tar:#05070B; --soft:#2A241D; --grain:.18; --acc:#F0A060; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#14110D; --sheet:#1B1712; --ink:#ECE8DE; --muted:#8E94A3; --line:#3A3229;
+  --grid:rgba(240,170,100,.06); --grid2:rgba(240,170,100,.03);
+  --red:#FF6448; --blue:#5B8CFF; --amber:#FFBE3B; --teal:#2DD4A7; --violet:#A884FF;
+  --tar:#05070B; --soft:#2A241D; --grain:.18; --acc:#F0A060; color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:14px;margin:0;position:relative}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:var(--grain);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5  0 0 0 0 .45  0 0 0 0 .4  0 0 0 .5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+.app{position:relative;z-index:1;max-width:1320px;margin:0 auto;padding-inline:clamp(16px,3vw,36px);padding-block:20px 28px;display:grid;gap:16px}
+.top{display:flex;align-items:center;gap:16px 24px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:14px;min-width:0}
+.seal{width:44px;height:44px;border-radius:4px;background:var(--acc);color:var(--sheet);display:grid;place-items:center;font:900 15px/1 var(--f-display);letter-spacing:.02em;flex:none}
+.brand h1{font:900 26px/1.1 var(--f-display);margin:0;letter-spacing:.06em}
+.brand p{margin:3px 0 0;font:500 10.5px/1.3 var(--f-mono);color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.nav{display:flex;gap:2px;flex-wrap:wrap;margin-left:auto}
+.nav button{font:500 13px/1 var(--f-body);color:var(--muted);background:none;border:0;padding:8px 11px;border-radius:999px;cursor:pointer;transition:color .2s,background .2s}
+.nav button:hover{color:var(--ink);background:var(--soft)}
+.nav button[aria-current="true"]{color:var(--sheet);background:var(--ink)}
+.nav button:focus-visible,.btn:focus-visible,.track:focus-visible,.theme:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.theme{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;font-size:15px;display:grid;place-items:center}
+.stage{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:22px;align-items:start}
+.sheet{position:relative;aspect-ratio:16/10;max-width:100%;border:1px solid var(--line);border-radius:6px;overflow:hidden;
+  background-color:var(--sheet);
+  background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(var(--grid2) 1px,transparent 1px),linear-gradient(90deg,var(--grid2) 1px,transparent 1px);
+  background-size:100px 100px,100px 100px,20px 20px,20px 20px;background-position:-1px -1px}
+canvas{display:block;width:100%;height:100%;touch-action:manipulation}
+.hint{position:absolute;left:12px;top:10px;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.06em;pointer-events:none}
+.tip{position:absolute;pointer-events:none;max-width:290px;background:var(--ink);color:var(--sheet);padding:10px 13px 11px;border-radius:6px;font-size:13px;line-height:1.65;box-shadow:0 10px 30px -12px rgba(0,0,0,.45);z-index:3}
+.tip b{display:block;font:600 14.5px/1.4 var(--f-display);margin-bottom:3px;color:var(--sheet)}
+.rail{display:flex;flex-direction:column;gap:12px;min-width:0;padding-top:2px}
+.eyebrow{font:700 11px/1 var(--f-mono);color:var(--acc);letter-spacing:.14em;text-transform:uppercase}
+.rail h2{font:900 27px/1.25 var(--f-display);margin:0;text-wrap:balance;letter-spacing:.02em}
+.steps{display:flex;gap:5px;align-items:center}
+.steps i{width:18px;height:3px;border-radius:2px;background:var(--line);transition:background .3s}
+.steps i.on{background:var(--ink)}
+.steps span{font:500 11px var(--f-mono);color:var(--muted);margin-left:6px;font-variant-numeric:tabular-nums}
+.rail h3{font:700 17px/1.4 var(--f-body);margin:6px 0 0}
+.rail p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink)}
+.rail p b{color:var(--acc);font-weight:700}
+blockquote{margin:4px 0 0;padding:2px 0 2px 14px;border-left:2px solid var(--acc);font:600 14.5px/1.7 var(--f-display);color:var(--ink)}
+blockquote small{display:block;font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.08em;margin-bottom:3px}
+[hidden]{display:none!important}
+.ctrl{display:grid;gap:8px;padding:12px 14px;border:1px dashed var(--line);border-radius:6px;margin-top:4px}
+.ctrl label{font:700 13px var(--f-body);display:flex;justify-content:space-between;align-items:baseline}
+.ctrl output{font:700 20px var(--f-mono);color:var(--acc);font-variant-numeric:tabular-nums}
+.ctrl input[type=range]{width:100%;accent-color:var(--acc)}
+.ctrl .note{font-size:12.5px;line-height:1.6;color:var(--muted)}
+.transport{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btns{display:flex;gap:6px}
+.btn{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--sheet);color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:transform .15s,background .2s}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:scale(.94)}
+.btn.play{background:var(--ink);color:var(--sheet);border-color:var(--ink);width:46px;height:46px}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.track{flex:1 1 280px;min-width:0;display:flex;gap:5px;height:30px;align-items:center;cursor:pointer}
+.seg{height:6px;border-radius:3px;background:var(--line);position:relative;overflow:hidden;min-width:8px}
+.seg i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--acc)}
+.seg.past i{background:var(--ink)}
+.count{font:500 12px var(--f-mono);color:var(--muted);font-variant-numeric:tabular-nums;min-width:62px;text-align:right}
+.keys{font:500 10.5px var(--f-mono);color:var(--muted);letter-spacing:.04em}
+@media (max-width:980px){.stage{grid-template-columns:minmax(0,1fr)}.sheet{aspect-ratio:4/3}.nav{margin-left:0;width:100%}}
+@media (max-width:560px){.sheet{aspect-ratio:4/5}.brand h1{font-size:22px}.rail h2{font-size:23px}.keys{display:none}.nav button{padding:7px 9px;font-size:12.5px}}
+.ctrl .lbl{font:700 13px var(--f-body)}
+.segbtns{display:flex;flex-wrap:wrap;gap:6px}
+.segbtns button{flex:1 1 auto;font:600 12.5px/1.25 var(--f-body);color:var(--ink);background:var(--sheet);border:1px solid var(--line);border-radius:999px;padding:8px 11px;cursor:pointer;transition:background .2s,color .2s}
+.segbtns button:hover{background:var(--soft)}
+.segbtns button[aria-pressed="true"]{background:var(--acc);border-color:var(--acc);color:var(--sheet)}
+.segbtns button:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.bgcard{position:absolute;inset:0;z-index:3;overflow:auto;background:color-mix(in srgb,var(--sheet) 94%,transparent);backdrop-filter:blur(3px);display:flex;padding:28px 34px}
+.bgin{margin:auto;max-width:640px;width:100%;animation:bgup .5s ease-out}
+@keyframes bgup{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.bgtag{display:inline-block;font:700 11px/1 var(--f-mono);letter-spacing:.14em;color:var(--sheet);background:var(--acc);padding:6px 9px;border-radius:3px}
+.bgcard h4{font:900 26px/1.3 var(--f-display);margin:12px 0 10px;color:var(--ink)}
+.bgcard p{margin:0 0 14px;font-size:14.5px;line-height:1.85;color:var(--ink)}
+.bgcard b{color:var(--acc)}
+.bgcard dl{display:grid;grid-template-columns:max-content 1fr;gap:9px 16px;margin:0 0 14px;padding:14px 16px;border:1px solid var(--line);border-radius:6px;background:var(--sheet)}
+.bgcard dt{font:700 13.5px/1.6 var(--f-body);color:var(--acc)}
+.bgcard dd{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink)}
+.bgask{font:600 14.5px/1.7 var(--f-display);border-left:2px solid var(--amber);padding-left:12px;color:var(--ink)}
+.bgnext{margin-top:14px;font:500 11px var(--f-mono);color:var(--muted);letter-spacing:.06em}
+@media (max-width:560px){.bgcard{padding:18px 16px}.bgcard h4{font-size:21px}.bgcard dl{grid-template-columns:1fr;gap:2px}.bgcard dd{margin-bottom:8px}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <div class="seal">简史</div>
+      <div><h1>人类简史</h1><p>Sapiens · Yuval Noah Harari · 从动物到上帝</p></div>
+    </div>
+    <nav class="nav" id="nav" aria-label="章节"></nav>
+    <button class="theme" id="theme" aria-label="切换明暗主题" title="切换明暗主题">◐</button>
+  </header>
+
+  <main class="stage">
+    <div class="sheet" id="sheet">
+      <canvas id="cv" aria-label="动态示意图"></canvas>
+      <div class="hint">HOVER · 悬停图形查看详解</div>
+      <div class="tip" id="tip" hidden></div>
+      <div class="bgcard" id="bgcard" hidden></div>
+    </div>
+    <aside class="rail" aria-live="polite">
+      <div class="eyebrow" id="chap"></div>
+      <h2 id="stitle"></h2>
+      <div class="steps" id="steps"></div>
+      <h3 id="caph"></h3>
+      <p id="cap"></p>
+      <blockquote id="quote" hidden></blockquote>
+      <div class="ctrl" id="ctrl" hidden></div>
+    </aside>
+  </main>
+
+  <footer class="transport">
+    <div class="btns">
+      <button class="btn" id="prev" aria-label="上一步"><svg viewBox="0 0 16 16"><path d="M3 2h2v12H3zM14 2v12L6 8z"/></svg></button>
+      <button class="btn play" id="play" aria-label="暂停"><svg viewBox="0 0 16 16" id="playIcon"><path d="M4 2h3v12H4zM9 2h3v12H9z"/></svg></button>
+      <button class="btn" id="next" aria-label="下一步"><svg viewBox="0 0 16 16"><path d="M11 2h2v12h-2zM2 2v12l8-6z"/></svg></button>
+    </div>
+    <div class="track" id="track" role="slider" tabindex="0" aria-label="播放进度"></div>
+    <div class="count" id="count">01 / 01</div>
+    <div class="keys">← → 切换 · 空格 播放/暂停</div>
+  </footer>
+</div>
+
+
+<script>
+(()=>{
+const $=s=>document.querySelector(s);
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const lerp=(a,b,t)=>a+(b-a)*t;
+const TAU=Math.PI*2;
+const E={
+  io:t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2,
+  out:t=>1-Math.pow(1-t,3),
+  back:t=>{const c1=1.70158,c3=c1+1;return 1+c3*Math.pow(t-1,3)+c1*Math.pow(t-1,2)},
+  expo:t=>t>=1?1:1-Math.pow(2,-10*t)
+};
+const rnd=i=>{const x=Math.sin(i*127.1+311.7)*43758.5453;return x-Math.floor(x)};
+const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const cv=$('#cv'),ctx=cv.getContext('2d'),sheet=$('#sheet'),tip=$('#tip');
+let W=0,H=0,DPR=1;
+function resize(){const r=sheet.getBoundingClientRect();W=r.width;H=r.height;DPR=Math.min(2,window.devicePixelRatio||1);cv.width=Math.round(W*DPR);cv.height=Math.round(H*DPR)}
+new ResizeObserver(resize).observe(sheet);resize();
+
+/* ---------- theme ---------- */
+let C={};
+const KEYS=['paper','sheet','ink','muted','line','red','blue','amber','teal','violet','tar','soft','acc'];
+function readColors(){const cs=getComputedStyle(document.documentElement);KEYS.forEach(k=>C[k]=cs.getPropertyValue('--'+k).trim())}
+function rgba(hex,a){hex=(hex||'#000').replace('#','');if(hex.length===3)hex=hex.split('').map(c=>c+c).join('');const n=parseInt(hex,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+$('#theme').onclick=()=>{const r=document.documentElement;const cur=r.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');r.dataset.theme=cur==='dark'?'light':'dark'};
+
+/* ---------- drawing helpers ---------- */
+const FD='"Noto Serif SC","Songti SC",serif',FB='"Noto Sans SC","PingFang SC",system-ui,sans-serif',FM='"JetBrains Mono",ui-monospace,Menlo,monospace';
+const font=(size,w=500,f='b')=>`${w} ${size}px ${f==='d'?FD:f==='m'?FM:FB}`;
+function txt(s,x,y,o={}){ctx.save();ctx.font=font(o.size||13,o.w||500,o.f);ctx.fillStyle=o.color||C.ink;ctx.textAlign=o.align||'center';ctx.textBaseline=o.base||'middle';if(o.a!=null)ctx.globalAlpha*=o.a;ctx.fillText(s,x,y);ctx.restore()}
+function tw(s,size,w=500,f){ctx.save();ctx.font=font(size,w,f);const m=ctx.measureText(s).width;ctx.restore();return m}
+function dot(x,y,r,fill,stroke,lw=1.5){ctx.beginPath();ctx.arc(x,y,Math.max(0,r),0,TAU);if(fill){ctx.fillStyle=fill;ctx.fill()}if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw;ctx.stroke()}}
+function seg(x1,y1,x2,y2,color,lw=1,dash){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+function arrow(x1,y1,x2,y2,color,lw=1.5,head=8){seg(x1,y1,x2,y2,color,lw);const a=Math.atan2(y2-y1,x2-x1);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-head*Math.cos(a-.42),y2-head*Math.sin(a-.42));ctx.lineTo(x2-head*Math.cos(a+.42),y2-head*Math.sin(a+.42));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+function rr(x,y,w,h,r){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,r);else ctx.rect(x,y,w,h)}
+function pill(s,x,y,o={}){const size=o.size||12,pad=o.pad||9,w=tw(s,size,o.w||600,o.f)+pad*2,h=size+pad*1.1;const x0=o.align==='left'?x:o.align==='right'?x-w:x-w/2;rr(x0,y-h/2,w,h,h/2);ctx.fillStyle=o.bg||C.ink;ctx.fill();if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=1;ctx.stroke()}txt(s,x0+w/2,y+.5,{size,w:o.w||600,color:o.color||C.sheet,f:o.f});return {x:x0,y:y-h/2,w,h}}
+function layer(a,fn){if(a<=.004)return;ctx.save();ctx.globalAlpha*=Math.min(1,a);fn();ctx.restore()}
+function glow(x,y,r,color,a){if(r<=0)return;const g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,rgba(color,a));g.addColorStop(1,rgba(color,0));ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2)}
+const along=(x1,y1,x2,y2,p)=>[lerp(x1,x2,p),lerp(y1,y2,p)];
+
+/* ---------- hotspots ---------- */
+let HOT=[];
+const live=()=>ctx.globalAlpha>.45;
+function hotC(x,y,r,t,b,click){if(live())HOT.push({k:'c',x,y,r,t,b,click})}
+function hotR(x,y,w,h,t,b,click){if(live())HOT.push({k:'r',x,y,w,h,t,b,click})}
+function hotF(fn,t,b){if(live())HOT.push({k:'f',fn,t,b})}
+function hit(mx,my){for(let i=HOT.length-1;i>=0;i--){const h=HOT[i];if(h.k==='c'&&Math.hypot(mx-h.x,my-h.y)<=h.r)return h;if(h.k==='r'&&mx>=h.x&&mx<=h.x+h.w&&my>=h.y&&my<=h.y+h.h)return h;if(h.k==='f'&&h.fn(mx,my))return h}return null}
+
+
+/* ---------- DDD-specific helpers ---------- */
+function box(x,y,w,h,o={}){rr(x,y,w,h,o.r==null?6:o.r);if(o.fill){ctx.fillStyle=o.fill;ctx.fill()}if(o.stroke){ctx.strokeStyle=o.stroke;ctx.lineWidth=o.lw||1.2;if(o.dash)ctx.setLineDash(o.dash);ctx.stroke();if(o.dash)ctx.setLineDash([])}}
+function curve(x1,y1,qx,qy,x2,y2,color,lw=1.4,dash){ctx.beginPath();ctx.moveTo(x1,y1);ctx.quadraticCurveTo(qx,qy,x2,y2);ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+function curveArrow(x1,y1,qx,qy,x2,y2,color,lw=1.4,head=7){curve(x1,y1,qx,qy,x2,y2,color,lw);const a=Math.atan2(y2-qy,x2-qx);ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-head*Math.cos(a-.42),y2-head*Math.sin(a-.42));ctx.lineTo(x2-head*Math.cos(a+.42),y2-head*Math.sin(a+.42));ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+const qpt=(x1,y1,qx,qy,x2,y2,p)=>{const u=1-p;return [u*u*x1+2*u*p*qx+p*p*x2,u*u*y1+2*u*p*qy+p*p*y2]};
+function poly(pts,p){let L=0;const d=[];for(let i=1;i<pts.length;i++){const l=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);d.push(l);L+=l}let r=clamp(p)*L;for(let i=0;i<d.length;i++){if(r<=d[i]||i===d.length-1){const f=d[i]?clamp(r/d[i]):0;return along(pts[i][0],pts[i][1],pts[i+1][0],pts[i+1][1],f)}r-=d[i]}return pts[0]}
+function polyline(pts,color,lw=1.4,dash){ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=color;ctx.lineWidth=lw;if(dash)ctx.setLineDash(dash);ctx.stroke();if(dash)ctx.setLineDash([])}
+const solo=(s,k)=>(k?s.v(k):1)*(1-s.v(k+1));
+const mkClock=()=>{let key=null,t0=0;return (s,x='')=>{const k=s.step+'|'+x;if(k!==key){key=k;t0=s.t}return REDUCED?99:s.t-t0}};
+// rich text: CJK wraps per char, latin words and highlighted terms stay whole
+const LC=new Map();
+if(document.fonts&&document.fonts.addEventListener)document.fonts.addEventListener('loadingdone',()=>LC.clear());
+const esc=t=>t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+function toks(s,terms){const out=[];const plain=p=>(p.match(/[A-Za-z0-9_.()<>!=$,#]+|\s|./gu)||[]).forEach(c=>out.push({s:c}));
+ if(terms&&terms.length){const re=new RegExp('('+terms.map(esc).join('|')+')');s.split(re).forEach((p,i)=>{if(!p)return;if(i%2)out.push({s:p,hl:true});else plain(p)})}else plain(s);return out}
+function layout(s,maxW,size,w,f,terms){const key=[s,maxW|0,size,w,f,terms&&terms.join('|')].join('§');let L=LC.get(key);if(L)return L;
+ L=[];let line=[],lw=0;
+ toks(s,terms).forEach(t=>{const wd=tw(t.s,size,t.hl?700:w,f);if(lw+wd>maxW&&line.length&&t.s!==' '){L.push(line);line=[];lw=0}if(!line.length&&t.s===' ')return;line.push({s:t.s,hl:t.hl,x:lw,w:wd});lw+=wd});
+ if(line.length)L.push(line);if(LC.size>600)LC.clear();LC.set(key,L);return L}
+function rich(s,x,y,maxW,o={}){const size=o.size||12,w=o.w||500,lh=o.lh||Math.round(size*1.6);const L=layout(s,maxW,size,w,o.f,o.terms);const hits=[];
+ L.forEach((line,i)=>{const yy=y+i*lh;let run='',rx=0,rh=null;
+  const flush=()=>{if(run)txt(run,x+rx,yy,{size,w:rh?700:w,f:o.f,color:rh?(o.hl||C.acc):(o.color||C.ink),align:'left'});run=''};
+  line.forEach(t=>{if(!!t.hl!==rh||t.hl){flush();rx=t.x;rh=!!t.hl}run+=t.s;if(t.hl)hits.push({s:t.s,x:x+t.x,y:yy,w:t.w})});flush()});
+ return {h:L.length*lh,hits}}
+const richH=(s,maxW,o={})=>layout(s,maxW,o.size||12,o.w||500,o.f,o.terms).length*(o.lh||Math.round((o.size||12)*1.6));
+function segCtl(sel,get,set){const bs=[...document.querySelectorAll(sel+' button')];const sync=()=>bs.forEach(b=>b.setAttribute('aria-pressed',b.dataset.k===String(get())?'true':'false'));bs.forEach(b=>b.onclick=()=>{set(b.dataset.k);sync()});sync()}
+function code(lines,x,y,w,o={}){const size=o.size||11.5,lh=size*1.75,h=lines.length*lh+size*1.6;box(x,y,w,h,{fill:C.tar,r:6});
+ lines.forEach((l,i)=>{const isC=l.trim().startsWith('//');txt(l,x+size*1.1,y+size*.8+lh*(i+.5),{size,f:'m',w:500,align:'left',color:isC?'#8A93A6':(o.hl&&o.hl.includes(i)?(o.hlc||'#5EEAC0'):'#E8E4DA')})});
+ return {h,line:i=>y+size*.8+lh*(i+.5)}}
+function lockIcon(x,y,sz,color){ctx.beginPath();ctx.arc(x,y-sz*.25,sz*.32,Math.PI,0);ctx.strokeStyle=color;ctx.lineWidth=Math.max(1.4,sz*.13);ctx.stroke();box(x-sz*.48,y-sz*.25,sz*.96,sz*.72,{fill:color,r:2})}
+function person(x,y,r,color){dot(x,y-r*1.25,r*.62,color);ctx.beginPath();ctx.arc(x,y+r*.95,r*1.05,Math.PI,0);ctx.closePath();ctx.fillStyle=color;ctx.fill()}
+const LEND=()=>[C.blue,C.amber,C.violet];
+function pie(x,y,r,parts,o={}){const tot=parts.reduce((a,p)=>a+p.v,0)||1;let a0=-Math.PI/2;parts.forEach(p=>{const a1=a0+p.v/tot*TAU*(o.sweep==null?1:o.sweep);if(a1>a0+1e-4){ctx.beginPath();ctx.moveTo(x,y);ctx.arc(x,y,r,a0,a1);ctx.closePath();ctx.fillStyle=p.c;ctx.fill();ctx.strokeStyle=C.sheet;ctx.lineWidth=2;ctx.stroke();
+ const am=(a0+a1)/2;p._x=x+Math.cos(am)*r*.62;p._y=y+Math.sin(am)*r*.62;p._a0=a0;p._a1=a1}a0=a1})}
+const inSlice=(x,y,r,a0,a1)=>(mx,my)=>{const d=Math.hypot(mx-x,my-y);if(d>r)return false;let a=Math.atan2(my-y,mx-x);while(a<a0)a+=TAU;return a<=a1};
+/* ---------- Sapiens helpers ---------- */
+// centered (or aligned) wrapped paragraph; returns height
+function para(s,x,y,maxW,o={}){const size=o.size||12,w=o.w||500,lh=o.lh||Math.round(size*1.55);const L=layout(s,maxW,size,w,o.f);
+ L.forEach((line,i)=>txt(line.map(t=>t.s).join(''),x,y+i*lh,{size,w,f:o.f,color:o.color,align:o.align||'center',a:o.a}));return L.length*lh}
+const paraH=(s,maxW,o={})=>layout(s,maxW,o.size||12,o.w||500,o.f).length*(o.lh||Math.round((o.size||12)*1.55));
+const emo=(s,x,y,size,a)=>txt(s,x,y,{size,a,w:400});
+// a speech bubble with wrapped text; returns rect
+function bubble(s,x,y,maxW,o={}){const size=o.size||12,pad=o.pad||10;const L=layout(s,maxW-pad*2,size,o.w||600,o.f);const lw=Math.max(...L.map(l=>l.length?l[l.length-1].x+l[l.length-1].w:0));
+ const lh=Math.round(size*1.5),w=lw+pad*2,h=L.length*lh+pad*1.3,x0=x-w/2,y0=y-h/2;
+ box(x0,y0,w,h,{fill:o.bg||C.sheet,stroke:o.stroke||C.line,r:10});
+ if(o.tail){ctx.beginPath();ctx.moveTo(x-6,y0+h-1);ctx.lineTo(x+o.tail,y0+h+10);ctx.lineTo(x+6,y0+h-1);ctx.closePath();ctx.fillStyle=o.bg||C.sheet;ctx.fill()}
+ L.forEach((line,i)=>txt(line.map(t=>t.s).join(''),x,y0+pad*.65+lh*(i+.5),{size,w:o.w||600,f:o.f,color:o.color||C.ink}));
+ return {x:x0,y:y0,w,h}}
+// controls
+const TOUCH={};
+function rangeCtl(id,get,set,fmt){const el=document.getElementById(id),out=document.getElementById(id+'o');if(!el)return;TOUCH[id]=false;
+ const sync=()=>{if(out)out.textContent=fmt?fmt(get()):get()};el.value=get();el.oninput=()=>{TOUCH[id]=true;set(+el.value);sync()};sync()}
+// while the reader has not touched a slider, the animation drives it
+function autoVal(id,v,fmt){if(TOUCH[id])return null;const el=document.getElementById(id);if(el&&+el.value!==v){el.value=v;const o=document.getElementById(id+'o');if(o)o.textContent=fmt?fmt(v):v}return v}
+function btnCtl(id,fn){const b=document.getElementById(id);if(b)b.onclick=()=>{TOUCH[id]=true;fn(b)}}
+// simple world map (equirectangular, lon -180..180, lat 78..-56)
+const LAND=[
+ [[-17,15],[-5,36],[10,37],[32,31],[43,12],[51,12],[40,-15],[35,-25],[20,-35],[12,-18],[9,4],[-8,5]],
+ [[-10,36],[-9,43],[-2,48],[5,52],[10,55],[12,58],[20,69],[40,68],[70,73],[105,78],[140,72],[178,68],[170,60],[155,59],[140,52],[135,43],[122,40],[121,31],[110,20],[105,10],[100,13],[98,8],[92,22],[80,8],[73,20],[66,25],[57,25],[52,25],[45,13],[35,30],[28,36],[25,40],[15,38],[8,44],[3,43]],
+ [[114,-22],[122,-17],[130,-12],[137,-12],[142,-11],[146,-19],[153,-26],[150,-37],[141,-38],[135,-34],[129,-32],[115,-34]],
+ [[-168,66],[-156,71],[-130,70],[-95,72],[-80,63],[-62,58],[-56,50],[-66,44],[-76,35],[-81,25],[-90,30],[-97,26],[-97,19],[-87,15],[-80,8],[-85,11],[-92,15],[-105,20],[-112,30],[-124,40],[-125,49],[-135,58],[-152,60],[-165,60]],
+ [[-80,8],[-72,12],[-60,10],[-50,0],[-35,-6],[-39,-15],[-48,-26],[-58,-38],[-65,-55],[-74,-50],[-71,-30],[-76,-14],[-81,-5]],
+ [[-55,60],[-45,60],[-20,70],[-25,82],[-60,80],[-70,77]],
+ [[95,5],[105,-6],[106,-2],[100,2]],[[109,1],[118,7],[119,-3],[111,-3]],[[131,-1],[141,-3],[150,-10],[141,-9],[134,-4]],
+ [[44,-13],[50,-15],[48,-25],[44,-23]],[[166,-46],[174,-41],[178,-38],[172,-35],[173,-41]],
+ [[-6,50],[2,51],[-3,58],[-6,56]],[[130,31],[141,38],[142,44],[136,36]]
+];
+function mapProj(x,y,w,h){return (lon,lat)=>[x+(lon+180)/360*w,y+(78-lat)/136*h]}
+function drawLand(P,fill,stroke){LAND.forEach(poly0=>{ctx.beginPath();poly0.forEach(([lo,la],i)=>{const [px,py]=P(lo,la);i?ctx.lineTo(px,py):ctx.moveTo(px,py)});ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=1;ctx.stroke()}})}
+// fitted map rectangle (2.4:1) inside a box
+function fitMap(x,y,w,h){const r=2.4;let mw=w,mh=w/r;if(mh>h){mh=h;mw=h*r}return {x:x+(w-mw)/2,y:y+(h-mh)/2,w:mw,h:mh}}
+const fmtN=v=>v>=1e4?(v/1e4).toFixed(v%1e4?1:0).replace(/\.0$/,'')+' 万':String(v);
+const fmtY=v=>v>=1e8?(v/1e8).toFixed(v>=1e9?0:1).replace(/\.0$/,'')+' 亿年前':v>=1e4?(v/1e4).toFixed(v%1e4?1:0).replace(/\.0$/,'')+' 万年前':v+' 年前';
+
+const slY=v=>Math.round(7e4*Math.pow(1-v/100,2.2)),ySl=y=>Math.round(100*(1-Math.pow(y/7e4,1/2.2)));
+let NOW=0,n150=8,storyOn=false,peu={car:0,fac:0,emp:0,sh:0,judge:0},yAgo=70000,wheatView='h',weeks=0,trapPop=100,declBio=false,goods=12,empMode='r',cookView='s',loans=0,cond=50,expect=50;
+
+const TRAP=[['在麦子茂盛处住上一季','猎物和食物多，部落不必四处流浪。'],['留下一部分种子来年播种','采集野生谷物时小心留种。'],['把种子埋深、犁地整地','播种效果好很多。'],['除草、防虫、浇水、施肥','越来越多心力花在谷物上，采集狩猎的时间被挤压。'],['住进永久村落','女性每年都能生孩子，婴儿早早断奶改喂粥。'],['开垦更多田地','人口一多就耗尽剩余，只好再加大耕种面积。']];
+
+const SCENES=[
+/* ---------------- 0 · Three revolutions ---------------- */
+{nav:'三场革命',chap:'第 1 章 · 人类：一种也没什么特别的动物',title:'三场革命，一部人类史',
+steps:[
+ {h:'从物理到历史',dur:8,c:'135 亿年前的大爆炸开启了<b>物理学</b>；约 30 万年后原子和分子形成，有了<b>化学</b>；38 亿年前地球上出现有机体，有了<b>生物学</b>。而“历史”，要等到 7 万年前才开始。',q:'大约7万年前，“认知革命”（Cognitive Revolution）让历史正式启动。（第一章）'},
+ {h:'放大最后 7 万年',dur:9,c:'把时间轴放大到最后 7 万年，就能看见全书的骨架：<b>认知革命</b>（约 7 万年前）、<b>农业革命</b>（约 1.2 万年前）、<b>科学革命</b>（约 500 年前）。前两次各占一部分，第三部分讲把世界连成一体的力量，第四部分讲最后这 500 年。',q:'大约12000年前，“农业革命”（Agricultural Revolution）让历史加速发展。而到了大约不过是500年前，“科学革命”（Scientific Revolution）可以说是让历史画下句点而另创新局。（第一章）'},
+ {h:'曾经有很多种“人”',dur:9,c:'“人类”本来不只一种。几十万年前，地球上至少同时有 6 种人：欧洲的<b>尼安德特人</b>、东亚的<b>直立人</b>、爪哇的<b>梭罗人</b>、弗洛里斯岛上身高不到 1 米的<b>弗洛里斯人</b>、西伯利亚的<b>丹尼索瓦人</b>，以及东非的我们<b>智人</b>（Homo sapiens）。悬停可看每种人的介绍。',q:'过去多种人种共存其实是常态，现在地球上只有“一种人”，这才是异常。（第一章）'},
+ {h:'最后只剩一种',dur:9,c:'智人走到哪里，当地的人种就很快消失：梭罗人最近的遗迹约 5 万年前，丹尼索瓦人随后绝迹，尼安德特人约 3 万年前退场，弗洛里斯人约 1.2 万年前消失。现代中东和欧洲人身上带有 1%~4% 的尼安德特人 DNA。',q:'智人就像是个香蕉共和国的独裁者。（第一章）'},
+ {h:'这本书要回答的问题',dur:10,c:'大脑只占体重 2%~3%，却消耗休息时 25% 的能量；会用火、会做石器的人种也不止智人一种。那么，<b>一种“没什么特别”的猿类，凭什么成了地球的主人</b>？成了主人之后，它<b>过得更快乐</b>了吗？接下来 9 幕，沿三场革命一路回答。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---------- timeline (steps 0-1) ----------
+ layer(1-v2,()=>{
+  const x0=n?20:50,x1=W-(n?20:50),y=H*.5;
+  // log-ish zoom: step0 shows 13.5 bn yrs linear; step1 zooms to last 70k
+  const z=v1;
+  const span=lerp(1.35e10,7.6e4,E.io(z));
+  const X=ago=>x1-(ago/span)*(x1-x0);
+  seg(x0,y,x1,y,C.ink,2);
+  txt(z<.5?'135 亿年前':'7 万多年前',x0,y+22,{size:10.5,f:'m',color:C.muted,align:'left'});
+  txt('今天',x1,y+22,{size:10.5,f:'m',color:C.muted,align:'right'});
+  const big=[[1.35e10,'大爆炸','物理学',C.blue,'物质、能量、时间、空间出现，这些基本特征成了“物理学”。'],[1.35e10-3e5,'原子与分子','化学',C.violet,'大爆炸后约 30 万年，物质和能量形成原子，再构成分子，这就是“化学”。'],[3.8e9,'有机体','生物学',C.teal,'38 亿年前，地球上有些分子结合成庞大精细的结构：有机体。从此有了“生物学”。']];
+  layer(1-z,()=>{big.forEach(([a,l,d,c,b],i)=>{const x=X(a)+(i===1?26:0),yy=y-(n?40:52)-(i%2)*26;seg(x,y,x,yy+10,c,1.2);dot(x,y,5,c);pill(l,x,yy,{size:n?10.5:11.5,bg:c});txt(d,x,yy-20,{size:10.5,f:'m',color:c});hotC(x,y,12,l+' · '+d,b)});
+   // history is a speck
+   const hx=X(7e4);glow(hx,y,30,C.red,.6);dot(hx,y,4,C.red);txt('历史 ↓ 在这一点里',hx-6,y+46,{size:11,w:700,color:C.red,align:'right'});
+   txt('如果整条线是 135 亿年，7 万年只占最右端约 0.0005%',W/2,y+(n?96:86),{size:n?10.5:12,color:C.muted})});
+  const rev=[[7e4,'认知革命','第一部分 · 第 1–4 章',C.amber,'约 7 万年前。智人开始能讨论不存在的事物，并一起相信它们，历史从此脱离生物学独立发展。'],[1.2e4,'农业革命','第二部分 · 第 5–8 章',C.teal,'约 1.2 万年前。人类开始种植作物、驯养动物，定居下来，人口暴增。'],[0,'人类的融合统一','第三部分 · 第 9–13 章',C.violet,'金钱、帝国、宗教把成千上万个小世界合成一个全球世界。这一部分讲的是贯穿农业时代的过程，没有一个起点日期。'],[500,'科学革命','第四部分 · 第 14–20 章',C.red,'约 500 年前。人类承认自己无知，开始追求新的力量，世界在几百年里天翻地覆。']];
+  layer(z,()=>{
+   // unity band between agri and science
+   const ux0=X(1.2e4),ux1=X(500);box(ux0,y-7,ux1-ux0,14,{fill:rgba(C.violet,.18),r:7});
+   rev.forEach(([a,l,p,c,b],i)=>{const x=i===2?(ux0+ux1)/2:X(a);const up=i%2===0;const yy=y+(up?-1:1)*(n?(i===2?92:58):(i===2?100:70));
+    if(i!==2){seg(x,y,x,yy,c,1.4);dot(x,y,6,c)}else seg(x,y,x,yy,c,1,[3,3]);
+    const lx=clamp(x,n?62:80,W-(n?62:80));const pb=pill(l,lx,yy,{size:n?11:13,bg:c,w:700});txt(p,lx,yy+(up?-20:20),{size:n?9.5:10.5,f:'m',color:c});
+    if(i!==2)txt(fmtY(a||0),lx,yy+(up?-36:36),{size:n?10:11,w:700,color:C.ink});
+    hotR(pb.x,pb.y,pb.w,pb.h,l,b);if(i!==2)hotC(x,y,12,l,b)});
+   txt('第三部分讲的“融合统一”贯穿整个农业时代',W/2,H-(n?26:30),{size:n?10:11,color:C.muted});
+  });
+ });
+ // ---------- family of humans (steps 2-4) ----------
+ layer(v2,()=>{
+  const P=mapProj(0,0,1,1);
+  const top=n?36:30,bh=H*(n?.5:.62);
+  const mr=fitMap(n?8:30,top,W-(n?16:60),bh);
+  const Pm=mapProj(mr.x,mr.y,mr.w,mr.h);
+  layer(.9,()=>drawLand(Pm,C.soft,C.line));
+  const sp=[['尼安德特人','Homo neanderthalensis',10,50,C.blue,3e4,'欧洲与西亚。比智人魁梧、肌肉发达，脑容量更大，适应冰河时期的寒冷气候。约 3 万年前退出世界舞台。'],
+   ['直立人','Homo erectus',112,32,C.violet,null,'东亚。存续了将近 200 万年，是目前所知存续最久的人类物种。'],
+   ['梭罗人','Homo soloensis',110,-7,C.teal,5e4,'印度尼西亚爪哇岛，适应热带生活。现存最近的遗迹约在 5 万年前。'],
+   ['弗洛里斯人','Homo floresiensis',121,-9,C.amber,1.2e4,'印度尼西亚弗洛里斯岛，经历了“侏儒化”：身高不过 1 米、体重不过 25 公斤，仍会制造石器、猎矮生象。约 1.2 万年前消失。'],
+   ['丹尼索瓦人','Homo denisova',85,52,C.muted,4.5e4,'2010 年在西伯利亚丹尼索瓦洞穴发现的一块手指骨，基因分析证实是一个新人种。在梭罗人之后不久绝迹。美拉尼西亚人和澳大利亚原住民最高带有 6% 的丹尼索瓦人 DNA。'],
+   ['智人','Homo sapiens',36,2,C.red,null,'东非。约 15 万年前东非就已有外貌与我们几乎一样的智人。约 7 万年前开始走出非洲。']];
+  // step3 timer: extinction sweep
+  const ex=s.raw(3)>0?clamp(s.step>=3?(REDUCED?1:(s.step===3?s.age/6:1)):0):0;
+  const now=lerp(7e4,1e4,ex);
+  sp.forEach((q,i)=>{const [nm,la,lo,lat,c,end,b]=q;const [x,y]=Pm(lo,lat);const gone=end&&now<=end;const isS=nm==='智人';
+   const ga=gone?.18:1;const r=(n?6:8)+(isS?2:0);
+   layer(ga,()=>{dot(x,y,r,c);if(!gone)glow(x,y,r*2.6,c,.3);
+    const lx=x+(lo>100?-1:1)*(r+4),al=lo>100?'right':'left';
+    const ly=y+(nm==='梭罗人'?-10:nm==='弗洛里斯人'?12:0);
+    txt(nm,lx,ly-(n?0:6),{size:n?10.5:12,w:700,color:C.ink,align:al});if(!n)txt(la,lx,ly+8,{size:9,f:'m',color:C.muted,align:al})});
+   if(gone){seg(x-r,y-r,x+r,y+r,C.ink,1.6);seg(x-r,y+r,x+r,y-r,C.ink,1.6)}
+   hotC(x,y,r+8,nm+' '+la,b+(end?` <br><i>消失：约 ${fmtY(end)}</i>`:''))});
+  // sapiens expansion arrows during step 3
+  layer(s.v(3),()=>{const [ax,ay]=Pm(36,2);[[10,50],[85,52],[110,-7],[121,-9],[135,-25],[112,32]].forEach(([lo,la],k)=>{const p=clamp(ex*1.4-k*.08);if(p<=0)return;const [bx,by]=Pm(lo,la);const [px,py]=along(ax,ay,bx,by,p);curve(ax,ay,(ax+px)/2,(ay+py)/2-20,px,py,rgba(C.red,.65),1.4,[4,3])});
+   const lbl=fmtY(Math.round(now/1000)*1000);pill(lbl,mr.x+mr.w-6,mr.y+14,{size:n?10.5:12,f:'m',bg:C.red,align:'right'});
+  });
+  // bottom panel
+  const by=mr.y+mr.h+(n?16:22);
+  layer(1-s.v(4),()=>{
+   layer(1-s.v(3),()=>{txt('几十万年前：至少 6 种人同时存在',W/2,by+8,{size:n?11.5:13,w:700,f:'d'})});
+   layer(s.v(3),()=>{const alive=sp.filter(q=>!q[5]||now>q[5]).length-(now<3e4?0:0);txt(`还剩 ${sp.filter(q=>!(q[5]&&now<=q[5])).length} 种`+(ex>=1?' → 直立人的记录也在更早结束，最后只剩智人':''),W/2,by+8,{size:n?11:13,w:700,f:'d',color:C.red})});
+  });
+  layer(s.v(4),()=>{
+   const q=[['🧠','大脑：占体重 2%~3%','休息时却耗掉 25% 的能量（其他猿类约 8%）。代价是要花更多时间找食物，肌肉也退化了。'],['🔥','火：30 万年前已是家常便饭','直立人、尼安德特人和智人的祖先都会用火。火让食物易于消化，肠道缩短，大脑才得以变大。'],['❓','那为什么偏偏是智人？','答案在下一幕：一种新的语言能力。']];
+   const cw=n?(W-24):Math.min(260,(W-80)/3),gap=n?6:14,tot=n?cw:cw*3+gap*2;let x=(W-tot)/2;
+   q.forEach((it,i)=>{const yy=n?by-6+i*((H-by-4)/3):by,hh=n?(H-by-4)/3-gap:H-by-(n?8:16);
+    const bx=n?x:x+i*(cw+gap);box(bx,yy,cw,hh,{fill:i===2?rgba(C.acc,.12):C.sheet,stroke:i===2?C.acc:C.line,r:8});
+    if(n){emo(it[0],bx+18,yy+hh/2,16);txt(it[1],bx+36,yy+hh/2,{size:11.5,w:700,align:'left'})}
+    else{emo(it[0],bx+22,yy+22,18);txt(it[1],bx+42,yy+22,{size:12,w:700,align:'left'});para(it[2],bx+14,yy+46,cw-28,{size:11,align:'left',color:C.muted})}
+    hotR(bx,yy,cw,hh,it[1],it[2])});
+  });
+ });
+}},
+/* ---------------- 1 · Fiction & the 150 limit ---------------- */
+{nav:'虚构故事',chap:'第 2 章 · 知善恶树',title:'会讲故事的猿',
+ctrlSteps:[2,3],ctrl:`<label for="nsl">群体人数 <output id="nslo">8</output></label><input id="nsl" type="range" min="2" max="400" step="1" value="8"><div class="segbtns"><button id="storyb" aria-pressed="false">讲一个共同的故事</button></div><div class="note">拖动滑块：每多一个人，需要维持的一对一关系就多出一大截。超过约 150 人，只靠八卦的群体会分裂；按下按钮，看共同的故事怎样把陌生人重新连起来。</div>`,
+enter(){rangeCtl('nsl',()=>n150,v=>{n150=v},v=>v);const b=document.getElementById('storyb');b.setAttribute('aria-pressed',storyOn);btnCtl('storyb',el=>{storyOn=!storyOn;el.setAttribute('aria-pressed',storyOn);el.textContent=storyOn?'收起故事，只靠八卦':'讲一个共同的故事'});b.textContent=storyOn?'收起故事，只靠八卦':'讲一个共同的故事'},
+steps:[
+ {h:'动物也有语言',dur:8,c:'7 万到 3 万年前，智人出现了新的思维和沟通方式，书中称为<b>认知革命</b>。但语言不是智人发明的：<b>青猴</b>有一种叫声表示“小心！有老鹰！”，稍作调整就成了“小心！有狮子！”。前者让猴群抬头望天，后者让它们冲上树。',q:'智人的语言并不是世界上的第一种语言。（第二章）'},
+ {h:'智人语言的三种用途',dur:12,c:'书中依次比较三种解释。①<b>“河边有只狮子”</b>：智人能描述“今天上午在河湾，一群狮子正在跟踪野牛”，于是能一起规划狩猎。②<b>八卦</b>：知道部落里谁可靠、谁是骗子，能维持更大的群体。③<b>虚构故事</b>：谈论根本不存在的事物，这才是智人独有的。',q:'“讨论虚构的事物”正是智人语言最独特的功能。（第二章）'},
+ {bg:1,h:'背景：黑猩猩、八卦与 150 人',dur:16,c:'黑猩猩靠<b>互相理毛</b>、一起打架来建立信任，族群一般只有 <b>20~50 只</b>；成员一多，秩序就动摇，族群分裂。智人用语言八卦，效率高得多，但人脑能记住的社会关系仍然有限。社会学研究认为，靠八卦维持的最大“自然”团体约 <b>150 人</b>。',terms:[['八卦','在背后谈论别人：谁和谁好、谁诚实、谁是骗子。书中认为这是语言最早的重要用途之一。'],['一对一关系','群体里任意两人之间的一条关系。n 个人就有 n(n−1)/2 条，50 人的部落有 1225 条。'],['150 人门槛','30 人的排、100 人的连，几乎不需要正式纪律；一个万人的师，就不能再用带排的方式领导。家族企业变大时也会碰上这道坎。']],ask:'拖动人数时注意两件事：关系数增长得有多快？超过 150 人以后，是什么让群体重新连起来？'},
+ {h:'八卦的天花板',dur:11,c:'每个点是一个人，每条线是一段需要维持的关系。人数翻倍，关系数大约翻四倍：<b>50 人有 1225 对，150 人有 11175 对</b>。超过约 150 人，大多数人就无法真正了解所有成员，群体会分裂成几个小团伙。'},
+ {h:'共同的故事跨过门槛',dur:12,c:'怎么建成有数万居民的城市、上亿人口的帝国？<b>只要同样相信某个故事，素不相识的人也能合作。</b>两个天主教徒从未谋面，也能一起参加十字军；两个律师素不相识，也能联手为陌生人辩护。人与人之间不再需要每一条线，只需要都连到同一个故事。',q:'人类和黑猩猩之间真正不同的地方就在于那些虚构的故事，它像胶水一样把千千万万的个人、家庭和群体结合在一起。（第二章）'},
+ {h:'一起想象',dur:10,c:'虚构的重点不只是想象，而是<b>“一起”想象</b>。国家、金钱、人权、法律都只存在于人类共同的想象里，却真实地组织着几百万人的行为。故事也能迅速改写：1789 年，法国人几乎一夜之间从相信“天赋君权”改为相信“人民做主”。基因演化的路总在堵车，智人从此开上了<b>文化演化</b>的快速道路。',q:'除了存在于人类共同的想象之外，这个宇宙中根本没有神、没有国家、没有钱、没有人权、没有法律，也没有正义。（第二章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---- step 0: green monkey ----
+ layer(1-v1,()=>{
+  const ph=Math.floor((s.t*.25)%2),cx=W/2,gy=H*.72;
+  seg(0,gy,W,gy,C.line,1.5);
+  // tree
+  const tx=W*.78;box(tx-8,gy-H*.32,16,H*.32,{fill:rgba(C.amber,.6),r:3});dot(tx,gy-H*.36,m*.1,rgba(C.teal,.5));
+  // monkeys
+  for(let i=0;i<5;i++){const bx=W*.18+i*W*.09;let x=bx,y=gy-10;const p=(s.t*.25%1);
+   if(ph===1){const q=E.io(clamp(p*2-.2*i/5));x=lerp(bx,tx-20+i*8,q);y=lerp(gy-10,gy-H*.3+i*10,q)}
+   emo('🐒',x,y,n?20:26);if(ph===0&&i===2)emo('🐒',x,y,n?20:26)}
+  const call=ph===0?'“小心！有老鹰！”':'“小心！有狮子！”';
+  bubble(call,W*.3,H*.28,220,{size:n?12:14,tail:-10});
+  txt(ph===0?'→ 猴群停下动作，望向天空':'→ 猴群立刻冲到树上',W*.3,H*.28+(n?34:40),{size:n?11:12,color:C.muted});
+  if(ph===0)emo('🦅',W*.62,H*.16+Math.sin(t*2)*6,n?24:30);else emo('🦁',W*.08+((s.t*.25%1))*W*.2,gy-14,n?24:30);
+  hotC(W*.3,H*.28,60,'青猴的叫声','动物学家确定：青猴的某种叫声代表“小心！有老鹰！”，稍微调整就变成“小心！有狮子！”。这是有声语言，但只传达眼前的真实信息。');
+ });
+ // ---- step 1: three functions ----
+ layer(v1*(1-v2),()=>{
+  const it=[['🦁','河边有只狮子','“今天上午，在附近的河湾，有一群狮子正在跟踪一群野牛。”','能传达大量关于环境的信息','规划并执行复杂的计划，像是躲开狮子、猎捕野牛',C.amber],
+   ['🗣️','八卦','“部落里谁讨厌谁、谁跟谁在交往、谁诚实、谁是骗子。”','能传达大量关于社会关系的信息','组织更大、更有凝聚力的群体，规模可达 150 人',C.blue],
+   ['🦁✨','虚构故事','“狮子是我们部落的守护神。”','能传达关于不存在的事物的信息','大批陌生人之间的合作，社会行为快速创新',C.red]];
+  const k=clamp(Math.floor(s.age/3.2),0,2);
+  const cw=n?W-24:(W-80)/3,gap=n?8:16;
+  it.forEach((q,i)=>{const on=s.step>1||REDUCED||i<=k;
+   layer(on?1:.25,()=>{let x,y,h;if(n){x=12;h=(H-40)/3-gap;y=20+i*(h+gap)}else{x=40+i*(cw+gap);y=H*.12;h=H*.76}
+    box(x,y,cw,h,{fill:i===2?rgba(C.red,.08):C.sheet,stroke:q[5],r:10,lw:i===2?2:1.2});
+    if(n){emo(q[0],x+24,y+h/2,22);txt(q[1],x+52,y+20,{size:13,w:900,f:'d',color:q[5],align:'left'});para(q[2],x+52,y+42,cw-62,{size:10.5,align:'left'});txt('→ '+q[4],x+52,y+h-14,{size:10,color:C.muted,align:'left'})}
+    else{emo(q[0],x+cw/2,y+44,34);txt(q[1],x+cw/2,y+92,{size:17,w:900,f:'d',color:q[5]});
+     const hh=para(q[2],x+cw/2,y+128,cw-36,{size:12.5,w:600});
+     txt('新能力',x+cw/2,y+150+hh,{size:10,f:'m',color:C.muted});para(q[3],x+cw/2,y+170+hh,cw-36,{size:11.5});
+     txt('更深远的影响',x+cw/2,y+214+hh,{size:10,f:'m',color:C.muted});para(q[4],x+cw/2,y+234+hh,cw-36,{size:11.5,w:700,color:q[5]})}
+    hotR(x,y,cw,h,q[1],q[3]+'。影响：'+q[4]+'。（第二章表格“认知革命有什么影响”）')})});
+ });
+ // ---- steps 3-5: network ----
+ layer(v2,()=>{
+  let N=n150;if(s.step===2){const a=autoVal('nsl',Math.round(lerp(8,180,clamp((s.age-.6)/8))),v=>v);if(a!=null)N=n150=a}
+  if(s.step===3&&!TOUCH.storyb&&s.age>2.5&&!storyOn){storyOn=true;const b=document.getElementById('storyb');if(b){b.setAttribute('aria-pressed','true');b.textContent='收起故事，只靠八卦'}}
+  if(s.step>=3&&!TOUCH.nsl&&N<300){const a=autoVal('nsl',Math.min(400,Math.max(N,320)),v=>v);if(a!=null)N=n150=a}
+  if(s.step<3&&!TOUCH.storyb)storyOn=false;
+  const pairs=N*(N-1)/2,over=N>150;
+  const top=n?70:64,cy=top+(H-top-(n?60:50))/2,R=Math.min(W*(n?.44:.3),(H-top-(n?60:50))/2-6);
+  const cx=n?W/2:W*.4;
+  // groups when over limit and no story
+  const st=storyOn?1:0;
+  const ng=over&&!st?Math.ceil(N/120):1;
+  const pts=[];for(let i=0;i<N;i++){const g=i%ng;const ga=g/ng*TAU-Math.PI/2;const gcx=cx+(ng>1?Math.cos(ga)*R*.55:0),gcy=cy+(ng>1?Math.sin(ga)*R*.55:0);
+   const rr0=(ng>1?R*.4:R)*Math.sqrt(rnd(i*3+1)),aa=rnd(i*7+2)*TAU;pts.push([gcx+Math.cos(aa)*rr0,gcy+Math.sin(aa)*rr0,g])}
+  // links: sample at most ~1500
+  const maxL=1600;const all=pairs;const stepL=Math.max(1,Math.ceil(all/maxL));
+  ctx.lineWidth=.6;
+  if(!st){let c=0;ctx.strokeStyle=rgba(over?C.red:C.blue,Math.max(.05,Math.min(.5,30/Math.sqrt(all+1))));ctx.beginPath();
+   for(let i=0;i<N;i++)for(let j=i+1;j<N;j++){if((c++%stepL))continue;if(pts[i][2]!==pts[j][2])continue;ctx.moveTo(pts[i][0],pts[i][1]);ctx.lineTo(pts[j][0],pts[j][1])}ctx.stroke()}
+  else{ctx.strokeStyle=rgba(C.amber,.25);ctx.beginPath();pts.forEach(p=>{ctx.moveTo(p[0],p[1]);ctx.lineTo(cx,cy)});ctx.stroke()}
+  pts.forEach(p=>dot(p[0],p[1],N>200?1.6:N>60?2.2:3.2,st?C.amber:over?C.red:C.blue));
+  if(ng>1&&!st){for(let g=0;g<ng;g++){const ga=g/ng*TAU-Math.PI/2;const gx=cx+Math.cos(ga)*R*.55,gy=cy+Math.sin(ga)*R*.55;ctx.beginPath();ctx.arc(gx,gy,R*.44,0,TAU);ctx.strokeStyle=rgba(C.red,.5);ctx.setLineDash([4,4]);ctx.lineWidth=1;ctx.stroke();ctx.setLineDash([])}}
+  if(st){glow(cx,cy,R*.5,C.amber,.35);emo('🦁',cx,cy-4,n?26:34);txt('守护灵 · 共同的故事',cx,cy+(n?22:28),{size:n?10.5:12,w:700,color:C.amber});
+   hotC(cx,cy,30,'共同的故事','部落守护灵、神、国家、公司……只要大家同样相信，就不需要人人互相认识。每个人只需和故事相连，连线数随人数线性增长。')}
+  hotC(cx,cy,R,'群体',`现在有 ${N} 人。只靠八卦，需要维持 ${pairs.toLocaleString()} 条一对一关系。`);
+  // readout
+  const rx=n?W/2:W*.8,ry=n?top-30:H*.3;
+  const lines=[[`${N}`,'人'],[pairs.toLocaleString(),'条一对一关系'],[st?N.toLocaleString():'—','条“人-故事”连线']];
+  if(n){txt(`${N} 人 · ${pairs.toLocaleString()} 对关系`+(st?` · 故事连线 ${N}`:''),rx,ry,{size:12.5,w:700,f:'m',color:over&&!st?C.red:C.ink});
+   txt(over?(st?'共同的故事让陌生人合作':'超过 150 人：群体分裂'):'150 人以内：靠八卦就能运作',rx,ry+20,{size:11,w:700,color:over&&!st?C.red:st?C.amber:C.blue})}
+  else{lines.forEach((L,i)=>{const c=i===1?(over&&!st?C.red:C.blue):i===2?C.amber:C.ink;txt(L[0],rx,ry+i*68,{size:30,w:700,f:'m',color:i===2&&!st?C.line:c});txt(L[1],rx,ry+i*68+26,{size:11.5,color:C.muted})});
+   const msg=over?(st?'共同的故事让陌生人合作':'超过 150 人：只靠八卦，群体分裂'):'150 人以内：靠八卦就能运作';
+   pill(msg,rx,ry+3*68+4,{size:11.5,bg:over&&!st?C.red:st?C.amber:C.blue})}
+  // 150 gauge
+  const gx0=n?24:40,gx1=n?W-24:W*.66,gy=H-(n?24:26);seg(gx0,gy,gx1,gy,C.line,4);
+  const X=v=>gx0+(gx1-gx0)*clamp(v/400);
+  [[20,'黑猩猩 20'],[50,'50'],[150,'150']].forEach(([v,l])=>{seg(X(v),gy-6,X(v),gy+6,v===150?C.red:C.muted,1.5);txt(l,X(v),gy-14,{size:9.5,f:'m',color:v===150?C.red:C.muted})});
+  dot(X(N),gy,6,over&&!st?C.red:st?C.amber:C.blue);
+  box(X(20),gy-2,X(50)-X(20),4,{fill:rgba(C.teal,.6),r:2});
+  hotR(X(20),gy-8,X(50)-X(20),16,'黑猩猩族群：20~50 只','靠理毛和一起打架建立信任。成员一多，秩序动摇，族群就分裂。');
+  hotR(X(150)-6,gy-20,12,30,'150 人门槛','借由八卦来维持的最大“自然”团体大约是 150 人。（第二章）');
+  // step5 overlay: imagined things
+  layer(v4,()=>{const items=['神','国家','金钱','人权','法律','公司'];const R2=R*1.02;
+   items.forEach((w0,i)=>{const a=i/items.length*TAU+t*.12;const x=cx+Math.cos(a)*R2,y=cy+Math.sin(a)*R2;pill(w0,x,y,{size:n?10.5:12,bg:C.sheet,color:C.amber,stroke:C.amber});
+    hotC(x,y,18,w0,'只存在于人类共同的想象中，却真实地组织着陌生人的合作。')})});
+ });
+}},
+/* ---------------- 2 · Peugeot ---------------- */
+{nav:'标致公司',chap:'第 2 章 · 知善恶树',title:'标致公司真的存在吗？',
+ctrlSteps:[0],ctrl:`<div class="lbl">把这些东西一样样拿走</div><div class="segbtns" id="peub"><button data-k="car">回收所有汽车</button><button data-k="fac">毁掉所有工厂</button><button data-k="emp">全体员工离开</button><button data-k="sh">股东卖光股票</button><button data-k="judge">法官下令解散</button></div><div class="note">每按一个按钮，就拿走一样“看得见的东西”。观察中间的公司标记什么时候才会消失。</div>`,
+enter(){const bs=[...document.querySelectorAll('#peub button')];const sync=()=>bs.forEach(b=>b.setAttribute('aria-pressed',peu[b.dataset.k]?'true':'false'));bs.forEach(b=>b.onclick=()=>{TOUCH.peu=true;const k=b.dataset.k;peu[k]=peu[k]?0:NOW;sync()});this._sync=sync;sync()},
+steps:[
+ {bg:1,h:'背景：从狮人到标致',dur:16,c:'德国施泰德洞穴出土过一尊象牙“<b>狮人</b>”雕像，人身狮头，约 3.2 万年前，是最早能确定的艺术品之一，也可能是最早的宗教证据。300 公里外的法国瓦朗蒂盖伊村，是<b>标致汽车</b>（Peugeot）的起源地，它的商标恰好也是一头狮子。标致全球有 <b>20 万</b>名员工，大多互不相识；2008 年，他们合作造出了 150 多万辆车，营收约 550 亿欧元。',terms:[['有限公司','法律上独立于创办人、投资者和管理者的“个体”。公司负债，股东和创办人不必用自己的房子去还。'],['法律拟制 legal fiction','法律“当作它存在”的东西。公司就是最典型的一种。'],['法人','法律上把公司当成人：能开银行账户、拥有财产、纳税、被起诉。corporation 一词来自拉丁文 corpus（身体），而公司恰恰没有身体。'],['尚恩','书中设想的 13 世纪法国马车匠。他就是他的工作室，店倒了要卖房卖牛还债，甚至可能被卖为奴隶。']],ask:'书中问：“该以什么标准，我们才能说标致公司确实存在？”下一步，试着把公司的东西一样样拿走。'},
+ {h:'做减法',dur:16,c:'把所有标致汽车回收打成废铁，公司还能造新车；员工全部罹难、工厂全毁，公司还能借钱、重新雇人；股东卖光股票，公司依然存在。但只要<b>一位法官下令解散</b>，车、厂、人都还在，公司却当场消失。用右侧按钮自己试试。',q:'标致公司只是我们的一个集体想象，这种想象在法律上称为“法律拟制”（legal fiction）。（第二章）'},
+ {h:'律师就是现代的巫师',dur:11,c:'阿尔芒·标致在 1896 年成立有限公司，他 1915 年去世，公司至今健在。公司是怎么“造”出来的？和神父在弥撒中说“这是我的身体”、让面包变成基督的身体一样：<b>在对的场合说出对的话</b>，所有相信这套故事的人就会照着行事。对标致来说，这套故事是法国国会写的法律。'},
+ {h:'想象的现实不是谎话',dur:10,c:'明知河边没有狮子却说有，这是<b>谎话</b>，青猴也会。<b>想象的现实</b>则是人人都相信它；只要这份共同的信念还在，它就能影响世界。从认知革命起，智人就生活在<b>双重的现实</b>里：一边是河流、树木、狮子，一边是神、国家和公司。',q:'从认知革命以来，智人一直就生活在一种双重的现实之中。（第二章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2);NOW=s.t;
+ // auto-play removal sequence on step 0 (anim index 0) until touched
+ if(s.step===0&&!TOUCH.peu){const order=['car','fac','emp','sh','judge'];order.forEach((k,i)=>{const on=s.age>1.4+i*2.6;if(on&&!peu[k])peu[k]=s.t;if(!on&&peu[k]&&s.age<1)peu[k]=0});const sc=SCENES[2];if(sc._sync)sc._sync()}
+ if(s.step>0&&!TOUCH.peu){['car','fac','emp','sh','judge'].forEach(k=>peu[k]=0);const sc=SCENES[2];if(sc._sync)sc._sync()}
+ const cx=W/2,cy=H*(n?.44:.47);
+ layer(1-v1,()=>{
+  const R=Math.min(W*(n?.36:.3),H*.34);
+  const items=[['car','🚗','汽车','150 万辆/年','就算全世界所有的标致汽车同时被回收打成废铁，标致公司也不会消失。',-Math.PI*.75],['fac','🏭','工厂与机器','装配线、展示大厅','即使所有装配线和办公室都毁了，公司还是可以借贷，重新盖起工厂。',-Math.PI*.25],['emp','👷','员工','20 万人','就算所有员工全部罹难，公司还能重新雇用员工。',Math.PI*.25],['sh','📈','经营团队与股东','','解散经营团队、股东卖光股票，公司本身依然存在。',Math.PI*.75]];
+  const judged=peu.judge?clamp((s.t-peu.judge)/1.2):0;
+  items.forEach(([k,e,l,sub,b,a])=>{const gone=peu[k]?clamp((s.t-peu[k])/.8):0;const x=cx+Math.cos(a)*R*(n?1:1.25),y=cy+Math.sin(a)*R;
+   seg(cx,cy,x,y,rgba(C.muted,.4*(1-gone)),1,[3,4]);
+   layer(1-gone*.85,()=>{dot(x,y,n?26:32,C.sheet,C.line);emo(e,x,y-2,n?22:28);txt(l,x,y+(n?40:48),{size:n?11:12.5,w:700});if(sub&&!n)txt(sub,x,y+66,{size:10.5,f:'m',color:C.muted})});
+   if(gone>0){seg(x-18,y-18,x+18,y+18,C.red,2.4);seg(x-18,y+18,x+18,y-18,C.red,2.4)}
+   hotC(x,y,34,l,b)});
+  // the company
+  const sc0=1-E.io(judged);
+  if(sc0>.01){const r=(n?40:52)*(.6+.4*sc0);glow(cx,cy,r*2.2,C.acc,.35*sc0);
+   layer(sc0,()=>{dot(cx,cy,r,rgba(C.acc,.14),C.acc,2);emo('🦁',cx,cy-r*.18,r*.8);txt('Peugeot SA',cx,cy+r*.52,{size:n?10.5:12,f:'m',w:700,color:C.acc})});
+   hotC(cx,cy,r,'标致公司（Peugeot SA）','它不是车、不是工厂、不是员工也不是股东。它只存在于法律这个共同的故事里。')}
+  const gone=['car','fac','emp','sh'].filter(k=>peu[k]).length;
+  const msg=judged>.3?'车、厂、人都还在，公司却消失了：它只存在于法律这个故事里':gone?`拿走了 ${gone} 样东西，公司依然存在`:'公司由哪些东西组成？';
+  txt(msg,W/2,H-(n?30:34),{size:n?11.5:14,w:700,f:'d',color:judged>.3?C.red:C.ink});
+  if(judged>.3){const b=pill('⚖ 判决：解散',cx,cy,{size:n?12:14,bg:C.red})}
+ });
+ // step 2: priest / lawyer
+ layer(v1*(1-v2),()=>{
+  const half=n?W:W/2;const rows=[['⛪','神父','穿着圣袍，在对的时间说出“Hoc est corpus meum!”（这是我的身体）','面包和葡萄酒成为基督的身体','数百万天主教徒行礼如仪'],['⚖️','律师','按法国国会写下的法律，执行仪式、宣告咒语和誓言','标致公司成为法人','千百万法国公民把它当作真实存在的实体']];
+  rows.forEach((r,i)=>{const x=n?W/2:W*(.27+.46*i),y0=n?30+i*(H/2-10):H*.12;const cw=n?W-28:W*.4;
+   box(x-cw/2,y0,cw,n?H/2-30:H*.74,{fill:C.sheet,stroke:i?C.acc:C.violet,r:10});
+   emo(r[0],x,y0+(n?24:46),n?22:34);txt(r[1],x,y0+(n?50:90),{size:n?13:17,w:900,f:'d',color:i?C.acc:C.violet});
+   const ys=n?[72,112,146]:[130,200,262];
+   [r[2],'↓ '+r[3],'↓ '+r[4]].forEach((tt,j)=>para(tt,x,y0+ys[j],cw-30,{size:n?10.5:12.5,w:j?700:500,color:j===1?(i?C.acc:C.violet):C.ink}));
+   hotR(x-cw/2,y0,cw,n?H/2-30:H*.74,r[1],i?'1896 年，阿尔芒·标致成立有限公司。他 1915 年去世，标致公司至今仍然生气勃勃。':'书中把公司的诞生比作弥撒：都是讲故事，再说服听众相信。')});
+  if(!n)txt('=',W/2,H*.5,{size:40,w:900,f:'d',color:C.muted});
+ });
+ // step 3: double reality
+ layer(v2,()=>{
+  const gy=H*.5;
+  const L=[['🌊','河流'],['🌳','树木'],['🦁','狮子']],R=[['⛩','神'],['🏛','国家'],['🦁','标致公司']];
+  const xL=n?W*.27:W*.27,xR=n?W*.73:W*.73;
+  box(16,H*.12,W/2-24,H*.7,{fill:rgba(C.teal,.07),stroke:C.teal,r:10});
+  box(W/2+8,H*.12,W/2-24,H*.7,{fill:rgba(C.amber,.08),stroke:C.amber,r:10,dash:[5,4]});
+  txt('客观现实',xL,H*.12+24,{size:n?13:16,w:900,f:'d',color:C.teal});
+  txt('想象的现实',xR,H*.12+24,{size:n?13:16,w:900,f:'d',color:C.amber});
+  L.forEach((q,i)=>{const y=H*.3+i*H*.15;emo(q[0],xL-(n?20:40),y,n?20:26);txt(q[1],xL+(n?4:0),y,{size:n?12:14,w:700,align:'left'})});
+  R.forEach((q,i)=>{const y=H*.3+i*H*.15;emo(q[0],xR-(n?20:40),y,n?20:26);txt(q[1],xR+(n?4:0),y,{size:n?12:14,w:700,align:'left'})});
+  hotR(16,H*.12,W/2-24,H*.7,'客观现实','不管人们信不信，都存在。');
+  hotR(W/2+8,H*.12,W/2-24,H*.7,'想象的现实','并不是谎话：人人都相信它，只要这份共同的信念还在，它就能影响世界。');
+  const ly=H*.88;
+  txt('谎话：明知河边没有狮子，却说有（青猴也会）',W/2,ly,{size:n?10.5:12.5,color:C.muted});
+ });
+}},
+/* ---------------- 3 · Serial killer ---------------- */
+{nav:'连环杀手',chap:'第 2–4 章 · 知善恶树 / 亚当和夏娃的一天 / 毁天灭地的人类洪水',title:'智人如何胜出，又付出了什么',
+ctrlSteps:[1],ctrl:`<label for="ysl">时间 <output id="yslo">7 万年前</output></label><input id="ysl" type="range" min="0" max="100" step="1" value="0"><div class="note">从 7 万年前拖到今天：智人的足迹到达哪里，哪里的巨型动物就熄灭。悬停剪影查看物种。</div>`,
+enter(){rangeCtl('ysl',()=>ySl(yAgo),v=>{yAgo=slY(v)},v=>fmtY(slY(v)))},
+steps:[
+ {h:'一对一 vs 一百对一百',dur:11,c:'尼安德特人比智人魁梧、脑容量更大，也会用火、照顾病弱。约 10 万年前，智人第一次北上中东就败给了他们。但认知革命后，智人能编织共同的故事：多个部落一起把兽群赶进峡谷，和远方部落交易贝壳、黑曜石。新爱尔兰岛上的黑曜石来自 400 多公里外的新不列颠岛。',q:'如果是一对一单挑，尼安德特人应该能把智人揍扁。但如果是上百人的对立，尼安德特人就绝无获胜的可能。（第二章）'},
+ {bg:1,h:'背景：澳大利亚的巨兽',dur:16,c:'约 <b>4.5 万年前</b>，印度尼西亚群岛的智人发展出第一个航海社会，渡过宽达 100 公里的海峡，登上澳大利亚。他们看见的是一个从未见过的世界：200 公斤重、2 米高的<b>巨型袋鼠</b>；和老虎一样大的<b>袋狮</b>；体重两吨半、外形像袋熊的<b>双门齿兽</b>。几千年后，24 种 50 公斤以上的动物中有 <b>23 种</b>灭绝。',terms:[['巨型动物 megafauna','体重 50 公斤以上的大型动物。它们繁殖慢，一旦被持续猎杀就很难恢复。'],['火耕','刻意烧掉茂密的灌木和森林，把地貌变成开阔草原，方便狩猎。书中认为智人抵达澳大利亚时可能已掌握这种技术。'],['亚非大陆 / 外面的世界','书中把亚洲和非洲连成的大陆称为亚非大陆；澳大利亚、美洲、远洋岛屿则是智人后来才到达的“外面的世界”。']],ask:'有人把灭绝归咎于气候变化。拖动时间轴时，留意灭绝的时间点和什么事件重合。'},
+ {h:'人到哪里，灭绝就到哪里',dur:16,c:'澳大利亚之后，约 <b>1.6 万年前</b>智人经当时连接西伯利亚和阿拉斯加的陆地，步行进入美洲，不到两千年，北美 47 属大型哺乳动物消失 34 属，南美 60 属消失 50 属。约 1500 年前马达加斯加的象鸟消失，约 800 年前毛利人登上新西兰，几个世纪内六成鸟类灭绝；弗兰格尔岛的长毛象在约 4000 年前人类到达时灭绝。'},
+ {h:'三项证据：罪名成立',dur:12,c:'书中给出三条理由，说明灭绝不能怪气候。①澳大利亚的双门齿兽活过了至少 10 次冰河期，偏偏在 4.5 万年前灭绝；②气候变迁通常也会冲击海洋生物，但当时海洋没有显著灭绝；③同样的灭绝在之后几千年<b>一再重演</b>，每次都恰好在人类到达时。',q:'但翻开历史记录，智人看起来就是个生态的连环杀手。（第四章）'},
+ {h:'一半的大型兽类',dur:10,c:'认知革命时，地球上约有 <b>200 属</b> 50 公斤以上的大型陆生哺乳动物；到农业革命时，只剩约 <b>100 属</b>。人类还没发明轮子、文字和铁器，就已经让全球约一半的大型兽类消失。这还只是第一波，后面还有农民和工业带来的第二波、第三波。',q:'整个动物界从古至今，最重要也最具破坏性的力量，就是这群四处游荡、讲着故事的智人。（第三章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---- step 0: 1v1 vs many ----
+ layer(1-v1,()=>{
+  const half=n?H/2:W/2;
+  const panel=(ox,oy,w,h,title,few)=>{box(ox+6,oy+6,w-12,h-12,{fill:C.sheet,stroke:C.line,r:10});txt(title,ox+w/2,oy+28,{size:n?12:14,w:700,f:'d'});
+   const cy0=oy+h*.55;
+   if(few){emo('🧔',ox+w*.32,cy0,n?40:58);emo('🧍',ox+w*.68,cy0,n?28:40);txt('尼安德特人',ox+w*.32,cy0+(n?32:46),{size:11,w:700,color:C.blue});txt('智人',ox+w*.68,cy0+(n?32:46),{size:11,w:700,color:C.red});
+    pill('尼安德特人胜',ox+w/2,oy+h-26,{size:11,bg:C.blue});hotR(ox,oy,w,h,'一对一','尼安德特人更魁梧、肌肉更发达，适应冰河时期的寒冷。单打独斗，智人不是对手。')}
+   else{for(let i=0;i<10;i++)emo('🧔',ox+w*.12+(i%2)*w*.1,oy+h*.3+Math.floor(i/2)*h*.1,n?14:20);
+    for(let i=0;i<60;i++){const x=ox+w*.5+(i%10)*w*.045+Math.sin(t+i)*1.2,y=oy+h*.28+Math.floor(i/10)*h*.085;dot(x,y,n?2.2:3,C.red)}
+    emo('🦁',ox+w*.72,oy+h*.22,n?14:20);
+    txt('共同的守护灵 → 多个部落联手',ox+w*.7,oy+h*.86,{size:n?10:11,color:C.red,w:700});
+    pill('智人胜',ox+w/2,oy+h-24,{size:11,bg:C.red});hotR(ox,oy,w,h,'上百人对抗','尼安德特人能分享“狮子在哪”的信息，却大概没办法传颂和改写部落守护灵的故事，因此无法大规模合作。')}};
+  if(n){panel(0,0,W,H/2,'一对一',true);panel(0,H/2,W,H/2,'上百人对上百人',false)}
+  else{panel(0,H*.06,W/2,H*.86,'一对一',true);panel(W/2,H*.06,W/2,H*.86,'上百人对上百人',false)}
+ });
+ // ---- steps 2-4: map ----
+ layer(v1,()=>{
+  let Y=yAgo;
+  if(s.step===1){const a=autoVal('ysl',Math.round(clamp((s.age-.5)/12)*100),v=>fmtY(slY(v)));if(a!=null)Y=yAgo=slY(a)}
+  else if(s.step>1&&!TOUCH.ysl){yAgo=Y=0;autoVal('ysl',100,v=>fmtY(slY(v)))}
+  const mr=fitMap(n?26:20,n?H*.2:30,W-(n?52:40),H*(n?.42:.66));
+  const P=mapProj(mr.x,mr.y,mr.w,mr.h);
+  drawLand(P,C.soft,C.line);
+  // arrivals
+  const A=[['非洲',36,2,7e4,null,'智人的起点。东非的智人约 7 万年前开始走出非洲。'],['澳大利亚',134,-25,4.5e4,'🦘','约 4.5 万年前智人登陆。24 种 50 公斤以上的动物中 23 种灭绝：巨型袋鼠、袋狮、双门齿兽……'],['北美',-100,45,1.6e4,'🦣','约 1.6 万年前（约公元前 14000 年）智人从西伯利亚步行抵达阿拉斯加。不到两千年，47 属大型哺乳动物消失 34 属，包括长毛象、乳齿象、剑齿虎。'],['南美',-60,-15,1.4e4,'🦥','60 属大型哺乳动物消失 50 属，包括巨型地懒。剑齿虎活跃了 3000 多万年，也在此时消失。'],['马达加斯加',47,-20,1500,'🪶','象鸟高 3 米、重约半吨，是全球最大的鸟；巨狐猴是最大的灵长类。约 1500 年前两者一同消失，时间正值人类到达。'],['新西兰',172,-41,800,'🐦','约 800 年前毛利人登陆。几个世纪内，大多数巨型动物和六成的鸟类物种灭绝。'],['弗兰格尔岛',-179,71,4000,'🦣','北冰洋上的小岛。长毛象在这里比大陆多活了数千年，直到约 4000 年前人类第一次抵达时突然灭绝。']];
+  const [ox,oy]=P(36,2);
+  A.forEach((a,i)=>{const [x,y]=P(a[1],a[2]);const reached=Y<=a[3];const after=reached?clamp((a[3]-Y)/Math.max(400,a[3]*.08)):0;
+   if(i>0&&reached){curve(ox,oy,(ox+x)/2,Math.min(oy,y)-mr.h*.2,x,y,rgba(C.red,.55),1.3,[4,3])}
+   if(a[4]){const alive=1-after;const sz=n?16:22;layer(.25+.75*alive,()=>emo(a[4],x,y-(n?4:6),sz));if(after>.6){seg(x-10,y-14,x+10,y+4,C.red,2);seg(x-10,y+4,x+10,y-14,C.red,2)}
+    txt(a[0],clamp(x,n?30:0,W-(n?30:0)),y+(n?12:16),{size:n?9.5:11,w:700,color:reached?C.red:C.muted});hotC(x,y,22,a[0]+' · '+fmtY(a[3]),a[5])}
+   else{dot(x,y,5,C.red);txt(a[0],x,y+14,{size:n?9.5:11,w:700,color:C.red})}});
+  pill(fmtY(Math.round(Y)),mr.x+mr.w-8,mr.y+12,{size:n?11:13,f:'m',bg:C.red,align:'right'});
+  // bottom counter
+  const by=mr.y+mr.h+(n?22:18);
+  layer(clamp(1-v2+v3),()=>{const reachedN=A.slice(1).filter(a=>Y<=a[3]).length;const genera=Math.round(200-100*clamp((7e4-Y)/(7e4-1e4))*(Y<4.5e4?1:.15));
+   if(!n){txt('大型陆生哺乳动物（属）',W/2,by+6,{size:11,color:C.muted});}
+   const bw=Math.min(W-40,520),bx=(W-bw)/2,yy=by+(n?6:22);box(bx,yy,bw,12,{fill:C.soft,r:6});box(bx,yy,bw*genera/200,12,{fill:C.amber,r:6});
+   txt(`约 ${genera} / 200 属`,W/2,yy+(n?28:32),{size:n?11:12.5,w:700,f:'m'});
+   hotR(bx,yy-4,bw,20,'大型陆生哺乳动物','在认知革命发生的时候，地球上大约有200属体重超过50公斤的大型陆生哺乳动物。而等到农业革命的时候，只剩下大约100属。（第四章）')});
+  layer(v2*(1-v3),()=>{const ev=[['①','气候变化不大','双门齿兽活过至少 10 次冰河期'],['②','海洋没事','气候变迁通常也冲击海洋，但 4.5 万年前海洋没有显著灭绝'],['③','一再重演','美洲、马达加斯加、新西兰、弗兰格尔岛，每次都在人类到达时']];
+   const cw=n?W-16:(W-60)/3,gap=n?4:10;ev.forEach((e,i)=>{const x=n?8:30+i*(cw+gap),y=n?by-4+i*((H-by)/3):by,h=n?(H-by)/3-gap:H-by-14;
+    box(x,y,cw,h,{fill:C.sheet,stroke:C.red,r:8});txt(e[0]+' '+e[1],x+(n?10:cw/2),y+(n?h/2:20),{size:n?11.5:13,w:700,color:C.red,align:n?'left':'center'});
+    if(!n)para(e[2],x+cw/2,y+44,cw-24,{size:11,color:C.muted});else txt(e[2].slice(0,20)+'…',x+cw-8,y+h/2,{size:9.5,color:C.muted,align:'right'});
+    hotR(x,y,cw,h,'证据'+e[0]+' '+e[1],e[2]+'。')})});
+ });
+}},
+/* ---------------- 4 · Biggest fraud ---------------- */
+{nav:'农业骗局',chap:'第 5 章 · 史上最大骗局',title:'是小麦驯化了人',
+ctrlSteps:[0,2],ctrl:`<div class="segbtns" id="wvb"><button data-k="h">人的视角</button><button data-k="w">小麦的视角</button></div><div class="segbtns" id="trapb"><button id="trapGo">再往前走一步</button><button id="trapBack">回到采集生活</button></div><div class="note" id="trapNote"></div>`,
+enter(){segCtl('#wvb',()=>wheatView,k=>{TOUCH.wv=true;wheatView=k});
+ const go=document.getElementById('trapGo'),bk=document.getElementById('trapBack');
+ go.onclick=()=>{TOUCH.trap=true;weeks=Math.min(TRAP.length,weeks+1)};
+ bk.onclick=()=>{TOUCH.trap=true;if(weeks<3)weeks=0;else{bk.dataset.no=NOW}}},
+steps:[
+ {bg:1,h:'背景：杰里科绿洲',dur:16,c:'约 1.8 万年前，最后一个冰河时代结束，中东的气温上升、雨量增多，很适合小麦生长。采集者把野生麦子带回营地加工，种子沿路掉落；他们放火烧灌木丛，又给小麦清出了阳光。巴勒斯坦的<b>杰里科</b>（Jericho）绿洲是书中的例子：公元前 13000 年，这里能养活约 <b>100 名</b>健康的采集者；到公元前 8500 年，成了约 <b>1000 人</b>的农村。',terms:[['驯化 domesticate','来自拉丁文 domus，意思是“房子”。书中反问：现在关在房子里的，究竟是小麦还是智人？'],['演化上的成功','衡量标准是世界上这个物种 DNA 拷贝数的多少，而不是个体是否快乐。'],['纳图芬文化','公元前 12500 至前 9500 年黎凡特的采集者文化。他们已定居村落、研磨野生谷物，后代逐渐变成农民。']],ask:'接下来切换“人的视角”和“小麦的视角”。同一场革命，谁是赢家？'},
+ {h:'两种视角',dur:14,c:'<b>小麦的视角</b>：1 万年前它只是中东一小片地区的野草，如今占地约 225 万平方公里，快有英国的 10 倍大，是地球史上最成功的植物。<b>人的视角</b>：要清石头、除草、驱虫、挑水，脊椎和膝盖付出代价，出现椎间盘突出、关节炎和疝气，还得永久住在麦田旁边。用右侧按钮切换。',q:'人类以为自己驯化了植物，但其实是植物驯化了智人。（第五章）'},
+ {h:'人更多了，日子更苦了',dur:11,c:'种小麦让每单位土地产出更多食物，人口呈指数增长；但农民的饮食更单一，工作更久，更容易遭遇旱灾、疾病和盗贼。大多数早期农业社会里，至少 1/3 的儿童活不到 20 岁。<b>物种赢了，个体输了。</b>',q:'这正是农业革命真正的本质：让更多的人却以更糟的状况活下去。（第五章）'},
+ {h:'奢侈生活的陷阱',dur:16,c:'没有人“决定”务农。每一步都只想让生活轻松一点，每一步也都合理。等到问题浮现，已经没有人记得别的活法；而且人口一涨就回不了头：<b>村子从 100 人涨到 110 人，难道会有 10 个人自愿挨饿？</b>现代版本是电子邮件，以及发誓 35 岁退休、结果背上房贷的大学毕业生。用右侧按钮一步步往前走，再试着回头。',q:'奢侈品史上常有这样的情况，就是原本的奢侈品往往最后会成为必需品，而且带来新的义务。（第五章）'},
+ {h:'最重要的一课',dur:10,c:'农业革命也是家畜的灾难。今天全球有超过 250 亿只鸡、约 10 亿头猪、超过 10 亿头牛，按 DNA 拷贝数算，它们极其成功；但肉鸡出生几周就被屠宰，现代酪农场里的奶牛通常只能活到 5 岁。这些动物的个体，是史上最悲惨的一群生物。',q:'我们从农业革命能学到的最重要一课，很可能就是物种演化上的成功并不代表个体的幸福。（第五章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3);NOW=s.t;
+ const note=document.getElementById('trapNote'),tb=document.getElementById('trapb'),wb=document.getElementById('wvb');
+ if(tb){tb.hidden=s.step!==2;wb.hidden=s.step!==0}
+ // ---- step 1: two views ----
+ if(s.step===0&&!TOUCH.wv){const k=Math.floor(s.age/5)%2?'w':'h';if(k!==wheatView){wheatView=k;segCtl('#wvb',()=>wheatView,k2=>{TOUCH.wv=true;wheatView=k2})}}
+ layer(1-v1,()=>{
+  const isW=wheatView==='w';
+  const gy=H*.7;seg(0,gy,W,gy,C.line,1.5);
+  // field
+  for(let i=0;i<(n?14:26);i++){const x=W*.08+i*(W*.84/(n?14:26));const sw=Math.sin(t*1.4+i*.6)*3;
+   ctx.beginPath();ctx.moveTo(x,gy);ctx.quadraticCurveTo(x+sw,gy-30,x+sw*1.6,gy-56);ctx.strokeStyle=C.amber;ctx.lineWidth=2;ctx.stroke();
+   for(let k=0;k<4;k++){ctx.beginPath();ctx.ellipse(x+sw*1.6-2+(k%2)*4,gy-56+k*6,2.4,4.4,(k%2?.5:-.5),0,TAU);ctx.fillStyle=C.amber;ctx.fill()}}
+  if(isW){
+   txt('小麦的视角',W/2,H*.12,{size:n?16:22,w:900,f:'d',color:C.amber});
+   const rows=[['1 万年前','中东一小片地区的野草'],['1000 年内','传遍世界各地'],['今天','约 225 万平方公里，快有英国的 10 倍']];
+   rows.forEach((r,i)=>{const y=H*.24+i*(n?32:38);txt(r[0],W/2-8,y,{size:n?11:13,w:700,f:'m',color:C.muted,align:'right'});txt(r[1],W/2+8,y,{size:n?11.5:14,w:700,align:'left'})});
+   txt('“我让一种猿替我清石头、除草、挑水、施肥、站岗。”',W/2,gy+(n?34:40),{size:n?11:13.5,w:600,f:'d',color:C.amber});
+   hotR(W*.08,gy-70,W*.84,70,'小麦','以生存和繁衍为标准，小麦是地球史上最成功的植物。北美大平原 1 万年前没有一株小麦，如今几百公里内只有麦田。');
+  }else{
+   txt('人的视角',W/2,H*.12,{size:n?16:22,w:900,f:'d',color:C.red});
+   const jobs=['清石头','除草','驱虫','守卫','挑水','施肥'];
+   jobs.forEach((j,i)=>{const x=W/2+(i-(jobs.length-1)/2)*(n?56:96),y=H*.26;pill(j,x,y,{size:n?10.5:12,bg:C.sheet,color:C.ink,stroke:C.line})});
+   // bent farmer
+   const fx=W*.5,fy=gy-24;const b=Math.sin(t*2)*.08+.5;
+   ctx.save();ctx.translate(fx,fy);ctx.rotate(b);person(0,0,n?9:12,C.red);ctx.restore();
+   const ail=['椎间盘突出','关节炎','疝气'];ail.forEach((a,i)=>pill(a,W/2+(i-1)*(n?86:120),H*.4,{size:n?10.5:11.5,bg:C.red}));
+   txt('“驯化”来自 domus（房子）：被关进房子里的是智人',W/2,gy+(n?34:40),{size:n?11:13.5,w:600,f:'d',color:C.red});
+   hotC(fx,fy,30,'农民','研究古代骨骼发现，进入农业时代后，人类出现大量椎间盘突出、关节炎和疝气。我们适应的是爬果树、追瞪羚，而不是弯腰清石块、挑水桶。');
+  }
+ });
+ // ---- step 2: two curves ----
+ layer(v1*(1-v2),()=>{
+  const x0=n?40:80,x1=W-(n?20:60),y0=H*.16,y1=H*.78;
+  seg(x0,y1,x1,y1,C.ink,1.4);seg(x0,y0,x0,y1,C.ink,1.4);
+  txt('公元前 13000',x0,y1+16,{size:10,f:'m',color:C.muted,align:'left'});txt('公元前 8500',x1,y1+16,{size:10,f:'m',color:C.muted,align:'right'});
+  const p=REDUCED?1:clamp(s.age/5);const N=60;
+  const pop=[],q=[];for(let i=0;i<=N*p;i++){const u=i/N;pop.push([lerp(x0,x1,u),lerp(y1-10,y0,Math.pow(u,1.8))]);q.push([lerp(x0,x1,u),lerp(y0+40,y1-50,u*.8+Math.sin(u*9)*.03)])}
+  if(pop.length>1){polyline(pop,C.teal,3);polyline(q,C.red,3)}
+  const lp=pop[pop.length-1],lq=q[q.length-1];
+  if(lp){txt('人口：约 100 → 约 1000',lp[0]-6,lp[1]-14,{size:n?11:13,w:700,color:C.teal,align:'right'});txt('个人的生活品质',lq[0]-6,lq[1]+18,{size:n?11:13,w:700,color:C.red,align:'right'})}
+  txt('杰里科绿洲',x0+10,y0-6,{size:n?11:12.5,w:700,f:'d',align:'left'});
+  hotR(x0,y0,x1-x0,y1-y0,'杰里科','公元前 13000 年约百名健康的采集者；公元前 8500 年约千人的农村，染病和营养不良的情形严重得多。（示意曲线）');
+ });
+ // ---- step 3: ratchet ----
+ layer(v2*(1-v3),()=>{
+  if(s.step===2&&!TOUCH.trap){weeks=Math.min(TRAP.length,Math.floor(s.age/2.2));const bk0=document.getElementById('trapBack');if(bk0&&s.age>14.2&&!bk0.dataset.auto){bk0.dataset.auto=1;bk0.dataset.no=s.t}}
+  const k=weeks;const pop=Math.round(100*Math.pow(1.1,k));
+  const x0=n?16:50,w=W-x0*2,top=n?24:36,rowH=(H*(n?.6:.62))/TRAP.length;
+  TRAP.forEach((r,i)=>{const on=i<k;const y=top+i*rowH;
+   layer(on?1:.28,()=>{box(x0,y,w,rowH-6,{fill:on?rgba(C.amber,.12):C.sheet,stroke:on?C.amber:C.line,r:7});
+    txt((i+1)+'. '+r[0],x0+12,y+(rowH-6)/2-(n?0:7),{size:n?11:13,w:700,align:'left'});if(!n)txt(r[1],x0+12,y+(rowH-6)/2+11,{size:10.5,color:C.muted,align:'left'});
+    if(on)txt('✓ 合理',x0+w-12,y+(rowH-6)/2,{size:n?10:11.5,w:700,color:C.teal,align:'right'})});
+   hotR(x0,y,w,rowH-6,r[0],r[1])});
+  const by=top+TRAP.length*rowH+(n?12:16);
+  txt(`村落人口：${pop} 人`,W/2,by+8,{size:n?14:18,w:700,f:'m',color:C.ink});
+  const bw=Math.min(w,460),bx=(W-bw)/2;box(bx,by+24,bw,10,{fill:C.soft,r:5});box(bx,by+24,bw*clamp(pop/180),10,{fill:C.teal,r:5});
+  const bk=document.getElementById('trapBack');const no=bk&&bk.dataset.no&&NOW-(+bk.dataset.no)<3.5;
+  const back=k<3?'还能回头':'回不去了：多出的人怎么办？';
+  txt(back,W/2,by+(n?54:58),{size:n?12:14,w:700,f:'d',color:k<3?C.teal:C.red});
+  if(no){bubble(`${pop} 人里，谁愿意自愿挨饿，好让其他人回到采集生活？`,W/2,by-30,Math.min(W-30,380),{size:n?11.5:13,bg:C.red,stroke:C.red,color:C.sheet})}
+  if(note)note.textContent=k<3?'前几步还能退回去。':'人口已经涨上来，按“回到采集生活”试试会发生什么。';
+  if(bk){bk.disabled=false;bk.style.opacity=k<3?1:.55}
+ });
+ // ---- step 4: livestock ----
+ layer(v3,()=>{
+  const it=[['🐔','鸡','超过 250 亿只','家鸡是有史以来最普遍的鸟类。驯化后的肉鸡出生几周就到了最佳屠宰年龄。'],['🐖','猪','约 10 亿头','1 万年前，绵羊、牛、山羊、野猪和鸡总数只有几百万只。'],['🐄','牛','超过 10 亿头','野生的牛能活 20~25 年。奶牛能多活几年，却过着完全不符合天性和渴望的生活。'],['🐑','绵羊','约 10 亿只','']];
+  const cw=n?(W-24)/2:(W-80)/4;
+  it.forEach((q,i)=>{const x=n?12+(i%2)*cw+cw/2:40+i*cw+cw/2,y=n?H*.18+Math.floor(i/2)*H*.26:H*.3;emo(q[0],x,y,n?30:42);txt(q[1],x,y+(n?30:42),{size:n?12:14,w:700});txt(q[2],x,y+(n?48:64),{size:n?11:13,w:700,f:'m',color:C.teal});if(q[3])hotC(x,y,34,q[1]+' · '+q[2],q[3])});
+  const y=n?H*.78:H*.66;
+  box(W/2-Math.min(W*.42,330),y,Math.min(W*.84,660),n?64:80,{fill:rgba(C.red,.08),stroke:C.red,r:10});
+  txt('物种：DNA 拷贝数暴增  ≠  个体：史上最悲惨的生物之一',W/2,y+(n?20:26),{size:n?11:14,w:700,color:C.red});
+  txt('这条结论将贯穿全书，直到第 19 章“快乐”',W/2,y+(n?44:54),{size:n?10:12,color:C.muted});
+ });
+}},
+/* ---------------- 5 · Imagined order & writing ---------------- */
+{nav:'想象的秩序',chap:'第 6–8 章 · 盖起金字塔 / 记忆过载 / 历史从无正义',title:'两份 1776 年的合作手册',
+ctrlSteps:[0],ctrl:`<div class="segbtns"><button id="bioB" aria-pressed="false">用生物学的语言重写</button></div><div class="note">按下按钮，把《独立宣言》最著名的一句逐词改写成生物学说法；再按一次恢复原文。</div>`,
+enter(){const b=document.getElementById('bioB');const sync=()=>{b.setAttribute('aria-pressed',declBio);b.textContent=declBio?'恢复原文':'用生物学的语言重写'};btnCtl('bioB',()=>{declBio=!declBio;sync()});sync()},
+steps:[
+ {bg:1,h:'背景：巴比伦与费城',dur:16,c:'农业产生了剩余粮食，也养活了国王、官员、祭司和士兵。几十万人要合作，靠的是什么？书中拿两份文件对照。<b>公元前 1776 年</b>，巴比伦是当时最大的城市，帝国子民超过百万；国王汉谟拉比颁布法典，说是安努、恩利尔、马杜克三位大神授权他“在这片土地伸张正义”。<b>3500 年后的 1776 年</b>，北美 13 个英国殖民地的代表聚在费城，宣布脱离英国王室。',terms:[['《汉谟拉比法典》','约 300 条判例，固定写法是“如果情形如何如何，判决便应如何如何”。书中称它是几十万古巴比伦人的合作手册。'],['上等人 / 平民 / 奴隶','法典把人分成男女两种性别和这三种阶级，价值天差地别。'],['舍客勒 shekel','银子的重量单位，约 8.33 克。'],['《独立宣言》','书中称它是现代数亿美国人的合作手册。']],ask:'两份文件都说自己讲的是“普遍且永恒的正义”，却互相矛盾。它们哪一份是对的？'},
+ {h:'两块石板',dur:16,c:'汉谟拉比说人分等级，每一级的“价钱”不同；《独立宣言》说人人生而平等。书中的回答是：<b>两者都错了</b>，平等和阶级都没有客观的生物学基础。生物学里没有“创造”，只有演化；演化的基础是差异，不是平等。按右侧按钮，看宣言用生物学语言重写后的样子。',q:'我们相信某种秩序，并非因为它是客观的现实，而是因为相信它可以让人提升合作效率、打造更美好的社会。（第六章）'},
+ {h:'客观、主观、主体间',dur:13,c:'想象的秩序为什么推不倒？因为它不在某一个人的脑子里，而是<b>存在于主体之间</b>（inter-subjective）。放射线是<b>客观</b>的，居里夫人不相信它有害，最后还是死于它造成的贫血；小孩想象的朋友是<b>主观</b>的，长大不信了，朋友就消失；法律、金钱、国家是<b>主体间</b>的，一个人不信没有用，要几百万人一起改变想法才行。',q:'每一次我们以为自己打破了监狱的高墙、迈向自由的前方，其实只是到了另一间更大的监狱，把活动范围稍稍加以扩大。（第六章）'},
+ {h:'史上第一个名字属于会计师',dur:13,c:'帝国要收税，就得记住大量数字，而人脑并不擅长。公元前 3500 年到前 3000 年，苏美尔人发明了<b>文字</b>。目前找到最早的信息之一是乌鲁克泥板上的“<b>29086 单位大麦 37 个月 库辛</b>”，意思最可能是：“37 个月间共收到 29086 单位大麦，由库辛签核。”最早的文字只能<b>部分表意</b>，像数学符号一样只记账，写不了诗。',q:'这一切说明，史上第一个记下的名称或名字，是属于一个会计师，而不是什么先知、诗人，或是伟大的征服者。（第七章）'},
+ {h:'想象的秩序带来阶级',dur:11,c:'每一种想象的秩序都会把人分成高低不同的群体：上等人和平民、种姓、黑人和白人、富人和穷人。这些分别大多始于偶然的历史事件，再被故事固定下来，变成恶性循环。区分“天生”与“文化”有一条简单的法则：生物学允许各种可能，<b>是文化在禁止</b>。',q:'一项黄金法则就是“天生带来允许，文化造成封闭”。（第八章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3);
+ if(s.step===0&&!TOUCH.bioB){const want=s.age>8;if(want!==declBio){declBio=want;const b=document.getElementById('bioB');if(b){b.setAttribute('aria-pressed',declBio);b.textContent=declBio?'恢复原文':'用生物学的语言重写'}}}
+ // ---- step 0: two tablets ----
+ layer(1-v1,()=>{
+  const tab=(x,y,w,h,title,sub,fill)=>{box(x,y,w,h,{fill,stroke:C.line,r:14});txt(title,x+w/2,y+(n?20:28),{size:n?13:17,w:900,f:'d'});txt(sub,x+w/2,y+(n?38:50),{size:n?9.5:11,f:'m',color:C.muted})};
+  let lx,ly,lw,lh,rx,ry,rw,rh;
+  if(n){lw=rw=W-24;lx=rx=12;ly=8;lh=H*.48;ry=ly+lh+8;rh=H-ry-8}else{lw=rw=(W-60)/2;lx=20;rx=40+lw;ly=ry=H*.06;lh=rh=H*.88}
+  tab(lx,ly,lw,lh,'《汉谟拉比法典》','约公元前 1776 年 · 巴比伦',rgba(C.amber,.12));
+  // value scale
+  const vals=[['平民男性的一只眼',60],['平民女性的命',30],['女奴隶的命',20]];
+  const bx=lx+(n?14:24),bw=lw-(n?28:48),by=ly+(n?54:80),rowh=(lh-(n?70:110))/3;
+  vals.forEach((v,i)=>{const y=by+i*rowh;txt(v[0],bx,y+(n?8:10),{size:n?11:13,w:700,align:'left'});
+   const ww=(bw-(n?40:60))*v[1]/60*(REDUCED?1:E.out(clamp(s.age/2-i*.3)));box(bx,y+(n?18:24),ww,n?12:16,{fill:C.amber,r:4});
+   txt(v[1]+' 舍客勒',bx+ww+6,y+(n?24:32),{size:n?10.5:12,w:700,f:'m',align:'left'});
+   hotR(bx,y,bw,rowh-4,v[0]+'：'+v[1]+' 舍客勒',['判例 198：若他使某个平民眼瞎或骨折，应赔偿 60 舍客勒的银子。','书中：一个平民女性值 30 舍客勒的银子。','书中：一个女奴隶只值 20 舍客勒。'][i])});
+  tab(rx,ry,rw,rh,'美国《独立宣言》','1776 年 7 月 4 日 · 费城',rgba(C.blue,.1));
+  const orig=[['人人','生而平等'],['造物者','赋予他们'],['若干','不可剥夺的权利'],['其中包括','生命权、自由权'],['和','追求幸福的权利']];
+  const bio=[['人人','演化各有不同'],['出生','就有'],['某些','可变的特性'],['其中包括','生命'],['和','追求快感']];
+  const L=declBio?bio:orig;
+  const tx=rx+rw/2,ty=ry+(n?60:100),lh2=n?(rh-74)/5:(rh-140)/5;
+  txt('我们认为下面这些真理是不言而喻的：',tx,ty-(n?6:14),{size:n?10:12,color:C.muted});
+  L.forEach((p,i)=>{const y=ty+(n?10:20)+i*lh2;const ch=declBio&&orig[i][1]!==bio[i][1];
+   txt(p[0]+' '+p[1],tx,y,{size:n?12:15,w:700,f:'d',color:ch?C.red:C.ink});
+   if(ch)hotR(rx,y-lh2/2,rw,lh2,p[1],['生物学里没有“创造”，只有演化；演化的基础是差异，而不是平等。','没有造物者，只有基因突变和自然选择。','每个人带着不同的基因密码，受不同环境影响，发展出不同的特质。','生物学可以讨论生存，但“自由”只是人类发明的概念。','生物学研究没办法为“幸福”下定义，只认可“快感”确实存在。'][i])});
+  if(declBio)txt('“他们都错了”：平等和阶级都只存在于想象之中',tx,ry+rh-(n?14:22),{size:n?10:12,w:700,color:C.red});
+ });
+ // ---- step 1: three realities ----
+ layer(v1*(1-v2),()=>{
+  const R=Math.min(W*(n?.16:.12),H*.16),cy=H*(n?.32:.4);
+  const it=[['客观','☢','放射线','不管信不信都存在。居里夫人不相信放射线有害，最后仍死于再生障碍性贫血。',C.teal,1],['主观','🧸','想象中的朋友','只存在于一个人的意识里。孩子长大不再相信，这个朋友就烟消云散。',C.violet,1],['主体间','⚖','法律 · 金钱 · 国家','存在于许多人意识的连接网络中。一个人改变想法影响不大；要网络中大多数人都改变，它才会消失。',C.amber,9]];
+  it.forEach((q,i)=>{const x=W*(i+.5)/3,y=cy;
+   if(q[5]>1){for(let k=0;k<q[5];k++){const a=k/q[5]*TAU+t*.3;const px=x+Math.cos(a)*R*1.35,py=y+Math.sin(a)*R*1.35;person(px,py+4,n?4:5.5,C.muted);seg(px,py,x,y,rgba(C.amber,.35),1)}}
+   else if(i===1){person(x-R*1.1,y+R*.9,n?6:8,C.violet);curve(x-R*1.1,y+R*.6,x-R,y,x-R*.6,y-R*.2,rgba(C.violet,.6),1.2,[3,3])}
+   dot(x,y,R*(i===2?.8:.7),rgba(q[4],.14),q[4],2);emo(q[1],x,y,R*.7);
+   txt(q[0],x,y-R-(n?18:24),{size:n?13:17,w:900,f:'d',color:q[4]});txt(q[2],x,y+R+(n?16:22),{size:n?10:12.5,w:700});
+   hotC(x,y,R*1.4,q[0]+' · '+q[2],q[3])});
+  // nested prisons
+  const py=H*(n?.72:.78);const bw=Math.min(W*.86,560);
+  for(let k=3;k>=0;k--){const ww=bw*(.4+.2*k),hh=(n?40:52)*(.5+.18*k);box(W/2-ww/2,py-hh/2,ww,hh,{stroke:rgba(C.ink,.25+.15*(3-k)),r:6,lw:1.2})}
+  person(W/2,py,n?5:7,C.red);
+  txt('逃出一座想象的秩序，只是走进另一座更大的',W/2,py+(n?42:52),{size:n?10.5:12,color:C.muted});
+ });
+ // ---- step 2: tablet ----
+ layer(v2*(1-v3),()=>{
+  const tw0=Math.min(W*.72,520),th=Math.min(H*.42,240),tx=W/2-tw0/2,ty=H*(n?.1:.08);
+  box(tx,ty,tw0,th,{fill:rgba(C.amber,.25),stroke:C.amber,r:16});
+  const g=[['29086','数字'],['单位大麦','货品'],['37 个月','期间'],['库辛','签核人']];
+  const k=REDUCED?4:clamp(Math.floor(s.age/1.6),0,4);
+  g.forEach((q,i)=>{const x=tx+tw0*(i+.5)/4,y=ty+th*.42;const on=i<k;
+   for(let j=0;j<5;j++){const a=rnd(i*9+j)*TAU;ctx.save();ctx.translate(x+(rnd(j+i)-.5)*tw0*.12,y+(rnd(j*3+i)-.5)*th*.3);ctx.rotate(a);ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(10,-4);ctx.lineTo(10,4);ctx.closePath();ctx.fillStyle=rgba(C.tar,.55);ctx.fill();ctx.restore()}
+   layer(on?1:0,()=>{pill(q[0],x,y+th*.38,{size:n?11:14,bg:i===3?C.red:C.ink});txt(q[1],x,y+th*.38+(n?20:24),{size:n?9.5:10.5,f:'m',color:C.muted})});
+   hotR(x-tw0/8,ty,tw0/4,th,q[0],q[1]==='签核人'?'库辛可能是一个职位，也可能是一个人。如果是人名，那他就是史上第一个留下名字的人。':'乌鲁克泥板，约公元前 3400 至前 3000 年。')});
+  const by=ty+th+(n?24:34);
+  txt('“在 37 个月间，总共收到 29086 单位的大麦。由库辛签核。”',W/2,by,{size:n?11.5:14.5,w:700,f:'d'});
+  // brain overflow
+  const bx=W/2,byy=by+(n?52:70);const it2=[['🧠','人脑','擅长记住植物、动物、地形和人际关系；不擅长记住数字'],['📜','文字','苏美尔：泥板 + 楔形文字（部分表意）'],['🪢','结绳语 quipu','安第斯：彩色绳子打结，记录税收和财产']];
+  const cw=n?(W-20)/3:Math.min(220,(W-80)/3);
+  it2.forEach((q,i)=>{const x=bx+(i-1)*(cw+(n?4:14));emo(q[0],x,byy,n?20:26);txt(q[1],x,byy+(n?22:28),{size:n?10.5:12.5,w:700});hotC(x,byy,26,q[1],q[2])});
+ });
+ // ---- step 3: hierarchy ----
+ layer(v3,()=>{
+  const rows=[['巴比伦','上等人 · 平民 · 奴隶'],['印度','种姓：婆罗门 → 首陀罗'],['美国 Jim Crow','白人 · 黑人'],['现代','富人 · 穷人']];
+  const x0=n?14:W*.12,w=n?W-28:W*.5,top=H*.1,rh=H*.15;
+  rows.forEach((r,i)=>{const y=top+i*rh;const lv=[1,.75,.5];
+   box(x0,y,w,rh-10,{fill:C.sheet,stroke:C.line,r:8});txt(r[0],x0+14,y+(rh-10)/2,{size:n?11.5:13,w:700,align:'left'});txt(r[1],x0+w-14,y+(rh-10)/2,{size:n?10.5:12.5,color:C.muted,align:'right'});
+   hotR(x0,y,w,rh-10,r[0],'大多数阶级分别起于偶然的历史事件，再借由故事一代代固定下来。')});
+  // vicious circle
+  if(!n){const cx=W*.8,cy=H*.38,R=Math.min(W*.13,H*.22);ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.strokeStyle=C.red;ctx.lineWidth=2;ctx.setLineDash([6,5]);ctx.lineDashOffset=-t*20;ctx.stroke();ctx.setLineDash([]);
+   const st=['偶然事件','形成阶级','编成故事','歧视加深'];st.forEach((q,i)=>{const a=i/4*TAU-Math.PI/2;pill(q,cx+Math.cos(a)*R,cy+Math.sin(a)*R,{size:11,bg:C.red})});txt('恶性循环',cx,cy,{size:14,w:900,f:'d',color:C.red});
+   hotC(cx,cy,R,'恶性循环','例如美国南方：奴隶制留下贫穷和歧视，歧视又让黑人难以翻身，人们便以为“黑人天生不如白人”。')}
+  const y=H*(n?.78:.8);
+  box(W/2-Math.min(W*.44,320),y-24,Math.min(W*.88,640),n?56:62,{fill:rgba(C.teal,.1),stroke:C.teal,r:10});
+  txt('生物学：允许各种可能',W/2,y-4,{size:n?12:14,w:700,color:C.teal});txt('文化：规定哪些不行',W/2,y+(n?18:22),{size:n?12:14,w:700,color:C.red});
+ });
+}},
+/* ---------------- 6 · Money, empire, religion ---------------- */
+{nav:'金钱帝国宗教',chap:'第 9–12 章 · 人类的融合统一',title:'把世界连成一个的三股力量',
+ctrlSteps:[1],ctrl:`<label for="gsl">市场上的商品种数 <output id="gslo">12</output></label><input id="gsl" type="range" min="2" max="1000" step="1" value="12"><div class="note">以物易物时，每两种商品之间都要有一个兑换比例；有了钱，每种商品只要一个价格。</div>`,
+enter(){rangeCtl('gsl',()=>goods,v=>{goods=v},v=>v)},
+steps:[
+ {h:'从数千个世界到一个',dur:12,c:'公元前 10000 年，地球上有数千个互不相干的人类世界。到公元 1450 年，将近<b>九成</b>人口已经活在由亚洲和非洲组成的“<b>亚非世界</b>”里，剩下约一成分属中美洲、安第斯、澳大利亚、大洋洲四个世界。把它们连起来的，是三种普世秩序：商人的<b>金钱</b>、征服者的<b>帝国</b>、先知的<b>宗教</b>。'},
+ {bg:1,h:'背景：苹果换鞋子',dur:16,c:'书中设想一个以物易物的村子：种苹果的想换双鞋，得先弄清几袋苹果值一双鞋。这批苹果种在好山上，上回换的是女鞋、这回要男靴，最近羊病了、皮革变贵……就算算清楚了，鞋匠也未必想要苹果。早期的钱，本身就是有用的东西：大约 4000 年前，非洲、南亚、东亚和大洋洲都用<b>贝壳</b>交易；奥斯维辛集中营里，<b>一条面包值 12 支香烟</b>。',terms:[['以物易物','直接拿货换货。双方都得恰好想要对方的东西。'],['麦元 · 席拉','约公元前 3000 年的苏美尔，用大麦当钱。1 席拉约 1 升，男工月薪 60 席拉，女工 30 席拉。'],['银舍客勒','约公元前 2500 年的美索不达米亚，8.33 克银子。银子不能吃也不能做工具，价值完全来自文化。'],['硬币','约公元前 640 年，吕底亚国王阿耶特斯铸出第一批：标准重量 + 识别印记。']],ask:'下一步拖动商品种数，比较以物易物和用钱，各要记住多少个数字。'},
+ {h:'4950 个汇率',dur:14,c:'以物易物，n 种商品之间要记住 n(n−1)/2 个兑换比例：<b>100 种商品是 4950 条，1000 种是 499500 条</b>。有了钱，每样商品只需要一个价格。钱的形态从大麦、银子、硬币一路变成计算机里的数字：今天全球约 60 兆美元的钱里，硬币和钞票加起来不到 6 兆。',q:'金钱正是有史以来最普遍也最有效的互信系统。（第十章）'},
+ {h:'别人也相信',dur:12,c:'十字军在伊比利亚半岛和穆斯林打得血流成河，胜利的基督徒却铸造了一种叫<b>米拉雷斯</b>（millares）的硬币，上面用阿拉伯文写着“安拉是唯一的真神，穆罕默德是安拉的使者”。宗教要求的是你自己相信；钱只要求你相信<b>别人也会收</b>。所以钱能跨过宗教、语言和敌意。代价是，万物都可以标价，连家庭、荣誉也可能被它侵蚀。',q:'原因就在于宗教信仰的重点是自己相信，但金钱信仰的重点是“别人相信”。（第十章）'},
+ {h:'帝国：一台压路机',dur:13,c:'帝国有两个特征：统治着许多文化不同的民族，疆界可以无限扩张。公元前 134 年，罗马人攻灭了西班牙的努曼西亚；后来西班牙人歌颂努曼西亚人的英勇，用的却是源自拉丁文的西班牙语。被征服者接受帝国的文化，再用帝国自己的价值要求平等，最终“他们”变成了“我们”。',q:'帝国就像一台压路机，将许多民族独特的多样性逐渐夯平（例如努曼西亚人），整合制造出他们更大的新群体。（第十一章）'},
+ {h:'宗教：超人类的秩序',dur:13,c:'宗教是“建立在超人类的秩序之上”的规范和价值观系统。要统一广大人群，它还需要<b>普世</b>（对所有人都成立）和<b>推广</b>（积极传教）两种特质，这要到公元前 1000 年间才出现。书中的演变线索：泛神论（animism，又译万物有灵论）→ 多神教 → 一神教、二元论 → 自然法则宗教（佛教）；近代还有人文主义。',q:'因此，我们可以说宗教是“一种人类规范及价值观的系统，建立在超人类的秩序之上”。（第十二章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---- step 0: worlds merging ----
+ layer(1-v1,()=>{
+  const mr=fitMap(n?6:20,n?30:24,W-(n?12:40),H*(n?.5:.62));const P=mapProj(mr.x,mr.y,mr.w,mr.h);
+  drawLand(P,C.soft,C.line);
+  const p=REDUCED?1:clamp(s.age/8);
+  // thousands of dots merging into Afro-Asia
+  for(let i=0;i<160;i++){const lo=-170+rnd(i)*340,la=-45+rnd(i+77)*110;const [x,y]=P(lo,la);
+   const inAA=lo>-20&&lo<145&&la>-35;const tx=P(55,25);const q=inAA?E.io(clamp(p*1.3-rnd(i+3)*.3)):0;
+   const xx=lerp(x,tx[0]+(rnd(i+5)-.5)*mr.w*.35,q*.6),yy=lerp(y,tx[1]+(rnd(i+9)-.5)*mr.h*.4,q*.6);dot(xx,yy,1.8,inAA?C.acc:C.muted)}
+  layer(p,()=>{const [ax,ay]=P(60,22);const r=mr.w*.24;ctx.beginPath();ctx.ellipse(ax,ay,r,r*.55,0,0,TAU);ctx.strokeStyle=C.acc;ctx.lineWidth=2;ctx.setLineDash([6,4]);ctx.stroke();ctx.setLineDash([]);
+   txt('亚非世界 · 约九成人口',ax,ay-r*.55-12,{size:n?11:13,w:700,color:C.acc});hotC(ax,ay,r*.5,'亚非世界（1450 年）','穆斯林旅行家伊本·白图泰从摩洛哥出发，走过西非、东非、南俄、中亚、印度、中国和印度尼西亚，这些地方都已紧密相连。');
+   [['中美洲',-95,18],['安第斯',-70,-15],['澳大利亚',134,-25],['大洋洲',170,-15]].forEach(([l,lo,la])=>{const [x,y]=P(lo,la);pill(l,x,y,{size:n?9.5:11,bg:C.sheet,color:C.ink,stroke:C.line})})});
+  pill(p<1?'公元前 10000 年 → 公元 1450 年':'公元 1450 年',mr.x+mr.w-6,mr.y+12,{size:n?10:12,f:'m',bg:C.ink,align:'right'});
+  const by=mr.y+mr.h+(n?16:20);
+  const f=[['💰','金钱','商人','第 10 章',C.amber],['👑','帝国','征服者','第 11 章',C.red],['🙏','宗教','先知','第 12 章',C.violet]];
+  const cw=n?(W-24)/3:Math.min(200,(W-80)/3);
+  f.forEach((q,i)=>{const x=W/2+(i-1)*(cw+(n?4:16));const y=by+(n?30:40);box(x-cw/2,y-(n?26:34),cw,n?56:72,{fill:rgba(q[4],.1),stroke:q[4],r:10});
+   emo(q[0],x-(n?22:40),y,n?16:24);txt(q[1],x+(n?8:6),y-(n?8:10),{size:n?13:16,w:900,f:'d',color:q[4]});txt(q[2]+' · '+q[3],x+(n?8:6),y+(n?12:14),{size:n?9.5:11,color:C.muted});
+   hotR(x-cw/2,y-34,cw,72,q[1],'三种普世秩序之一。它们让人类有可能把整个世界视为一个单位，不再区分“我们”和“他们”。')});
+ });
+ // ---- step 2: barter grid ----
+ layer(v1*(1-v2),()=>{
+  let N=goods;if(s.step===1){const a=autoVal('gsl',Math.round(lerp(12,100,clamp((s.age-.5)/9))),v=>v);if(a!=null)N=goods=a}
+  const pairs=N*(N-1)/2;
+  const gs=Math.min(n?W-40:W*.46,H*.62),gx=n?(W-gs)/2:W*.06+10,gy=n?60:H*.16;
+  // triangle matrix
+  const show=Math.min(N,60);const c=gs/show;
+  ctx.fillStyle=rgba(C.red,.55);for(let i=0;i<show;i++)for(let j=i+1;j<show;j++){ctx.fillRect(gx+j*c,gy+i*c,Math.max(1,c-.6),Math.max(1,c-.6))}
+  box(gx,gy,gs,gs,{stroke:C.line,r:2});
+  txt(N>60?`以物易物：兑换比例表（只画出前 60 种）`:'以物易物：兑换比例表',gx+gs/2,gy-14,{size:n?10.5:12,w:700,color:C.red});
+  hotR(gx,gy,gs,gs,'兑换比例表',`每个红格是一个需要记住的兑换比例：几袋苹果换一双鞋、几双鞋换一张羊皮……${N} 种商品共 ${pairs.toLocaleString()} 个。`);
+  if(n){txt(`${pairs.toLocaleString()} 个兑换比例  vs  ${N} 个价格`,W/2,gy+gs+24,{size:13,w:700,f:'m'})}
+  else{const rx=W*.76,ry=H*.24;txt(pairs.toLocaleString(),rx,ry,{size:34,w:700,f:'m',color:C.red});txt('个兑换比例（以物易物）',rx,ry+28,{size:12,color:C.muted});
+   txt(String(N),rx,ry+96,{size:34,w:700,f:'m',color:C.teal});txt('个价格（用钱）',rx,ry+124,{size:12,color:C.muted});
+   txt('100 种商品 → 4950 条；1000 种 → 499500 条',rx,ry+170,{size:11,color:C.muted})}
+  // money evolution
+  const ev=[['🌾','大麦','约公元前 3000 年','苏美尔的麦元。本身有生物学价值：人类可以吃。'],['⚖️','银舍客勒','约公元前 2500 年','8.33 克银子。不能吃也不能做工具，价值完全来自文化。'],['🪙','硬币','约公元前 640 年','吕底亚国王阿耶特斯铸造。印记证明重量和发行者。'],['💻','数字','今天','全球 60 兆美元的钱里，硬币和钞票不到 6 兆，其余都是计算机里的数字。']];
+  const ey=H-(n?44:56),ew=(W-(n?20:80))/4;
+  ev.forEach((q,i)=>{const x=(n?10:40)+ew*(i+.5);emo(q[0],x,ey-(n?6:8),n?16:22);txt(q[1],x,ey+(n?14:18),{size:n?10:12,w:700});if(!n)txt(q[2],x,ey+34,{size:10,f:'m',color:C.muted});if(i<3)arrow(x+ew*.28,ey-6,x+ew*.72,ey-6,C.muted,1.2,6);hotC(x,ey,24,q[1]+' · '+q[2],q[3])});
+ });
+ // ---- step 3: millares ----
+ layer(v2*(1-v3),()=>{
+  const cx=W/2,cy=H*.42,R=Math.min(W,H)*.2;
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(Math.sin(t*.6)*.1);
+  box(-R,-R,R*2,R*2,{fill:rgba(C.amber,.35),stroke:C.amber,r:8,lw:3});
+  txt('لا إله إلا الله',0,-R*.2,{size:R*.2,w:700,color:C.tar});txt('محمد رسول الله',0,R*.15,{size:R*.16,w:700,color:C.tar});
+  ctx.restore();
+  txt('米拉雷斯 millares · 基督徒征服者所铸',cx,cy+R+(n?20:26),{size:n?11.5:13,w:700});
+  txt('“安拉是唯一的真神，穆罕默德是安拉的使者。”',cx,cy+R+(n?40:50),{size:n?10.5:12,color:C.muted});
+  hotR(cx-R,cy-R,R*2,R*2,'米拉雷斯','十字军击败伊比利亚半岛的穆斯林王国后，基督徒除了发行印有十字架的硬币，也铸造了这种印着阿拉伯文清真言的方形硬币。南法的天主教主教也发行流行的穆斯林硬币。');
+  emo('✝',cx-R*1.8,cy,n?26:36);emo('☪',cx+R*1.8,cy,n?26:36);
+  arrow(cx-R*1.55,cy,cx-R*1.1,cy,C.muted,1.4);arrow(cx+R*1.55,cy,cx+R*1.1,cy,C.muted,1.4);
+  txt('自己相信 ≠ 别人相信',W/2,H-(n?22:28),{size:n?12:15,w:900,f:'d',color:C.acc});
+ });
+ // ---- step 4: empire cycle ----
+ layer(v3*(1-v4),()=>{
+  const st=['一小群人建立大帝国','形成帝国文化','属民接受帝国文化','属民以帝国价值要求平等','开国者失去主导','帝国文化继续发扬'];
+  const cx=n?W/2:W*.36,cy=H*.48,R=Math.min(n?W*.36:W*.22,H*.34);
+  const k=REDUCED?6:Math.floor(s.age/1.6)%7;
+  st.forEach((q,i)=>{const a=i/st.length*TAU-Math.PI/2;const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;const on=i<k;
+   const a2=(i+1)/st.length*TAU-Math.PI/2;curveArrow(x,y,cx+Math.cos((a+a2)/2)*R*1.15,cy+Math.sin((a+a2)/2)*R*1.15,cx+Math.cos(a2)*R*.96,cy+Math.sin(a2)*R*.96,rgba(C.red,on?.7:.2),1.3);
+   const b=pill((i+1)+' '+q,x,y,{size:n?9.5:11,bg:on?C.red:C.sheet,color:on?C.sheet:C.muted,stroke:C.line});hotR(b.x,b.y,b.w,b.h,'帝国循环 '+(i+1),q)});
+  emo('🛞',cx,cy,n?28:40);
+  if(!n){const col=[['古罗马','拉丁文、罗马法 → 高卢人、迦太基人要求平等'],['伊斯兰','阿拉伯语、伊斯兰教 → 埃及人、伊朗人、柏柏尔人'],['欧洲','英语、法语、人权 → 印度人、中国人、非洲人']];
+   col.forEach((c,i)=>{const x=W*.66,y=H*.22+i*H*.2;box(x,y,W*.3,H*.16,{fill:C.sheet,stroke:C.line,r:8});txt(c[0]+'帝国',x+12,y+20,{size:13,w:700,align:'left',color:C.red});para(c[1],x+12,y+44,W*.3-24,{size:11,align:'left',color:C.muted})})}
+  txt('公元前 134 年 · 努曼西亚被罗马攻灭；后人用拉丁语的后代歌颂它',W/2,H-(n?18:24),{size:n?9.5:11.5,color:C.muted});
+ });
+ // ---- step 5: religion tree ----
+ layer(v4,()=>{
+  const nodes=[['泛神论','animism',.1,.5,'采集时代。万物皆有灵：石头、泉水、动物和人在同一个层次对话。'],['多神教','',.32,.5,'王国和贸易网络扩大后，需要管辖更大范围的神。多神教对其他神通常宽容。'],['一神教','',.56,.3,'只有一位神。排他而热衷传教，推动了大规模的宗教统一。'],['二元论','',.56,.7,'善与恶两股对立力量，解释“恶的难题”：全能又仁慈的神为何允许苦难。'],['自然法则宗教','佛教等',.8,.5,'超人类的秩序是自然法则而非神的意志。佛陀的教诲：痛苦来自欲望，放下欲望才能解脱。'],['人文主义','',.8,.84,'近代崇拜“人性”的宗教，分自由、社会、演化三派。']];
+  const P=([a,b,x,y])=>[n?W*(.08+x*.84):W*(.06+x*.88),H*(.12+y*.66)];
+  [[0,1],[1,2],[1,3],[2,4],[3,4],[4,5]].forEach(([a,b])=>{const [x1,y1]=P(nodes[a]),[x2,y2]=P(nodes[b]);arrow(x1+(n?28:40),y1,x2-(n?28:44),y2,C.muted,1.2,6)});
+  nodes.forEach(q=>{const [x,y]=P(q);const b=pill(q[0],x,y,{size:n?10:12.5,bg:C.violet});if(q[1]&&!n)txt(q[1],x,y+20,{size:10,f:'m',color:C.muted});hotR(b.x,b.y,b.w,b.h,q[0],q[4])});
+  txt('普世特质 + 推广特质 → 能统一广大人群',W/2,H-(n?20:26),{size:n?11:13,w:700,color:C.violet});
+ });
+}},
+/* ---------------- 7 · Revolution of ignorance ---------------- */
+{nav:'无知的革命',chap:'第 13–15 章 · 成功的秘密 / 发现自己的无知 / 科学与帝国的联姻',title:'承认“我们不知道”',
+ctrlSteps:[2],ctrl:`<div class="segbtns" id="cookb"><button data-k="s">科学远征队</button><button data-k="e">武力远征军</button></div><div class="note">同一艘船、同一趟航程。切换两种视角，看船上的人和带回来的东西。</div>`,
+enter(){segCtl('#cookb',()=>cookView,k=>{TOUCH.cook=true;cookView=k})},
+steps:[
+ {h:'事后看来必然',dur:11,c:'为什么最后是欧洲征服了世界？直到 1775 年，亚洲仍占全球经济的八成，欧洲就像个“经济侏儒”。书中先提醒一条铁则：<b>历史是二级混沌系统</b>，对它的预测本身就会改变它，所以历史无法预测，也不以人类的福祉为目的。学历史不是为了预测，而是为了看清：现在的世界并非自然或必然。',q:'历史的铁则就是：事后看来无可避免的事，在当时看来总是毫不明显。（第十三章）'},
+ {h:'地图上出现了空白',dur:14,c:'现代科学和过去的知识体系有三大不同：①愿意<b>承认无知</b>（ignoramus，拉丁文“我们不知道”）；②以<b>观察和数学</b>为中心；③用新知识<b>追求新的力量</b>。1459 年的欧洲世界地图画得满满当当，连当时一无所知的南非都写满了信息；1525 年的<b>萨尔瓦提地图</b>，美洲海岸线往下就是一片空白。',q:'科学革命并不是“知识的革命”，而是“无知的革命”。（第十四章）'},
+ {bg:1,h:'背景：金星凌日与坏血病',dur:16,c:'地球离太阳多远？18 世纪中叶有了测量办法：在地球不同的大洲观察同一场<b>金星凌日</b>，用三角函数就能算出来。1761 和 1769 年各有一次。英国皇家学会派天文学家格林前往塔希提岛，同行还有植物学家班克斯、索兰德等八位科学家和几位画家，船长是<b>詹姆斯·库克</b>。航程从 1768 年到 1771 年。远航最大的杀手是<b>坏血病</b>：16 到 18 世纪约夺走两百万船员的生命。',terms:[['金星凌日','金星从太阳和地球之间直接通过，看起来像从太阳表面划过。'],['坏血病','缺乏维生素 C。牙龈出血、掉牙、伤口无法愈合。远航的水手只吃饼干和牛肉干。'],['林德的实验','1747 年英国医生林德把患病水手分组治疗，吃柑橘类水果的那组迅速康复。'],['英国皇家学会','伦敦皇家自然知识促进会，远征的大部分经费由它资助。']],ask:'切换两种视角时想一想：这趟远征到底是科学，还是帝国？'},
+ {h:'两者皆是',dur:15,c:'<b>科学视角</b>：库克相信林德，带了大量酸菜、上岸就让水手吃新鲜蔬果，结果没有一个人死于坏血病；远征带回了天文、地理、植物、动物和人类学的大量资料。<b>帝国视角</b>：船由皇家海军提供，载着 85 名全副武装的水手和士兵，还有大炮和步枪；库克宣布澳大利亚等地归英国所有。一个世纪后，澳大利亚和新西兰原住民人数锐减 90%，塔斯马尼亚原住民更是惨遭灭族。',q:'所以这样说来，库克的船队究竟是有武力保护的科学远征队，还是有几个科学家随行的武力远征军？……其实两者皆是。（第十五章）'},
+ {h:'科学 · 帝国 · 资本',dur:12,c:'科学研究很贵，必须有“金主”。帝国出钱，因为新知识能带来新力量；资本家出钱，因为探险和殖民能赚钱；科学拿到钱，又带来新的力量和财富。这个<b>回馈循环</b>就是近 500 年历史的主要引擎。1500 年时欧洲并没有技术优势，真正的差别在于这套价值观、故事和制度。',q:'在过去500年间，科学、帝国和资本之间的回馈循环无疑正是推动历史演进的主要引擎。（第十四章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3);
+ // ---- step 0: hindsight ----
+ layer(1-v1,()=>{
+  const x0=n?30:W*.12,x1=W-(n?30:W*.12),y=H*.48;
+  // branching paths
+  const br=[[-.32,'中国 · 明朝','郑和下西洋（1405–1433）规模远超哥伦布，却没有殖民。'],[-.12,'奥斯曼帝国','据第十五章：现代早期蓬勃发展的亚洲强权之一。'],[.12,'印度 · 莫卧儿','据第十五章：1775 年，光是印度和中国就占了全球生产量的 2/3。'],[.32,'西欧','最终出现科学革命的地方。']];
+  const p=REDUCED?1:clamp(s.age/4);
+  dot(x0,y,7,C.ink);txt('1500 年',x0,y+22,{size:11,f:'m',color:C.muted});
+  br.forEach((b,i)=>{const yy=y+b[0]*H;const sel=i===3;const xx=lerp(x0,x1,p);
+   curve(x0,y,(x0+x1)/2,yy,xx,yy,sel&&p>=1?C.red:rgba(C.muted,.6),sel&&p>=1?2.4:1.2,sel?null:[4,4]);
+   if(p>.9){txt(b[1],x1+(n?-4:8),yy,{size:n?10.5:12.5,w:700,align:n?'right':'left',color:sel?C.red:C.muted})}
+   if(b[2])hotC(x1,yy,26,b[1],b[2])});
+  txt('站在 1500 年，没有人能指出哪条路会胜出',W/2,H*.1,{size:n?12:15,w:700,f:'d'});
+  txt('二级混沌：预测本身就会改变结果',W/2,H-(n?26:34),{size:n?10.5:12,color:C.muted});
+ });
+ // ---- step 1: two maps ----
+ layer(v1*(1-v2),()=>{
+  const half=n?H*.42:W*.46;
+  const mk=(ox,oy,w,h,title,full)=>{box(ox,oy,w,h,{fill:C.sheet,stroke:C.line,r:8});txt(title,ox+w/2,oy+18,{size:n?11.5:13,w:700,f:'d'});
+   const mr=fitMap(ox+8,oy+30,w-16,h-40);const P=mapProj(mr.x,mr.y,mr.w,mr.h);
+   ctx.save();ctx.beginPath();ctx.rect(mr.x,mr.y,mr.w,mr.h);ctx.clip();
+   if(full){LAND.forEach((pl,i)=>{if(i===3||i===4||i===5||i===10)return;ctx.beginPath();pl.forEach(([lo,la],k)=>{const [x,y]=P(lo,la);k?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.closePath();ctx.fillStyle=rgba(C.amber,.35);ctx.fill()});
+    for(let i=0;i<40;i++){const [x,y]=P(-170+rnd(i)*340,-50+rnd(i+3)*120);txt(['城','怪','岛','王','河'][i%5],x,y,{size:9,color:rgba(C.tar,.55)})}
+    hotR(mr.x,mr.y,mr.w,mr.h,'1459 年的欧洲世界地图','画满了各大陆、岛屿和详细解释，连当时欧洲人一无所知的南非都有密密麻麻的信息。没有空白，让人觉得世界尽在掌握。')}
+   else{drawLand(P,rgba(C.blue,.2),null);ctx.fillStyle=C.sheet;const [ax,ay]=P(-85,0);ctx.fillRect(ax,ay,mr.w*.42,mr.h);const [bx,by]=P(100,-10);ctx.fillRect(bx,by,mr.w*.4,mr.h);
+    txt('？',P(-60,-30)[0],P(-60,-30)[1],{size:n?18:26,w:900,color:C.red});txt('？',P(140,-30)[0],P(140,-30)[1],{size:n?18:26,w:900,color:C.red});
+    hotR(mr.x,mr.y,mr.w,mr.h,'1525 年萨尔瓦提地图','美洲海岸线一路向下之后就是一片空白。这就像一份邀请：后面有什么？')}
+   ctx.restore()};
+  if(n){mk(10,10,W-20,H*.42,'1459 年 · 画满了',true);mk(10,H*.46,W-20,H*.42,'1525 年 · 出现空白',false)}
+  else{mk(20,H*.08,W*.46,H*.62,'1459 年 · 画满了',true);mk(W*.52,H*.08,W*.46,H*.62,'1525 年 · 出现空白',false)}
+  if(!n){const y=H*.82;['① 承认无知','② 观察与数学','③ 追求新力量'].forEach((q,i)=>pill(q,W/2+(i-1)*170,y,{size:12.5,bg:C.blue}))}
+ });
+ // ---- step 2: Cook's ship ----
+ layer(v2*(1-v3),()=>{
+  if(s.step===2&&!TOUCH.cook){const k=Math.floor(s.age/6)%2?'e':'s';if(k!==cookView){cookView=k;segCtl('#cookb',()=>cookView,k2=>{TOUCH.cook=true;cookView=k2})}}
+  const sci=cookView==='s',col=sci?C.blue:C.red;
+  const cx=W/2,sy=H*(n?.36:.42),sw=Math.min(W*.7,460);
+  // sea
+  ctx.beginPath();for(let x=0;x<=W;x+=8){const y=sy+30+Math.sin(x*.03+t*1.5)*4;x?ctx.lineTo(x,y):ctx.moveTo(x,y)}ctx.lineTo(W,H);ctx.lineTo(0,H);ctx.closePath();ctx.fillStyle=rgba(C.blue,.08);ctx.fill();
+  // hull
+  const bob=Math.sin(t*1.2)*3;ctx.beginPath();ctx.moveTo(cx-sw/2,sy+bob);ctx.lineTo(cx+sw/2,sy+bob);ctx.lineTo(cx+sw*.38,sy+32+bob);ctx.lineTo(cx-sw*.38,sy+32+bob);ctx.closePath();ctx.fillStyle=C.tar;ctx.fill();
+  [-.2,.05,.28].forEach((f,i)=>{const mx=cx+sw*f;seg(mx,sy+bob,mx,sy-H*.24+bob,C.tar,3);box(mx-24,sy-H*.22+bob,48,H*.14,{fill:rgba(col,.2),stroke:col,r:3})});
+  txt('库克的远征船 · 1768–1771',cx,sy+bob+16,{size:n?9.5:11,f:'m',color:'#E8E4DA'});
+  if(!sci){for(let i=0;i<5;i++){const gx=cx-sw*.3+i*sw*.15;dot(gx,sy+18+bob,4,C.red)}}
+  const items=sci?[['🔭','天文学家格林','观测金星凌日，计算日地距离'],['🌿','植物学家班克斯、索兰德','带回大量植物学、动物学资料'],['🎨','画家','绘制新的土地、植物、动物和人'],['🥬','酸菜和新鲜蔬果','没有一个水手死于坏血病']]
+   :[['⚓','皇家海军提供的船','库克同时是海军军官'],['🔫','85 名武装水手和士兵','船用大炮、步枪、火药'],['🚩','“发现”即占领','宣布澳大利亚等岛屿归英国所有'],['💀','一世纪后','澳新原住民锐减 90%，塔斯马尼亚原住民惨遭灭族']];
+  const by=sy+(n?52:64),cw=n?(W-20)/2:(W-60)/4,ch=n?(H-by-10)/2-6:H-by-20;
+  items.forEach((q,i)=>{const x=n?10+(i%2)*cw:30+i*cw,y=n?by+Math.floor(i/2)*(ch+6):by;box(x+3,y,cw-6,ch,{fill:rgba(col,.08),stroke:col,r:8});
+   emo(q[0],x+cw/2,y+(n?18:24),n?16:22);para(q[1],x+cw/2,y+(n?40:56),cw-20,{size:n?10.5:12,w:700});if(!n)para(q[2],x+cw/2,y+92,cw-24,{size:11,color:C.muted});
+   hotR(x,y,cw,ch,q[1],q[2])});
+  txt(sci?'有武力保护的科学远征队？':'有几个科学家随行的武力远征军？',cx,H*.06+4,{size:n?13:17,w:900,f:'d',color:col});
+ });
+ // ---- step 3: feedback loop ----
+ layer(v3,()=>{
+  const cx=W/2,cy=H*.46,R=Math.min(W*(n?.3:.2),H*.28);
+  const nd=[['🔬','科学','新知识 → 新力量',C.blue],['👑','帝国','出钱、提供船和军队',C.red],['💰','资本','投资探险与殖民',C.amber]];
+  ctx.save();ctx.translate(cx,cy);ctx.rotate(t*.25);ctx.beginPath();ctx.arc(0,0,R,0,TAU);ctx.strokeStyle=rgba(C.acc,.5);ctx.lineWidth=2;ctx.setLineDash([8,8]);ctx.stroke();ctx.setLineDash([]);ctx.restore();
+  nd.forEach((q,i)=>{const a=i/3*TAU-Math.PI/2;const x=cx+Math.cos(a)*R,y=cy+Math.sin(a)*R;
+   const a2=(i+1)/3*TAU-Math.PI/2;const x2=cx+Math.cos(a2)*R,y2=cy+Math.sin(a2)*R;
+   curveArrow(x+(x2-x)*.25,y+(y2-y)*.25,cx+Math.cos((a+a2)/2)*R*1.3,cy+Math.sin((a+a2)/2)*R*1.3,x+(x2-x)*.75,y+(y2-y)*.75,q[3],2,9);
+   dot(x,y,n?30:40,C.sheet,q[3],2.4);emo(q[0],x,y-(n?6:8),n?18:24);txt(q[1],x,y+(n?14:18),{size:n?11:13,w:900,f:'d',color:q[3]});
+   if(!n)txt(q[2],x,y+(i===0?-60:62),{size:11.5,color:C.muted});
+   hotC(x,y,40,q[1],q[2])});
+  txt('近 500 年的历史引擎',cx,cy,{size:n?11:14,w:900,f:'d'});
+ });
+}},
+/* ---------------- 8 · Credit ---------------- */
+{nav:'信用',chap:'第 16 章 · 资本主义教条',title:'预支未来，打造现在',
+ctrlSteps:[0],ctrl:`<div class="lbl">A 先生的银行</div><div class="segbtns"><button id="loanB">再贷给 C 小姐 100 万</button><button id="loanR">从头开始</button></div><div class="note">每贷出一笔，钱付给承包商 B 先生，他又存回同一家银行。比较账面上的数字和金库里的现金。</div>`,
+enter(){btnCtl('loanB',()=>{TOUCH.loan=true;loans=Math.min(9,loans+1)});btnCtl('loanR',()=>{TOUCH.loan=true;loans=0})},
+steps:[
+ {bg:1,h:'背景：开一家面包店',dur:16,c:'这是作者为了解释现代经济<b>虚构的一个简化例子</b>。加州有位金融家 <b>A 先生</b>开了一家银行；建筑承包商 <b>B 先生</b>刚赚了 100 万美元现金，存进这家银行；面包师傅 <b>C 小姐</b>经验丰富但缺钱，想开城里第一家真正好的面包店，需要工业烤箱、水槽、锅碗瓢盆。',terms:[['创业者的困境','没有面包店就烤不了面包，赚不了钱就雇不了承包商，雇不了承包商就没有面包店。人类在这个困境里困了几千年。'],['信用 credit','一种金钱概念，代表“目前还不存在、只存在于想象中”的货品。'],['部分准备','银行只留下一部分现金，其余都贷出去。书中说，银行每持有 1 元，就能放款 10 元。']],ask:'下一步点击“贷款”，盯住两个数字：B 先生户头里有多少钱？银行金库里实际有多少？'},
+ {h:'户头里的钱 vs 金库里的钱',dur:18,c:'A 先生把 100 万贷给 C 小姐，她付给 B 先生盖店，B 先生又存回银行：<b>户头 200 万，金库还是 100 万</b>。工程追加费用，再贷 100 万：户头 300 万，金库仍是 100 万。按美国银行法这还能再重复 7 次，户头最后可达 <b>1000 万</b>。我们户头里九成以上的钱，只是数字。',q:'“信任”就是世上绝大多数金钱的唯一后盾。（第十六章）'},
+ {h:'会变大的饼',dur:13,c:'这听起来像庞氏骗局，但书中说它是人类想象力又一次惊人的发挥。前现代的人认为饼的大小固定，所以不敢借钱给人。<b>科学革命带来“进步”的观念</b>：相信未来会更好，就敢借钱；借了钱，就能创业；创业成功，饼真的变大，于是大家更相信未来。',q:'正是“信用”的概念，让我们能够预支未来、打造现在。（第十六章）'},
+ {bg:1,h:'背景：密西西比公司',dur:15,c:'1717 年，法国的<b>密西西比公司</b>要开拓美洲密西西比河下游的殖民地，新奥尔良就在这时成形。公司所有人<b>约翰·劳</b>同时是法国央行行长，又被国王任命为主计大臣（约等于财政部长）。当时那里其实只有沼泽和鳄鱼，公司却把它描述得金银遍地。',terms:[['股份公司','把公司拆成股份卖给大众筹钱，在证券交易所买卖。荷兰东印度公司（1602）是早期的成功例子。'],['里弗 livre','当时的法国货币单位。'],['三级会议','法国由教士、贵族、平民三个等级代表组成的会议，当时已经一个半世纪没有召开。']],ask:'信用建立在信任上。信任一旦崩塌，代价由谁来付？'},
+ {h:'泡沫与一场革命',dur:14,c:'股价从上市的 500 里弗，到 1719 年 12 月 2 日涨破 10000 里弗，随后像雪崩一样暴跌到 1000 里弗，最后彻底崩溃，股票变得像壁纸。法国人对国王的金融智慧失去信心，王室越借越难、利率越来越高。到路易十六时，<b>年度预算有一半</b>用来付利息。1789 年，他被迫召开三级会议，<b>法国大革命</b>就此揭开序幕。'},
+ {h:'国家为资本服务',dur:13,c:'资本和帝国越绑越紧。书中称<b>第一次鸦片战争</b>（1840–1842）是国家为资本家服务“最恶名昭彰的例子”：中国禁烟，而许多英国议员和部长持有鸦片商的股票。英国以“自由贸易”为名开战，条约规定不得限制英国烟商，香港成了贩毒基地。19 世纪末，中国约有 4000 万鸦片成瘾者，占人口的 1/10。'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---- step 0: bank ----
+ layer(1-v1,()=>{
+  let k=loans;if(s.step===0&&!TOUCH.loan){k=loans=Math.min(9,Math.floor(Math.max(0,s.age-1)/1.6))}
+  const acct=100*(k+1);
+  const top=n?18:30;
+  // actors
+  const A=[['🏦','A 先生','银行家',C.blue],['👷','B 先生','承包商',C.amber],['👩‍🍳','C 小姐','面包师傅',C.red]];
+  const ay=top+(n?26:36),xs=[W*.5,W*(n?.16:.2),W*(n?.84:.8)];
+  A.forEach((q,i)=>{emo(q[0],xs[i],ay,n?22:30);txt(q[1],xs[i],ay+(n?22:30),{size:n?11:13,w:700,color:q[3]});if(!n)txt(q[2],xs[i],ay+48,{size:10.5,color:C.muted})});
+  // flow animation per loan
+  const ph=(s.t*.9)%1;if(k>0){const path=[[xs[0],ay],[xs[2],ay],[xs[1],ay+(n?50:70)],[xs[0],ay]];const [px,py]=poly(path,ph);glow(px,py,16,C.teal,.6);txt('$',px,py,{size:13,w:700,color:C.teal,f:'m'})}
+  curveArrow(xs[0]+30,ay,W*.66,ay-20,xs[2]-30,ay,rgba(C.teal,.6),1.4);txt('贷款 100 万',W*.66,ay-(n?24:30),{size:n?9.5:11,color:C.teal});
+  curveArrow(xs[2]-20,ay+20,W*.5,ay+(n?66:90),xs[1]+20,ay+20,rgba(C.teal,.6),1.4);txt('付工程款',W*.5,ay+(n?62:82),{size:n?9.5:11,color:C.teal});
+  curveArrow(xs[1]+30,ay-10,W*.34,ay-24,xs[0]-30,ay-6,rgba(C.teal,.6),1.4);txt('存回银行',W*.34,ay-(n?28:34),{size:n?9.5:11,color:C.teal});
+  // two bars
+  const by=H*(n?.5:.52),bh=H*(n?.36:.36),bw=n?W*.3:Math.min(140,W*.14);
+  const bars=[['B 先生户头',acct,C.teal,W*(n?.3:.36)],['银行金库现金',100,C.ink,W*(n?.7:.64)]];
+  bars.forEach(([l,v,c,x])=>{const h=bh*v/1000;box(x-bw/2,by+bh-h,bw,h,{fill:rgba(c,.75),r:4});box(x-bw/2,by,bw,bh,{stroke:C.line,r:4});
+   txt(v+' 万',x,by+bh-h-14,{size:n?13:18,w:700,f:'m',color:c});txt(l,x,by+bh+16,{size:n?10.5:12,w:700});
+   hotR(x-bw/2,by,bw,bh,l,l==='银行金库现金'?'这 100 万现金从来没有离开过银行。':'每一笔贷款都变成 B 先生户头里新增的数字。')});
+  if(k>=9)pill('上限：银行每持有 1 元，就能放款 10 元',W/2,by-(n?16:22),{size:n?10.5:12,bg:C.red});
+  else txt(`已贷出 ${k} 次`,W/2,by-(n?16:22),{size:n?11:12.5,f:'m',color:C.muted});
+  // bridge of trust
+  if(!n){const y=by+bh*.4;curve(W*.36+bw/2,y,W/2,y-40,W*.64-bw/2,y,C.amber,2,[4,3]);txt('对未来的信任',W/2,y-30,{size:12,w:700,color:C.amber})}
+ });
+ // ---- step 2: growing pie ----
+ layer(v1*(1-v2),()=>{
+  const cx=W/2,cy=H*.48,R=Math.min(W*(n?.32:.22),H*.3);
+  const st=['相信进步','借出信用','创业成长','饼变大了'];
+  ctx.beginPath();ctx.arc(cx,cy,R,0,TAU);ctx.strokeStyle=rgba(C.acc,.5);ctx.lineWidth=2;ctx.setLineDash([6,6]);ctx.lineDashOffset=-t*20;ctx.stroke();ctx.setLineDash([]);
+  st.forEach((q,i)=>{const a=i/4*TAU-Math.PI/2;pill(q,cx+Math.cos(a)*R,cy+Math.sin(a)*R,{size:n?11:13,bg:C.acc})});
+  const pr=R*.36*(1+.15*Math.sin(t*.8));pie(cx,cy,pr,[{v:3,c:C.amber},{v:2,c:rgba(C.amber,.6)},{v:2,c:rgba(C.amber,.4)}]);
+  hotC(cx,cy,pr,'会变大的饼','前现代：饼的大小固定，你多拿一块我就少一块，所以没人愿意借钱。现代：相信未来会更好，就敢借钱、敢创业。');
+  txt('1500 年人均年产值约 550 美元 → 今天约 8800 美元',W/2,H-(n?22:30),{size:n?10.5:12,color:C.muted});
+ });
+ // ---- step 3: Mississippi ----
+ layer(v2*(1-v3),()=>{
+  const x0=n?40:80,x1=W-(n?20:60),y0=H*.12,y1=H*.7;
+  seg(x0,y1,x1,y1,C.ink,1.2);seg(x0,y0,x0,y1,C.ink,1.2);
+  const pts=[['上市',500],['1719.8.1',2750],['8.30',4100],['9.4',5000],['12.2',10000],['暴跌',1000],['如壁纸',0]];
+  const Y=v=>y1-(y1-y0)*v/10500;const X=i=>lerp(x0+10,x1-10,i/(pts.length-1));
+  const p=REDUCED?1:clamp(s.age/6);const upto=p*(pts.length-1);
+  const P=[];for(let i=0;i<=Math.floor(upto);i++)P.push([X(i),Y(pts[i][1])]);const fr=upto-Math.floor(upto);if(Math.floor(upto)<pts.length-1){const a=pts[Math.floor(upto)],b=pts[Math.floor(upto)+1];P.push([lerp(X(Math.floor(upto)),X(Math.floor(upto)+1),fr),Y(lerp(a[1],b[1],fr))])}
+  if(P.length>1)polyline(P,C.red,3);
+  pts.forEach((q,i)=>{if(i>upto)return;dot(X(i),Y(q[1]),3.5,C.red);if(q[0]&&(!n||i%2===0||i===4))txt(q[0],X(i),y1+14,{size:n?9:10.5,f:'m',color:C.muted});if(i<=5)txt(q[1]+'',X(i),Y(q[1])-12,{size:n?9.5:11,w:700,f:'m',color:C.red});hotC(X(i),Y(q[1]),12,q[0],i===6?'彻底崩溃，再也没有任何价值。央行和国库手中只剩大量如壁纸的股票。':q[1]+' 里弗')});
+  txt('密西西比公司股价（里弗/股）',x0+8,y0-4,{size:n?10.5:12,w:700,align:'left'});
+  // chain to revolution
+  const cy2=H*.86,items=['失去信任','借钱更难、利率更高','路易十六：一半预算付利息','1789 召开三级会议','法国大革命'];
+  layer(clamp(p*2-1),()=>{if(n){txt(items.join(' → '),W/2,cy2,{size:9.5,w:700,color:C.red})}else{const gw=(W-60)/items.length;items.forEach((q,i)=>{const x=30+gw*(i+.5);pill(q,x,cy2,{size:11,bg:i===4?C.red:C.sheet,color:i===4?C.sheet:C.ink,stroke:C.line});if(i<items.length-1)arrow(x+gw*.4,cy2,x+gw*.6,cy2,C.muted,1.2,6)})}});
+ });
+ // ---- step 4: opium ----
+ layer(v3,()=>{
+  const ch=[['📈','议员和部长持有烟商股票'],['🏛','向政府施压'],['⛴','1840 年以“自由贸易”开战'],['📜','条约：不得限制英国烟商 + 取得香港使用权'],['😶‍🌫️','19 世纪末：约 4000 万人成瘾']];
+  const y0=n?24:H*.12,rh=(H-y0-(n?30:40))/ch.length;
+  ch.forEach((q,i)=>{const y=y0+i*rh;const x=n?20:W*.2;const w=n?W-40:W*.6;
+   box(x,y,w,rh-12,{fill:i===4?rgba(C.red,.1):C.sheet,stroke:i===4?C.red:C.line,r:8});emo(q[0],x+(n?20:30),y+(rh-12)/2,n?16:22);txt(q[1],x+(n?42:60),y+(rh-12)/2,{size:n?11.5:14,w:700,align:'left'});
+   if(i<ch.length-1)arrow(W/2,y+rh-12,W/2,y+rh,C.muted,1.4,6);
+   hotR(x,y,w,rh-12,q[1],['英国东印度公司和杂物商靠向中国出口鸦片发了大财。','这些烟商与英国国会和首相关系良好。','英国靠汽船、重型火炮、火箭和连发步枪轻松获胜。','香港直到 1997 年才回归中国。','占当时全国人口的 1/10。'][i])});
+  txt('西方政府几乎就像是资本家的工会（书中转述马克思等人的玩笑）',W/2,H-(n?12:18),{size:n?9.5:11,color:C.muted});
+ });
+}},
+/* ---------------- 9 · Happiness & the end of Sapiens ---------------- */
+{nav:'快乐与未来',chap:'第 19–20 章 · 从此过着幸福快乐的日子 / 智人末日 · 后记',title:'力量变大了，人更快乐了吗？',
+ctrlSteps:[0],ctrl:`<label for="csl">客观条件 <output id="cslo">50</output></label><input id="csl" type="range" min="0" max="100" step="1" value="50"><label for="esl">主观期望 <output id="eslo">50</output></label><input id="esl" type="range" min="0" max="100" step="1" value="50"><div class="note">指针只看两者是否相符：条件变好，期望也跟着涨，快乐就回到原处。</div>`,
+enter(){rangeCtl('csl',()=>cond,v=>{cond=v});rangeCtl('esl',()=>expect,v=>{expect=v})},
+steps:[
+ {bg:1,h:'背景：怎么测量快乐',dur:16,c:'历史书很少问：这些革命让人更快乐了吗？近几十年，心理学家和生物学家开始用问卷调查<b>主观幸福感</b>，再和财富、健康、婚姻等条件对照。几个发现：钱能带来快乐，但有上限。年收入一万多元的清洁工中了两百万元彩票，快乐能持续好一阵子；年薪几百万的高管中了两三千万，只会高兴几个星期。家庭和社群的影响比金钱和健康都大。',terms:[['主观幸福感','请受访者自己回答“你对现在的生活有多满意”，再做统计。'],['期望','你觉得自己“应该”得到什么。它随条件水涨船高。'],['血清素、多巴胺、催产素','让人感到愉快的几种生化物质。书中说快乐最终是大脑里的生化反应。']],ask:'接下来拖动两个滑块，看什么情况下快乐会真正提高。'},
+ {h:'条件 vs 期望',dur:16,c:'想要牛车，得到牛车，你会满足；想要全新法拉利，得到二手菲亚特，你会不开心。所以中乐透或出车祸，对长期幸福感都没有太大影响。条件改善，期望也跟着膨胀；媒体和广告又不断告诉我们“应该”拥有什么。拖动两个滑块试试。',q:'快乐并不在于任何像是财富、健康甚至社群之类的客观条件，而在于客观条件和主观期望之间是否相符。（第十九章）'},
+ {h:'快乐空调',dur:14,c:'生物学的解释更彻底：快乐由生化机制决定，就像一台<b>空调</b>，每个人有自己的设定温度。有人天生开朗，情绪在 6 到 10 分之间来回，稳定在 8 分附近；有人在 3 到 7 分之间，稳定在 5 分。一个古代中国农夫盖好土屋，一个香港企业家还完豪宅房贷，大脑分泌的血清素都只到 X。',q:'对大脑来说，它完全不知道豪宅要比土屋舒适太多，它只知道现在的血清素浓度是X。（第十九章）'},
+ {h:'意义，与佛教的回答',dur:12,c:'卡尼曼发现，养小孩时换尿布、洗碗、处理哭闹，大多数时刻并不愉快，但父母都说孩子是快乐的主要来源。所以快乐不只是愉快的时刻多于痛苦，而是<b>觉得生命整体有意义</b>。佛教走得更远：快乐既不在外在条件，也不在内心感受，痛苦来自对感受的渴求；放下追求，才能解脱。'},
+ {bg:1,h:'背景：荧光兔阿巴',dur:14,c:'2000 年，巴西生物艺术家<b>爱德华多·卡茨</b>付钱请法国一间实验室，改造出一只会发荧光绿的兔子：把绿色荧光水母的 DNA 植入普通兔子胚胎。卡茨给它取名<b>阿巴</b>（Alba）。在将近 40 亿年里，所有生命都遵循自然选择；现在，生命可以被<b>智能设计</b>。',terms:[['自然选择','40 亿年来塑造一切生命的法则：能生存、能繁衍的特征留下来。'],['智能设计','生命由某个“设计者”刻意塑造。书中说，讲到未来，这个说法可能反而是对的。'],['吉尔伽美什计划','书中借古代史诗英雄之名，指现代科学想战胜死亡的计划。']],ask:'最后一步，书中提出了三条可能取代自然选择的道路，以及一个问题。'},
+ {h:'变成神的动物',dur:16,c:'智能设计取代自然选择有三条路：<b>生物工程</b>（1996 年背上植入牛软骨细胞、长出“耳朵”的老鼠）、<b>仿生工程</b>（2001 年失去双臂的水电工杰西·沙利文装上了生化手臂）、<b>无机生命</b>（会自行演化的计算机病毒）。7 万年前，智人还是非洲角落一种微不足道的动物；今天它几乎拥有神的力量，却仍然不知道自己想要什么。',q:'或许真正该问的问题不是“我们究竟想要变成什么”，而是“我们究竟希望自己想要什么”（第二十章）'}
+],
+draw(s){
+ const {W,H,t}=s,n=s.narrow,m=Math.min(W,H);
+ const v1=s.v(1),v2=s.v(2),v3=s.v(3),v4=s.v(4);
+ // ---- step 0: dials ----
+ layer(1-v1,()=>{
+  let c=cond,e=expect;
+  if(s.step===0&&!TOUCH.csl&&!TOUCH.esl){const a=s.age;const cc=Math.round(clamp(30+a*6,30,90));const ee=Math.round(a<4?30:clamp(30+(a-4)*7,30,90));const r1=autoVal('csl',cc),r2=autoVal('esl',ee);if(r1!=null)c=cond=r1;if(r2!=null)e=expect=r2}
+  const d=c-e;const hap=clamp(50+d*1.2,0,100);
+  const cx=W/2,cy=H*(n?.44:.52),R=Math.min(W*(n?.38:.26),H*.36);
+  // gauge
+  ctx.lineCap='round';
+  const a0=Math.PI*.85,a1=Math.PI*2.15;
+  ctx.beginPath();ctx.arc(cx,cy,R,a0,a1);ctx.strokeStyle=C.soft;ctx.lineWidth=n?16:22;ctx.stroke();
+  const g=ctx.createLinearGradient(cx-R,cy,cx+R,cy);g.addColorStop(0,C.blue);g.addColorStop(.5,C.amber);g.addColorStop(1,C.teal);
+  ctx.beginPath();ctx.arc(cx,cy,R,a0,lerp(a0,a1,hap/100));ctx.strokeStyle=g;ctx.stroke();ctx.lineCap='butt';
+  const na=lerp(a0,a1,hap/100);seg(cx,cy,cx+Math.cos(na)*R*.8,cy+Math.sin(na)*R*.8,C.ink,3);dot(cx,cy,7,C.ink);
+  txt(hap>62?'满足':hap<38?'不开心':'平平',cx,cy+R*.42,{size:n?16:22,w:900,f:'d',color:hap>62?C.teal:hap<38?C.blue:C.amber});
+  txt('快乐 ≈ 条件 − 期望',cx,cy+R*.42+(n?24:30),{size:n?11:13,f:'m',color:C.muted});
+  hotC(cx,cy,R,'快乐指针',`客观条件 ${c}，主观期望 ${e}。两者相符或条件超出期望时，你会满足。`);
+  // two side bars
+  const bw=n?18:26,bh=R*1.5,by=cy-bh/2-(n?10:0);
+  [[c,'条件',C.teal,n?24:cx-R-70,'🐂→🏎'],[e,'期望',C.violet,n?W-24-bw:cx+R+44,'🏎']].forEach(([v,l,col,x])=>{box(x,by,bw,bh,{fill:C.soft,r:5});box(x,by+bh*(1-v/100),bw,bh*v/100,{fill:col,r:5});txt(l,x+bw/2,by+bh+16,{size:n?11:12.5,w:700,color:col});txt(v,x+bw/2,by-12,{size:n?11:13,w:700,f:'m'});hotR(x,by,bw,bh,l,l==='条件'?'财富、健康、社群等客观条件。':'你觉得自己应该得到什么。')});
+  const ex=[['想要牛车，得到牛车','满足',C.teal],['想要法拉利，得到二手菲亚特','不开心',C.blue]];
+  ex.forEach((q,i)=>{const y=H-(n?40:46)+i*(n?18:22);txt(q[0]+' → '+q[1],W/2,y,{size:n?10.5:12,color:q[2],w:600})});
+ });
+ // ---- step 1: thermostat ----
+ layer(v1*(1-v2),()=>{
+  const x0=n?40:80,x1=W-(n?20:60),y0=H*.12,y1=H*.62;
+  const Y=v=>lerp(y1,y0,(v-1)/9);
+  for(let v=1;v<=10;v++){seg(x0,Y(v),x1,Y(v),rgba(C.line,v===5||v===8?1:.4),1);if(v%1===0)txt(v,x0-10,Y(v),{size:9.5,f:'m',color:C.muted,align:'right'})}
+  const ev=[[.2,'中乐透',+2],[.45,'失业',-2],[.7,'结婚',+1.4]];
+  const line=(base,lo,hi,col,lab)=>{const P=[];for(let i=0;i<=120;i++){const u=i/120;let v=base+Math.sin(u*24+base)*.35;ev.forEach(([p,_,d])=>{const k=u-p;if(k>0)v+=d*Math.exp(-k*22)});v=clamp(v,lo,hi);P.push([lerp(x0,x1,u),Y(v)])}polyline(P,col,2.4);txt(lab,x1+4,Y(base),{size:n?9.5:11,w:700,color:col,align:n?'right':'left'})};
+  line(8,6,10,C.teal,n?'8':'设定 8 分');line(5,3,7,C.blue,n?'5':'设定 5 分');
+  ev.forEach(([p,l])=>{const x=lerp(x0,x1,p);seg(x,y0,x,y1,C.muted,1,[3,3]);txt(l,x,y0-10,{size:n?10:11,w:700,color:C.muted})});
+  hotR(x0,y0,x1-x0,y1-y0,'快乐空调系统','重大事件会让情绪暂时波动，但很快回到原本的设定点。（示意）');
+  // farmer vs tycoon
+  const by=H*.76;const it=[['🛖','古代中国农夫','盖好了小土屋，旁边是猪圈'],['🏙','现代香港企业家','还完豪宅的最后一笔房贷，窗外是南海']];
+  it.forEach((q,i)=>{const x=W*(i?.72:.28);emo(q[0],x-(n?34:60),by,n?22:30);txt(q[1],x-(n?14:34),by-(n?8:10),{size:n?11:13,w:700,align:'left'});if(!n)txt(q[2],x-34,by+12,{size:10.5,color:C.muted,align:'left'});pill('血清素 = X',x,by+(n?28:38),{size:n?10.5:12,f:'m',bg:C.violet});hotR(x-80,by-24,160,72,q[1],q[2]+'。大脑不管土屋还是豪宅，只管血清素浓度。')});
+ });
+ // ---- step 2: meaning ----
+ layer(v2*(1-v3),()=>{
+  const cols=[['逐刻计算','换尿布 · 洗碗 · 哭闹 · 发脾气',C.blue,'不愉快'],['回顾一生','孩子是快乐的主要来源',C.teal,'有意义']];
+  cols.forEach((q,i)=>{const x=n?W/2:W*(i?.7:.3),y=n?H*(.1+i*.28):H*.18,w=n?W-30:W*.34,h=n?H*.24:H*.4;box(x-w/2,y,w,h,{fill:rgba(q[2],.08),stroke:q[2],r:10});
+   txt(q[0],x,y+(n?20:30),{size:n?13:16,w:900,f:'d',color:q[2]});para(q[1],x,y+(n?46:70),w-30,{size:n?11:13});pill(q[3],x,y+h-(n?20:28),{size:n?11:12.5,bg:q[2]});hotR(x-w/2,y,w,h,'卡尼曼的研究',i?'大多数家长都说孩子是他们快乐的主要来源。':'就单纯的数字来说，养小孩可说是非常不愉快的事。')});
+  const y=n?H*.72:H*.72;
+  box(W/2-Math.min(W*.44,330),y,Math.min(W*.88,660),n?H*.22:H*.18,{fill:C.sheet,stroke:C.line,r:10});
+  txt('☸ 佛教',W/2,y+(n?20:26),{size:n?13:15,w:900,f:'d',color:C.amber});
+  para('快乐既不在外在条件，也不在内心感受。痛苦来自对感受的渴求，放下追求才能解脱。',W/2,y+(n?42:52),Math.min(W*.8,600),{size:n?10.5:12.5});
+ });
+ // ---- step 3: three paths + final ----
+ layer(v3,()=>{
+  const top=n?34:H*.08;
+  const paths=[['🧬','生物工程','biological engineering','1996 年：背上植入牛软骨细胞、长出“耳朵”的老鼠；2000 年：荧光兔阿巴。'],['🦾','仿生工程','cyborg engineering','2001 年失去双臂的水电工杰西·沙利文，装上了用意念控制的生化手臂。'],['💾','无机生命','inorganic life','计算机病毒：能独立于创造者、自行复制演化的程序原型。']];
+  const cw=n?W-24:(W-80)/3,ch=n?H*.17:H*.36;
+  paths.forEach((q,i)=>{const x=n?12:40+i*(cw+0),y=n?top+i*(ch+8):top;box(x+(n?0:6),y,cw-(n?0:12),ch,{fill:C.sheet,stroke:C.violet,r:10});
+   if(n){emo(q[0],x+24,y+ch/2,22);txt(q[1],x+52,y+ch/2-8,{size:13,w:900,f:'d',color:C.violet,align:'left'});txt(q[2],x+52,y+ch/2+12,{size:9.5,f:'m',color:C.muted,align:'left'})}
+   else{emo(q[0],x+cw/2,y+40,32);txt(q[1],x+cw/2,y+82,{size:16,w:900,f:'d',color:C.violet});txt(q[2],x+cw/2,y+102,{size:10,f:'m',color:C.muted});para(q[3],x+cw/2,y+128,cw-40,{size:11,color:C.ink})}
+   hotR(x,y,cw,ch,q[1],q[3])});
+  // timeline arrow: 70k years
+  const ty=n?top+3*(ch+8)+16:top+ch+(H*.1);
+  const x0=n?20:60,x1=W-(n?20:60);arrow(x0,ty,x1,ty,C.ink,2,10);
+  const pts=[[0,'7 万年前','非洲角落微不足道的动物'],[.75,'农业 · 帝国 · 科学',''],[1,'今天','几乎拥有神的力量']];
+  pts.forEach(([u,a,b])=>{const x=lerp(x0,x1-14,u);dot(x,ty,5,C.ink);txt(a,x,ty+(n&&u>0&&u<1?18:-14),{size:n?10:11.5,w:700,align:u===0?'left':u===1?'right':'center'});if(b&&!n)txt(b,x,ty+18,{size:10.5,color:C.muted,align:u===0?'left':u===1?'right':'center'})});
+  const qy=n?Math.min(H-24,ty+64):H-(H-ty)/2+10;
+  const qa=1;
+  layer(qa,()=>{txt('“我们究竟希望自己想要什么？”',W/2,qy,{size:n?15:22,w:900,f:'d',color:C.acc});
+   hotR(W/2-200,qy-20,400,40,'后记 · 变成神的这种动物','拥有神的能力，但是不负责任、贪得无厌，而且连想要什么都不知道。天下危险，恐怕莫此为甚。（后记）')});
+ });
+}},
+];
+/* ====================================================================
+   ENGINE
+   ==================================================================== */
+const FLAT=[];SCENES.forEach((sc,si)=>{let a=0;sc.steps.forEach((st,k)=>{FLAT.push({si,k,st,ak:st.bg?Math.max(0,a-1):a});if(!st.bg)a++})});
+const bgEl=$('#bgcard');
+let cur=0,sceneIdx=-1,sf=-1,sceneT=0,sceneFade=0,stepClock=0,stepAge=0,playing=!REDUCED;
+const nav=$('#nav'),track=$('#track');
+SCENES.forEach((sc,i)=>{const b=document.createElement('button');b.textContent=sc.nav;b.onclick=()=>jumpScene(i);nav.appendChild(b)});
+const segEls=SCENES.map((sc,i)=>{const d=document.createElement('div');d.className='seg';d.style.flex=`${sc.steps.length} 1 0`;d.title=sc.nav;d.innerHTML='<i></i>';track.appendChild(d);return d});
+const firstOf=si=>FLAT.findIndex(f=>f.si===si);
+function jumpScene(si){go(firstOf(si),true)}
+function enterScene(si,k,fromStart){
+ sceneIdx=si;sceneT=0;sceneFade=REDUCED?1:0;sf=fromStart?k-1:k;
+ const sc=SCENES[si],ctrl=$('#ctrl');
+ if(sc.ctrl){ctrl.innerHTML=sc.ctrl;ctrl.hidden=false}else{ctrl.innerHTML='';ctrl.hidden=true}
+ sc.enter&&sc.enter();
+ [...nav.children].forEach((b,i)=>b.setAttribute('aria-current',i===si?'true':'false'));
+ try{history.replaceState(null,'','#s'+si)}catch(e){}
+}
+function go(i,fromStart){
+ i=clamp(i,0,FLAT.length-1);const prev=FLAT[cur];const f=FLAT[i];
+ const forward=i>cur;cur=i;stepClock=0;stepAge=0;
+ if(f.si!==sceneIdx)enterScene(f.si,f.ak,fromStart||forward);
+ panel();
+}
+function panel(){
+ const f=FLAT[cur],sc=SCENES[f.si];
+ $('#chap').textContent=sc.chap;$('#stitle').textContent=sc.title;
+ $('#steps').innerHTML=sc.steps.map((_,k)=>`<i class="${k<=f.k?'on':''}"></i>`).join('')+`<span>${f.k+1} / ${sc.steps.length}</span>`;
+ $('#caph').textContent=f.st.h;$('#cap').innerHTML=f.st.bg?'画面里是这个例子的业务背景和关键术语。读完后进入下一步，再看动画演示。':f.st.c;
+ const q=$('#quote');if(f.st.q){q.innerHTML='<small>原书要点</small>'+f.st.q;q.hidden=false}else q.hidden=true;
+ {const c=$('#ctrl');c.hidden=!!f.st.bg||!(sc.ctrl&&(!sc.ctrlSteps||sc.ctrlSteps.includes(f.ak)))}
+ if(f.st.bg){bgEl.innerHTML=`<div class="bgin"><div class="bgtag">例子背景</div><h4>${f.st.h.replace(/^背景：/,'')}</h4><p>${f.st.c}</p><dl>${f.st.terms.map(([t,d])=>`<dt>${t}</dt><dd>${d}</dd>`).join('')}</dl><div class="bgask">${f.st.ask}</div><div class="bgnext">按 → 或“下一步”进入例子</div></div>`;bgEl.hidden=false;bgEl.scrollTop=0}else{bgEl.hidden=true}
+ $('#count').textContent=String(cur+1).padStart(2,'0')+' / '+String(FLAT.length).padStart(2,'0');
+}
+function setPlay(p){playing=p;$('#play').setAttribute('aria-label',p?'暂停':'播放');$('#playIcon').innerHTML=p?'<path d="M4 2h3v12H4zM9 2h3v12H9z"/>':'<path d="M4 2l10 6-10 6z"/>'}
+$('#play').onclick=()=>{if(!playing&&cur===FLAT.length-1&&stepClock>=FLAT[cur].st.dur){go(0,true)}setPlay(!playing)};
+$('#prev').onclick=()=>go(cur-1);
+$('#next').onclick=()=>go(cur+1);
+track.addEventListener('click',e=>{const r=track.getBoundingClientRect();const fr=clamp((e.clientX-r.left)/r.width);
+ // map through segment widths
+ let acc=0;for(let i=0;i<segEls.length;i++){const sr=segEls[i].getBoundingClientRect();if(e.clientX<=sr.right+2.5||i===segEls.length-1){const loc=clamp((e.clientX-sr.left)/sr.width);const n=SCENES[i].steps.length;go(firstOf(i)+Math.min(n-1,Math.floor(loc*n)),true);return}}});
+track.addEventListener('keydown',e=>{if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}});
+document.addEventListener('keydown',e=>{if(e.target.matches('input,textarea'))return;if(e.target===track)return;
+ if(e.key==='ArrowRight'){go(cur+1);e.preventDefault()}else if(e.key==='ArrowLeft'){go(cur-1);e.preventDefault()}else if(e.key===' '){setPlay(!playing);e.preventDefault()}});
+
+// tooltip
+let mouse=null,hoverHot=null;
+function showTip(){
+ if(!mouse){tip.hidden=true;cv.style.cursor='default';return}
+ const h=hit(mouse.x,mouse.y);hoverHot=h;
+ if(!h){tip.hidden=true;cv.style.cursor='default';return}
+ cv.style.cursor=h.click?'pointer':'help';
+ if(tip.dataset.key!==h.t+h.b){tip.innerHTML=`<b>${h.t}</b>${h.b}`;tip.dataset.key=h.t+h.b}
+ tip.hidden=false;
+ const tw0=tip.offsetWidth,th0=tip.offsetHeight;let x=mouse.x+16,y=mouse.y+16;
+ if(x+tw0>W-8)x=mouse.x-tw0-14;if(x<8)x=8;if(y+th0>H-8)y=mouse.y-th0-14;if(y<8)y=8;
+ tip.style.left=x+'px';tip.style.top=y+'px';
+}
+cv.addEventListener('pointermove',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top}});
+cv.addEventListener('pointerleave',e=>{if(e.pointerType==='mouse'){mouse=null}});
+cv.addEventListener('pointerdown',e=>{const r=cv.getBoundingClientRect();mouse={x:e.clientX-r.left,y:e.clientY-r.top};const h=hit(mouse.x,mouse.y);if(h&&h.click){h.click();mouse=null}else if(!h&&e.pointerType!=='mouse'){mouse=null}});
+
+let last=performance.now();
+function frame(ts){
+ const dt=Math.min(.05,(ts-last)/1000);last=ts;
+ readColors();
+ const st=FLAT[cur].st;
+ stepAge+=dt;
+ if(playing){stepClock+=dt;if(stepClock>=st.dur){if(cur<FLAT.length-1)go(cur+1);else{stepClock=st.dur;setPlay(false)}}}
+ sceneT+=dt;sceneFade=Math.min(1,sceneFade+dt/.7);
+ const target=FLAT[cur].ak,diff=target-sf;
+ if(REDUCED)sf=target;else{const sp=Math.max(1/1.1,Math.abs(diff)*1.8)*dt;sf+=Math.sign(diff)*Math.min(Math.abs(diff),sp)}
+ // render
+ ctx.setTransform(DPR,0,0,DPR,0,0);ctx.clearRect(0,0,W,H);HOT=[];
+ const a=E.out(sceneFade);
+ const S={W,H,t:sceneT,dt,sf,age:stepAge,step:target,narrow:W<560,raw:k=>clamp(sf-k+1),v:k=>E.io(clamp(sf-k+1))};
+ ctx.save();ctx.globalAlpha=a;ctx.translate(0,(1-a)*16);
+ try{SCENES[sceneIdx].draw(S)}catch(err){console.error(err)}
+ ctx.restore();
+ showTip();
+ // progress
+ const gp=cur+clamp(stepClock/st.dur);
+ segEls.forEach((el,i)=>{const s0=firstOf(i),n=SCENES[i].steps.length;const f=clamp((gp-s0)/n);el.firstChild.style.width=(f*100)+'%';el.classList.toggle('past',gp>=s0+n)});
+ track.setAttribute('aria-valuenow',cur+1);track.setAttribute('aria-valuemax',FLAT.length);
+ requestAnimationFrame(frame);
+}
+readColors();
+const hs=/^#s(\d)$/.exec(location.hash);
+go(hs?firstOf(clamp(+hs[1],0,SCENES.length-1)):0,true);
+setPlay(playing);
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
